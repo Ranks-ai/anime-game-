@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Roulette Premium Effects</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #roulette {
+            width: 300px;
+            height: 300px;
+            border: 5px solid #333;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 215, 0, 1);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particle-fly 1.5s forwards;
+        }
+        @keyframes particle-fly {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-200px) scale(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="roulette">
+        <button id="spin-button">Spin!</button>
+    </div>
+    <audio id="rarity-sound" src="sound-effect.mp3" preload="auto"></audio>
+    <script>
+        const spinButton = document.getElementById('spin-button');
+        const raritySound = document.getElementById('rarity-sound');
+
+        spinButton.addEventListener('click', () => {
+            spinRoulette();
+            playRaritySound();
+        });
+
+        function spinRoulette() {
+            const roulette = document.getElementById('roulette');
+            roulette.style.transition = 'transform 2s ease';
+            roulette.style.transform = 'rotate(' + (Math.random() * 360 + 720) + 'deg)';
+            createParticles();
+        }
+
+        function createParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                document.getElementById('roulette').appendChild(particle);
+
+                // Remove particle after animation
+                particle.addEventListener('animationend', () => {
+                    particle.remove();
+                });
+            }
+        }
+
+        function playRaritySound() {
+            raritySound.currentTime = 0;
+            raritySound.play();
+        }
+    </script>
+</body>
+</html>
