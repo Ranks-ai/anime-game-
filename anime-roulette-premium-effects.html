@@ -1684,6 +1684,11 @@ function showPopup(char) {
   const skipTurnBtn = document.createElement("button");
   skipTurnBtn.innerText = "⏭️ SKIP THIS TURN";
   skipTurnBtn.style.marginTop = "12px";
+  const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
+  if (skipLimitReached) {
+    skipTurnBtn.disabled = true;
+    skipTurnBtn.title = "Skip limit reached (2 per game)";
+  }
   skipTurnBtn.onclick = () => {
     popup.remove();
     skipTurn();
@@ -1728,10 +1733,16 @@ function skipTurn() {
     return;
   }
 
+  const currentPenalty = state.skipPenalties[state.player] || 0;
+  if (currentPenalty >= 2) {
+    playSoundEffect('error');
+    showMessage("❌ Skip limit reached (2 per game)", "error");
+    return;
+  }
+
   playSoundEffect('skip');
   state.skippedThisTurn = true;
 
-  const currentPenalty = state.skipPenalties[state.player] || 0;
   const updatedPenalty = currentPenalty + 1;
   state.skipPenalties[state.player] = updatedPenalty;
   db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
@@ -1981,8 +1992,9 @@ function updateGameDisplay(data) {
 
   state.myTurn = data.turn === state.player;
   const allRolesFilled = hasAllRolesSelected();
+  const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
   spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
-  skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled;
+  skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled || skipLimitReached;
   document.getElementById("status").innerText = allRolesFilled
     ? "✅ All 7 roles filled"
     : (state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn");
