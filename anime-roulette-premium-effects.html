@@ -788,7 +788,7 @@ button:disabled {
     <div style="display: flex; flex-direction: column; align-items: center;">
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
         <button id="spinBtn" onclick="spin()">🎡 SPIN</button>
-        <button onclick="skipTurn()">⏭️ SKIP</button>
+        <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
         <button id="ultimateBtn" onclick="activateUltimate()">🔥 ULTIMATE</button>
       </div>
       <canvas id="canvas" width="320" height="320"></canvas>
@@ -936,12 +936,15 @@ ultimateUsed: false,
   musicEnabled: true,
   myFilledRoles: {},
   gameEnded: false,
-  cachedUltimateBonus: 0
+  cachedUltimateBonus: 0,
+  hasSpunThisTurn: false,
+  skippedThisTurn: false
 };
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spinBtn");
+const skipBtn = document.getElementById("skipBtn");
 const ultimateBtn = document.getElementById("ultimateBtn");
 const bgm = document.getElementById("bgm");
 
@@ -1310,6 +1313,7 @@ function spin() {
       const index = Math.floor(normalized / slice) % state.characters.length;
       const selected = state.characters[index];
       const selectedWithForm = applyFormVariation(selected);
+      state.hasSpunThisTurn = true;
 
       playSoundEffect('select');
       showPopup(selectedWithForm);
@@ -1392,6 +1396,16 @@ function showPopup(char) {
   });
 
   content.appendChild(rolesContainer);
+
+  const skipTurnBtn = document.createElement("button");
+  skipTurnBtn.innerText = "⏭️ SKIP THIS TURN";
+  skipTurnBtn.style.marginTop = "12px";
+  skipTurnBtn.onclick = () => {
+    popup.remove();
+    skipTurn();
+  };
+  content.appendChild(skipTurnBtn);
+
   loadImage(char.img);
 }
 
@@ -1403,6 +1417,8 @@ function selectRole(role, popup, char) {
     document.getElementById("charCounter").innerText = state.characters.length;
     draw();
 
+    state.hasSpunThisTurn = false;
+    state.skippedThisTurn = false;
     const next = state.player === "Player1" ? "Player2" : "Player1";
     db.ref(`rooms/${state.room}/turn`).set(next);
   }).catch(err => {
@@ -1412,7 +1428,24 @@ function selectRole(role, popup, char) {
 }
 
 function skipTurn() {
+  if (!state.myTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Not your turn!", "error");
+    return;
+  }
+  if (!state.hasSpunThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Spin the wheel before skipping!", "error");
+    return;
+  }
+  if (state.skippedThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ You can only skip once per turn!", "error");
+    return;
+  }
+
   playSoundEffect('skip');
+  state.skippedThisTurn = true;
   const next = state.player === "Player1" ? "Player2" : "Player1";
   db.ref(`rooms/${state.room}/turn`).set(next);
 }
@@ -1562,6 +1595,8 @@ function updateGameDisplay(data) {
   const isNowMyTurn = data.turn === state.player;
   if (state.myTurn !== isNowMyTurn && isNowMyTurn) {
     playSoundEffect('turn');
+    state.hasSpunThisTurn = false;
+    state.skippedThisTurn = false;
   }
 
   let h1 = "";
@@ -1612,6 +1647,7 @@ function updateGameDisplay(data) {
   document.getElementById("p2Score").innerText = Math.floor(s2);
 
   state.myTurn = data.turn === state.player;
+  skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn;
   document.getElementById("status").innerText = state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn";
 
   document.getElementById("p1Panel").classList.remove("active");
@@ -1644,6 +1680,8 @@ function joinGame() {
   state.gameEnded = false;
   state.ultimateUsed = false;
   state.cachedUltimateBonus = 0;
+  state.hasSpunThisTurn = false;
+  state.skippedThisTurn = false;
 
   const roomRef = db.ref(`rooms/${room}`);
 
