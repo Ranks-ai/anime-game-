@@ -1,90 +1,2106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Roulette Premium Effects</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-        #roulette {
-            width: 300px;
-            height: 300px;
-            border: 5px solid #333;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .particle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: rgba(255, 215, 0, 1);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particle-fly 1.5s forwards;
-        }
-        @keyframes particle-fly {
-            from {
-                opacity: 1;
-                transform: scale(1);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-200px) scale(0);
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Anime Roulette Ultimate</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  --bg-inner: #1a1a2f;
+  --bg-outer: #0a0a14;
+  --energy-a: rgba(0,200,255,0.15);
+  --energy-b: rgba(138,43,226,0.15);
+  --energy-c: rgba(255,0,150,0.15);
+  background: radial-gradient(circle at center, var(--bg-inner), var(--bg-outer) 70%);
+  color: white;
+  text-align: center;
+  padding: 20px;
+  font-family: Arial;
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+  transition: background 0.8s ease;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    var(--energy-a),
+    var(--energy-b),
+    var(--energy-c),
+    var(--energy-a)
+  );
+  animation: spinEnergy 20s linear infinite;
+  z-index: -2;
+  pointer-events: none;
+}
+
+@keyframes spinEnergy {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.04); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+body.theme-strength {
+  --bg-inner: #2f1a1a;
+  --bg-outer: #140a0a;
+  --energy-a: rgba(255, 80, 80, 0.20);
+  --energy-b: rgba(255, 170, 60, 0.18);
+  --energy-c: rgba(255, 0, 120, 0.18);
+}
+
+body.theme-speed {
+  --bg-inner: #14253a;
+  --bg-outer: #070f1a;
+  --energy-a: rgba(0, 220, 255, 0.22);
+  --energy-b: rgba(0, 150, 255, 0.18);
+  --energy-c: rgba(120, 255, 255, 0.16);
+}
+
+body.theme-defense {
+  --bg-inner: #1a2f24;
+  --bg-outer: #0a140f;
+  --energy-a: rgba(0, 255, 150, 0.20);
+  --energy-b: rgba(0, 200, 120, 0.18);
+  --energy-c: rgba(120, 255, 80, 0.16);
+}
+
+body.theme-stamina {
+  --bg-inner: #2f2a1a;
+  --bg-outer: #14110a;
+  --energy-a: rgba(255, 220, 0, 0.20);
+  --energy-b: rgba(255, 150, 0, 0.18);
+  --energy-c: rgba(255, 245, 130, 0.16);
+}
+
+body.theme-balanced {
+  --bg-inner: #201a2f;
+  --bg-outer: #0d0a14;
+  --energy-a: rgba(170, 100, 255, 0.18);
+  --energy-b: rgba(0, 210, 255, 0.16);
+  --energy-c: rgba(255, 0, 170, 0.16);
+}
+
+h1 {
+  color: #FFD700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+#joinSection {
+  margin: 30px 0;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+#joinSection input {
+  padding: 12px 15px;
+  border: 2px solid #FFD700;
+  background: #1a1a2b;
+  color: white;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 250px;
+}
+
+#joinSection button {
+  padding: 12px 25px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: black;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+#joinSection button:hover {
+  transform: scale(1.05);
+}
+
+#joinSection button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-msg {
+  color: #FF6B6B;
+  background: rgba(255, 107, 107, 0.1);
+  border: 2px solid #FF6B6B;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 10px 0;
+  max-width: 300px;
+  font-size: 13px;
+}
+
+.success-msg {
+  color: #00FF96;
+  background: rgba(0, 255, 150, 0.1);
+  border: 2px solid #00FF96;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 10px 0;
+  max-width: 300px;
+  font-size: 13px;
+}
+
+#gameSection {
+  display: none;
+  position: relative;
+  z-index: 1;
+}
+
+canvas {
+  border: 3px solid #FFD700;
+  background: #0a0a12;
+  margin: 20px 0;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(138, 43, 226, 0.4);
+  cursor: pointer;
+}
+
+button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: black;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 5px;
+  border-radius: 5px;
+  transition: all 0.3s;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+#status {
+  color: #FFD700;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+.game-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.panel {
+  background: linear-gradient(135deg, #1a1a2b, #0f0f1a);
+  border: 2px solid #FFD700;
+  padding: 20px;
+  border-radius: 10px;
+  width: 280px;
+  max-height: 500px;
+  overflow-y: auto;
+  transition: all 0.3s;
+}
+
+.panel.active {
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+  transform: scale(1.05);
+}
+
+.panel h3 {
+  color: #FFD700;
+  margin-bottom: 15px;
+}
+
+.char-item {
+  background: rgba(255, 215, 0, 0.1);
+  padding: 10px;
+  margin: 8px 0;
+  border-left: 3px solid #FFD700;
+  text-align: left;
+  border-radius: 5px;
+  font-size: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.char-item img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid #FFD700;
+  object-fit: cover;
+  background: #333;
+}
+
+.char-item img.glow-6 { box-shadow: 0 0 8px rgba(100, 200, 255, 0.6); }
+.char-item img.glow-7 { box-shadow: 0 0 10px rgba(0, 255, 150, 0.7); }
+.char-item img.glow-8 { box-shadow: 0 0 12px rgba(255, 200, 0, 0.8); }
+.char-item img.glow-9 { box-shadow: 0 0 14px rgba(255, 100, 0, 0.9); animation: glow-pulse 1.5s infinite; }
+.char-item img.glow-10 { box-shadow: 0 0 22px rgba(255, 0, 120, 1), 0 0 45px rgba(255, 60, 160, 0.95), 0 0 70px rgba(255, 220, 90, 0.85); animation: glow-pulse 0.9s infinite; filter: saturate(1.25) brightness(1.15); }
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 22px rgba(255, 0, 120, 1), 0 0 48px rgba(255, 40, 130, 0.9), 0 0 72px rgba(255, 220, 90, 0.75); }
+  50% { box-shadow: 0 0 28px rgba(255, 0, 140, 1), 0 0 62px rgba(255, 80, 180, 0.95), 0 0 86px rgba(255, 235, 130, 0.9); }
+}
+
+.char-item.traitor {
+  background: rgba(255, 68, 68, 0.1);
+  border-left-color: #FF4444;
+}
+
+.char-item.traitor img {
+  border-color: #FF4444;
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.8);
+}
+
+.char-info { flex: 1; }
+.char-item strong { color: #FFD700; display: block; }
+.char-item span { color: #88CCFF; font-size: 10px; display: block; margin-top: 2px; }
+.char-item.traitor span { color: #FF4444; }
+
+.ability-badge {
+  display: inline-block;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid #FFD700;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 9px;
+  color: #FFD700;
+  margin-top: 4px;
+  font-weight: bold;
+}
+
+.score {
+  color: #FFD700;
+  font-weight: bold;
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 5px;
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.popup-content {
+  background: linear-gradient(135deg, #1a1a2b, #0f0f1a);
+  border: 3px solid #FFD700;
+  border-radius: 15px;
+  padding: 40px;
+  text-align: center;
+  max-width: 420px;
+  animation: popupAppear 0.5s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes popupAppear {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.popup-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid #FFD700;
+  margin-bottom: 20px;
+  object-fit: cover;
+  background: #333;
+}
+
+.popup-content h2 {
+  color: #FFD700;
+  font-size: 32px;
+  margin-bottom: 15px;
+}
+
+.popup-content p {
+  color: #88CCFF;
+  margin-bottom: 10px;
+}
+
+.attributes-grid {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.attribute {
+  margin: 8px 0;
+  text-align: left;
+  font-size: 12px;
+}
+
+.attribute-name {
+  color: #FFD700;
+  font-weight: bold;
+  display: inline-block;
+  width: 60px;
+}
+
+.attribute-bar {
+  display: inline-block;
+  width: 120px;
+  height: 8px;
+  background: rgba(255, 215, 0, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 5px;
+  vertical-align: middle;
+}
+
+.attribute-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+}
+
+.attribute-value {
+  color: #88CCFF;
+  font-weight: bold;
+  display: inline-block;
+  width: 30px;
+  text-align: right;
+}
+
+.roles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.roles button {
+  padding: 12px 10px;
+  font-size: 12px;
+  position: relative;
+}
+
+.roles button.taken {
+  background: #666 !important;
+  color: #999 !important;
+  cursor: not-allowed !important;
+}
+
+.roles button.taken::after {
+  content: "✓";
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  color: #00FF00;
+  font-weight: bold;
+}
+
+.volume-control {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid #FFD700;
+  display: flex;
+  gap: 10px;
+}
+
+.volume-control button {
+  background: #FFD700;
+  color: black;
+  padding: 8px 15px;
+  font-size: 12px;
+  margin: 0;
+}
+
+.quit-btn {
+  background: #FF4444 !important;
+  color: white !important;
+}
+
+.rules-btn {
+  background: #00BFFF !important;
+  color: white !important;
+}
+
+.leaderboard-btn {
+  background: #FFB90F !important;
+  color: black !important;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chat-box {
+  margin: 20px auto 0;
+  width: 100%;
+  max-width: 900px;
+  border: 2px solid #00BFFF;
+  border-radius: 12px;
+  background: rgba(8, 15, 30, 0.72);
+  padding: 12px;
+  text-align: left;
+}
+
+.chat-header {
+  color: #00BFFF;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.chat-messages {
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 191, 255, 0.35);
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.chat-empty {
+  color: #88CCFF;
+  opacity: 0.85;
+  font-size: 12px;
+}
+
+.chat-line {
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: #D9EEFF;
+  line-height: 1.4;
+}
+
+.chat-line .name {
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.chat-line .time {
+  color: #88CCFF;
+  font-size: 10px;
+  margin-left: 6px;
+}
+
+.chat-input-row {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+#chatInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #00BFFF;
+  border-radius: 8px;
+  background: #0b1326;
+  color: white;
+  font-size: 12px;
+}
+
+#chatSendBtn {
+  background: #00BFFF;
+  color: #001018;
+  padding: 10px 14px;
+}
+
+.character-counter {
+  background: rgba(0, 150, 200, 0.3);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 2px solid #00BFFF;
+  color: #00BFFF;
+  font-weight: bold;
+}
+
+.winner-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.98);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.winner-content {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border: 5px solid #FF0000;
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 0 100px rgba(255, 215, 0, 0.8);
+  animation: winnerAppear 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+@keyframes winnerAppear {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.winner-content h1 {
+  color: #FF0000;
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.winner-name {
+  color: #0a0a14;
+  font-size: 36px;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+.winner-score {
+  color: #0a0a14;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.loser-info {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 30px;
+  color: #0a0a14;
+}
+
+.winning-draft {
+  margin-top: 24px;
+  text-align: left;
+  background: rgba(10, 10, 20, 0.35);
+  border: 2px solid rgba(0,0,0,0.35);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.winning-draft h3 {
+  color: #0a0a14;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.winning-draft-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.winning-draft-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(10,10,20,0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #0a0a14;
+  font-size: 13px;
+}
+
+.winning-draft-role {
+  font-weight: bold;
+}
+
+.winning-draft-empty {
+  color: #0a0a14;
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+.winner-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.winner-buttons button {
+  padding: 15px 30px;
+  font-size: 16px;
+  background: #FF0000 !important;
+  color: white !important;
+}
+
+.rules-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.rules-content {
+  background: linear-gradient(135deg, #1a1a2b, #0f0f1a);
+  border: 3px solid #FFD700;
+  border-radius: 15px;
+  padding: 40px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 60px rgba(0,0,0,0.9), 0 0 40px rgba(255,215,0,0.3);
+  animation: popupAppear 0.5s ease-out;
+}
+
+.rules-content h2 {
+  color: #FFD700;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.rule-section {
+  margin-bottom: 20px;
+  text-align: left;
+  background: rgba(255, 215, 0, 0.05);
+  padding: 15px;
+  border-left: 3px solid #FFD700;
+  border-radius: 5px;
+}
+
+.rule-section h3 {
+  color: #00FF96;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.rule-section p {
+  color: #88CCFF;
+  line-height: 1.6;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.rule-section ul {
+  color: #88CCFF;
+  margin-left: 20px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.rule-section li {
+  margin-bottom: 8px;
+}
+
+.rule-section li strong {
+  color: #FFD700;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #FFD700;
+  color: black;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 24px;
+  transition: all 0.3s;
+  z-index: 10000;
+}
+
+.modal-close:hover {
+  transform: scale(1.1);
+}
+
+.leaderboard-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.leaderboard-content {
+  background: linear-gradient(135deg, #1a1a2b, #0f0f1a);
+  border: 3px solid #FFB90F;
+  border-radius: 15px;
+  padding: 40px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 60px rgba(0,0,0,0.9), 0 0 40px rgba(255,185,15,0.3);
+  animation: popupAppear 0.5s ease-out;
+}
+
+.leaderboard-content h2 {
+  color: #FFB90F;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-table thead {
+  background: rgba(255, 185, 15, 0.1);
+  border-bottom: 2px solid #FFB90F;
+}
+
+.leaderboard-table th {
+  color: #FFB90F;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.leaderboard-table td {
+  color: #88CCFF;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 185, 15, 0.2);
+  font-size: 13px;
+}
+
+.leaderboard-table tr:hover {
+  background: rgba(255, 185, 15, 0.05);
+}
+
+.rank-1 { background: rgba(255, 215, 0, 0.15) !important; }
+.rank-2 { background: rgba(192, 192, 192, 0.15) !important; }
+.rank-3 { background: rgba(205, 127, 50, 0.15) !important; }
+
+.medal {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.leaderboard-name {
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.leaderboard-stat {
+  text-align: center;
+}
+
+.leaderboard-stat.wins {
+  color: #00FF96;
+  font-weight: bold;
+}
+
+.leaderboard-stat.winrate {
+  color: #FFD700;
+}
+
+.no-data {
+  text-align: center;
+  color: #88CCFF;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+.particle-burst {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10001;
+}
+
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+  animation: burst-fly 950ms ease-out forwards;
+}
+
+@keyframes burst-fly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(0.45);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.25);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FFD700;
+  border-radius: 5px;
+}
+</style>
 </head>
 <body>
-    <div id="roulette">
-        <button id="spin-button">Spin!</button>
-    </div>
-    <audio id="rarity-sound" src="sound-effect.mp3" preload="auto"></audio>
-    <script>
-        const spinButton = document.getElementById('spin-button');
-        const raritySound = document.getElementById('rarity-sound');
 
-        spinButton.addEventListener('click', () => {
-            spinRoulette();
-            playRaritySound();
+<div class="volume-control">
+  <button onclick="toggleMusic()" id="musicBtn">🔊 ON</button>
+  <button onclick="showRules()" class="rules-btn">📖 RULES</button>
+  <button onclick="showLeaderboard()" class="leaderboard-btn">🏆 LEADERBOARD</button>
+  <button onclick="quitGame()" class="quit-btn">❌ QUIT</button>
+</div>
+
+<h1>🎯 Anime Roulette Ultimate</h1>
+
+<div id="joinSection">
+  <input id="nameInput" placeholder="👤 Enter your name" type="text">
+  <input id="roomInput" placeholder="🏠 Enter room code" type="text">
+  <button onclick="joinGame()">🎮 START GAME</button>
+  <div id="messages"></div>
+</div>
+
+<div id="gameSection">
+  <div class="top-bar">
+    <div id="status">Waiting...</div>
+    <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
+  </div>
+
+  <div class="game-wrapper">
+    <div class="panel" id="p1Panel">
+      <h3 id="p1Name">Player 1</h3>
+      <div id="p1Chars"></div>
+      <div class="score">Score: <span id="p1Score">0</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button id="spinBtn" onclick="spin()">🎡 SPIN</button>
+        <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
+        <button id="ultimateBtn" onclick="activateUltimate()">🔥 ULTIMATE</button>
+      </div>
+      <canvas id="canvas" width="320" height="320"></canvas>
+    </div>
+
+    <div class="panel" id="p2Panel">
+      <h3 id="p2Name">Player 2</h3>
+      <div id="p2Chars"></div>
+      <div class="score">Score: <span id="p2Score">0</span></div>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chatBox">
+    <div class="chat-header">💬 Room Chat (short messages)</div>
+    <div id="chatMessages" class="chat-messages">
+      <div class="chat-empty">No messages yet. Say hi 👋</div>
+    </div>
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" />
+      <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+<audio id="bgm" loop preload="auto">
+  <source src="bgm.mp3" type="audio/mpeg">
+</audio>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC1TU7rzOzR3g0MfDLE8PavxRNBKyTCkMU",
+  authDomain: "anime-roll-ac963.firebaseapp.com",
+  databaseURL: "https://anime-roll-ac963-default-rtdb.firebaseio.com",
+  projectId: "anime-roll-ac963",
+  storageBucket: "anime-roll-ac963.appspot.com",
+  messagingSenderId: "690457557879",
+  appId: "1:690457557879:web:42752bdd2aa3fe3b163f72"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let audioContext = null;
+
+function getAudioContext() {
+  if (!audioContext) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioContext = new AudioContext();
+  }
+  return audioContext;
+}
+
+function playSound(frequencies, durations) {
+  try {
+    const ctx = getAudioContext();
+    frequencies.forEach((freq, idx) => {
+      setTimeout(() => {
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + durations[idx]);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + durations[idx]);
+        } catch(e) {}
+      }, idx * 80);
+    });
+  } catch(e) {}
+}
+
+function playSoundEffect(type) {
+  if (type === 'spin') playSound([200, 250, 300], [0.1, 0.1, 0.15]);
+  else if (type === 'select') playSound([400, 600, 800], [0.1, 0.15, 0.2]);
+  else if (type === 'skip') playSound([600, 400], [0.1, 0.15]);
+  else if (type === 'turn') playSound([440, 440], [0.1, 0.15]);
+  else if (type === 'error') playSound([150, 100], [0.1, 0.1]);
+}
+
+const BASE_CHARACTERS = [
+  {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}]},
+  {name:"Vegeta",score:10,img:"images/vegeta.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Prince's Pride",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
+  {name:"Madara",score:10,img:"images/madara.png",strength:9,speed:8,defense:9,stamina:10,ability:{name:"Infinite Tsukuyomi",description:"Enemy team -5 total",type:"enemyDebuff",value:5}},
+  {name:"Gojo",score:10,img:"images/gojo.png",strength:8,speed:9,defense:10,stamina:8,ability:{name:"Limitless",description:"+3 if Captain",type:"roleBonus",role:"Captain",value:3}},
+  {name:"Saitama",score:10,img:"images/saitama.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"Serious Punch",description:"+2 if Duelist",type:"roleBonus",role:"Duelist",value:2}},
+  {name:"Shanks",score:10,img:"images/shanks.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Conqueror's Haki",description:"+6 if Captain",type:"roleBonus",role:"Captain",value:6}},
+  {name:"Giorno",score:10,img:"images/giorno.png",strength:8,speed:8,defense:8,stamina:9},
+  {name:"Unohana",score:10,img:"images/unohana.png",strength:9,speed:8,defense:9,stamina:10},
+  {name:"Yamamoto",score:10,img:"images/yamamoto.png",strength:10,speed:7,defense:9,stamina:10,ability:{name:"Zanka no Tachi",description:"Burn enemy team -3 total",type:"enemyDebuff",value:3}},
+  {name:"Naruto",score:9,img:"images/naruto.png",strength:8,speed:8,defense:7,stamina:9,forms:[{name:"Sage Mode",score:10,strength:9,speed:8,defense:8,stamina:9},{name:"Kurama Link",score:11,strength:9,speed:9,defense:8,stamina:10}],ability:{name:"Shadow Clone",description:"+3 bonus if assigned as Duelist",type:"roleBonus",role:"Duelist",value:3}},
+  {name:"Sasuke",score:9,img:"images/sasuke.png",strength:8,speed:9,defense:7,stamina:8,forms:[{name:"Mangekyo",score:10,strength:8,speed:9,defense:8,stamina:8},{name:"Rinnegan",score:11,strength:9,speed:9,defense:8,stamina:9}]},
+  {name:"Luffy",score:9,img:"images/luffy.png",strength:9,speed:8,defense:7,stamina:10,forms:[{name:"Gear 4",score:10,strength:10,speed:8,defense:8,stamina:10},{name:"Gear 5",score:11,strength:10,speed:9,defense:8,stamina:10}],ability:{name:"Straw Hat Duo",description:"+4 if Zoro is on your team",type:"teamPair",partner:"Zoro",value:4}},
+  {name:"Zoro",score:9,img:"images/zoro.png",strength:9,speed:7,defense:8,stamina:8},
+  {name:"Ichigo",score:9,img:"images/ichigo.png",strength:9,speed:8,defense:7,stamina:8,forms:[{name:"Bankai",score:10,strength:9,speed:9,defense:7,stamina:8},{name:"Horn of Salvation",score:11,strength:10,speed:9,defense:8,stamina:9}]},
+  {name:"Asta",score:9,img:"images/asta.png",strength:7,speed:8,defense:6,stamina:9,ability:{name:"Anti-Magic",description:"Ignores role multipliers",type:"ignoreRole"}},
+  {name:"Itachi",score:9,img:"images/itachi.png",strength:7,speed:8,defense:8,stamina:8},
+  {name:"Obito",score:9,img:"images/obito.png",strength:7,speed:8,defense:9,stamina:7},
+  {name:"Pain",score:9,img:"images/pain.png",strength:8,speed:7,defense:8,stamina:8},
+  {name:"Hisoka",score:9,img:"images/hisoka.png",strength:8,speed:8,defense:6,stamina:8},
+  {name:"Yami",score:9,img:"images/yami.png",strength:9,speed:7,defense:8,stamina:8},
+  {name:"Law",score:9,img:"images/law.png",strength:7,speed:8,defense:7,stamina:8},
+  {name:"Jotaro",score:9,img:"images/jotaro.png",strength:8,speed:9,defense:8,stamina:8},
+  {name:"Tsunade",score:9,img:"images/tsunade.png",strength:8,speed:7,defense:8,stamina:9,ability:{name:"Creation Rebirth",description:"+4 if Healer, +2 if Support",type:"healingMastery",healerValue:4,supportValue:2}},
+  {name:"Akaza",score:9,img:"images/akaza.png",strength:9,speed:9,defense:8,stamina:9},
+  {name:"SoiFon",score:9,img:"images/soifon.png",strength:8,speed:10,defense:7,stamina:8},
+  {name:"Gin",score:9,img:"images/gin.png",strength:8,speed:9,defense:7,stamina:8},
+  {name:"Byakuya",score:9,img:"images/byakuya.png",strength:8,speed:9,defense:8,stamina:8,ability:{name:"Senbonzakura",description:"+4 if Captain",type:"roleBonus",role:"Captain",value:4}},
+  {name:"Toshiro",score:9,img:"images/toshiro.png",strength:8,speed:9,defense:7,stamina:8},
+  {name:"Komamura",score:9,img:"images/komamura.png",strength:9,speed:6,defense:10,stamina:9},
+  {name:"Ukitake",score:9,img:"images/ukitake.png",strength:8,speed:7,defense:8,stamina:9},
+  {name:"Eren",score:8,img:"images/eren.png",strength:8,speed:7,defense:6,stamina:8},
+  {name:"Levi",score:8,img:"images/levi.png",strength:7,speed:9,defense:7,stamina:8},
+  {name:"Deku",score:8,img:"images/deku.png",strength:7,speed:7,defense:6,stamina:8},
+  {name:"Bakugo",score:8,img:"images/bakugo.png",strength:8,speed:7,defense:6,stamina:7},
+  {name:"Kakashi",score:8,img:"images/kakashi.png",strength:7,speed:8,defense:7,stamina:7},
+  {name:"Killua",score:8,img:"images/killua.png",strength:7,speed:9,defense:6,stamina:8},
+  {name:"Gon",score:8,img:"images/gon.png",strength:7,speed:8,defense:6,stamina:8},
+  {name:"Natsu",score:8,img:"images/natsu.png",strength:8,speed:7,defense:6,stamina:8},
+  {name:"Erza",score:8,img:"images/erza.png",strength:8,speed:7,defense:8,stamina:7},
+  {name:"Genos",score:8,img:"images/genos.png",strength:8,speed:8,defense:7,stamina:6},
+  {name:"Rengoku",score:8,img:"images/rengoku.png",strength:8,speed:8,defense:7,stamina:8},
+  {name:"Orihime",score:8,img:"images/orihime.png",strength:5,speed:6,defense:8,stamina:8,ability:{name:"Soten Kisshun",description:"Strongest healer: +7 if Healer, +3 if Support",type:"healingMastery",healerValue:7,supportValue:3}},
+  {name:"Elizabeth",score:8,img:"images/elizabeth.png",strength:6,speed:7,defense:7,stamina:8},
+  {name:"Ace",score:8,img:"images/ace.png",strength:7,speed:8,defense:7,stamina:7},
+  {name:"Shinji",score:8,img:"images/shinji.png",strength:7,speed:8,defense:7,stamina:8},
+  {name:"Mayuri",score:8,img:"images/mayuri.png",strength:6,speed:7,defense:8,stamina:8},
+  {name:"Rose",score:8,img:"images/rose.png",strength:7,speed:7,defense:7,stamina:8},
+  {name:"Tanjiro",score:7,img:"images/tanjiro.png",strength:7,speed:7,defense:6,stamina:8},
+  {name:"Gray",score:7,img:"images/gray.png",strength:7,speed:7,defense:6,stamina:7},
+  {name:"Boruto",score:7,img:"images/boruto.png",strength:6,speed:7,defense:6,stamina:7},
+  {name:"Sarada",score:7,img:"images/sarada.png",strength:6,speed:7,defense:6,stamina:7},
+  {name:"Muichiro",score:7,img:"images/muichiro.png",strength:6,speed:8,defense:6,stamina:6},
+  {name:"Tengen",score:7,img:"images/tengen.png",strength:7,speed:8,defense:6,stamina:7},
+  {name:"Sakura",score:7,img:"images/sakura.png",strength:7,speed:7,defense:6,stamina:7},
+  {name:"Mimosa",score:7,img:"images/mimosa.png",strength:5,speed:6,defense:7,stamina:7},
+  {name:"Shoko",score:6,img:"images/shoko.png",strength:5,speed:6,defense:7,stamina:6}
+];
+
+const CHARACTERS = BASE_CHARACTERS.map(char => ({
+  ...char,
+  passiveAbility: {
+    name: "Battle Aura",
+    description: "+1 passive team power",
+    type: "flatBonus",
+    value: 1
+  }
+}));
+
+const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Traitor"];
+
+let state = {
+ultimateUsed: false,
+  room: null,
+  player: null,
+  playerName: "",
+  myTurn: false,
+  characters: [],
+  angle: 0,
+  spinning: false,
+  images: {},
+  musicEnabled: true,
+  myFilledRoles: {},
+  gameEnded: false,
+  cachedUltimateBonus: 0,
+  hasSpunThisTurn: false,
+  skippedThisTurn: false,
+  skipPenalties: {
+    Player1: 0,
+    Player2: 0
+  }
+};
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const spinBtn = document.getElementById("spinBtn");
+const skipBtn = document.getElementById("skipBtn");
+const ultimateBtn = document.getElementById("ultimateBtn");
+const bgm = document.getElementById("bgm");
+const chatMessagesEl = document.getElementById("chatMessages");
+const chatInputEl = document.getElementById("chatInput");
+
+function hasAllRolesSelected() {
+  return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
+}
+
+function activateUltimate() {
+  if (state.ultimateUsed || !state.room || !state.player) return;
+
+  db.ref(`rooms/${state.room}/players/${state.player}/slots`)
+    .once("value")
+    .then(snapshot => {
+      const mySlots = snapshot.val() || {};
+      const names = Object.values(mySlots).map(c => c.name);
+
+      let bonus = 0;
+      let ultimateName = "Power Surge";
+
+      if (names.includes("Naruto") && names.includes("Sasuke")) {
+        bonus = 8;
+        ultimateName = "Six Paths Awakening";
+      } else if (names.includes("Ichigo") && names.includes("Byakuya")) {
+        bonus = 7;
+        ultimateName = "Soul Society Unity";
+      } else if (names.includes("Yamamoto")) {
+        bonus = 6;
+        ultimateName = "Final Inferno";
+      } else if (names.includes("Asta")) {
+        bonus = 5;
+        ultimateName = "Devil Union Mode";
+      } else {
+        bonus = 4;
+        ultimateName = "Adrenaline Rush";
+      }
+
+      return db.ref(`rooms/${state.room}/ultimateBonus/${state.player}`).set(bonus)
+        .then(() => {
+          state.ultimateUsed = true;
+          ultimateBtn.disabled = true;
+          alert("🔥 " + ultimateName + " Activated! +" + bonus + " Team Power");
+        });
+    })
+    .catch(err => {
+      showMessage("❌ Ultimate failed: " + err.message, "error");
+    });
+}
+
+function refreshCachedUltimateBonus() {
+  // Apply ultimate bonus
+  if (state.room) {
+    db.ref(`rooms/${state.room}/ultimateBonus/${state.player}`)
+      .once("value")
+      .then(snap => {
+        if (snap.val()) {
+          state.cachedUltimateBonus = snap.val();
+        }
+      })
+      .catch(() => {});
+  }
+}
+
+function getGlowClass(score) {
+  if (score >= 10) return "glow-10";
+  if (score >= 9) return "glow-9";
+  if (score >= 8) return "glow-8";
+  if (score >= 7) return "glow-7";
+  return "glow-6";
+}
+
+async function showLeaderboard() {
+  playSoundEffect('select');
+  const modal = document.createElement("div");
+  modal.className = "leaderboard-modal";
+  const content = document.createElement("div");
+  content.className = "leaderboard-content";
+  
+  content.innerHTML = `
+    <button class="modal-close" onclick="this.closest('.leaderboard-modal').remove()">✕</button>
+    <h2>🏆 LEADERBOARD</h2>
+    <div id="leaderboardData">Loading...</div>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.remove();
+  };
+
+  try {
+    const snapshot = await db.ref('leaderboard').orderByChild('wins').limitToLast(100).once('value');
+    const data = snapshot.val();
+    
+    if (!data) {
+      document.getElementById("leaderboardData").innerHTML = `<div class="no-data">No games played yet!</div>`;
+      return;
+    }
+
+    const players = Object.values(data).sort((a, b) => b.wins - a.wins);
+    const topPlayers = players.slice(0, 50);
+
+    let html = `<table class="leaderboard-table"><thead><tr><th>RANK</th><th>PLAYER</th><th>WINS</th><th>LOSSES</th><th>WIN RATE</th></tr></thead><tbody>`;
+
+    topPlayers.forEach((player, index) => {
+      const totalGames = (player.wins || 0) + (player.losses || 0);
+      const winRate = totalGames > 0 ? ((player.wins || 0) / totalGames * 100).toFixed(1) : "0.0";
+      const medals = ['🥇', '🥈', '🥉'];
+      const medal = medals[index] || '';
+      const rowClass = index < 3 ? `rank-${index + 1}` : '';
+
+      html += `<tr class="${rowClass}"><td>${medal} ${index + 1}</td><td><span class="leaderboard-name">${player.name}</span></td><td class="leaderboard-stat wins">${player.wins || 0}</td><td>${player.losses || 0}</td><td class="leaderboard-stat winrate">${winRate}%</td></tr>`;
+    });
+
+    html += `</tbody></table>`;
+    document.getElementById("leaderboardData").innerHTML = html;
+  } catch(e) {
+    document.getElementById("leaderboardData").innerHTML = `<div class="no-data">Error loading leaderboard</div>`;
+  }
+}
+
+async function updateLeaderboard(winnerName, loserName) {
+  try {
+    const leaderboardRef = db.ref('leaderboard');
+    const winnerSnapshot = await leaderboardRef.orderByChild('name').equalTo(winnerName).once('value');
+    if (winnerSnapshot.exists()) {
+      const winnerKey = Object.keys(winnerSnapshot.val())[0];
+      const winnerData = winnerSnapshot.val()[winnerKey];
+      await leaderboardRef.child(winnerKey).update({wins: (winnerData.wins || 0) + 1});
+    } else {
+      await leaderboardRef.push({name: winnerName, wins: 1, losses: 0});
+    }
+
+    const loserSnapshot = await leaderboardRef.orderByChild('name').equalTo(loserName).once('value');
+    if (loserSnapshot.exists()) {
+      const loserKey = Object.keys(loserSnapshot.val())[0];
+      const loserData = loserSnapshot.val()[loserKey];
+      await leaderboardRef.child(loserKey).update({losses: (loserData.losses || 0) + 1});
+    } else {
+      await leaderboardRef.push({name: loserName, wins: 0, losses: 1});
+    }
+  } catch(e) {
+    console.error("Leaderboard error:", e);
+  }
+}
+
+function escapeHtml(text) {
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatChatTime(ts) {
+  const d = new Date(ts || Date.now());
+  return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+function renderChatMessages(chatData = {}) {
+  if (!chatMessagesEl) return;
+  const msgs = Object.values(chatData || {})
+    .filter(m => m && m.text)
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+    .slice(-40);
+
+  if (msgs.length === 0) {
+    chatMessagesEl.innerHTML = `<div class="chat-empty">No messages yet. Say hi 👋</div>`;
+    return;
+  }
+
+  chatMessagesEl.innerHTML = msgs
+    .map(m => `<div class="chat-line"><span class="name">${escapeHtml(m.name || 'Player')}</span><span class="time">${formatChatTime(m.ts)}</span><br>${escapeHtml(m.text)}</div>`)
+    .join('');
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+}
+
+function sendChatMessage() {
+  if (!state.room || !state.player || !chatInputEl) return;
+  const text = chatInputEl.value.trim().slice(0, 80);
+  if (!text) return;
+
+  db.ref(`rooms/${state.room}/chat`).push({
+    name: state.playerName || state.player,
+    player: state.player,
+    text,
+    ts: Date.now()
+  }).then(() => {
+    chatInputEl.value = "";
+  }).catch(err => {
+    showMessage("❌ Chat failed: " + err.message, "error");
+  });
+}
+
+if (chatInputEl) {
+  chatInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendChatMessage();
+  });
+}
+
+function showRules() {
+  playSoundEffect('select');
+  const modal = document.createElement("div");
+  modal.className = "rules-modal";
+  const content = document.createElement("div");
+  content.className = "rules-content";
+  
+  content.innerHTML = `
+    <button class="modal-close" onclick="this.closest('.rules-modal').remove()">✕</button>
+    <h2>📖 Game Rules</h2>
+    <div class="rule-section">
+      <h3>🎮 Objective</h3>
+      <p>Spin to select anime characters and assign them to 7 roles. Highest score wins!</p>
+    </div>
+    <div class="rule-section">
+      <h3>⭐ Role Multipliers</h3>
+      <ul>
+        <li><strong>Captain:</strong> Score × 1.5</li>
+        <li><strong>Vice:</strong> Score × 1.2</li>
+        <li><strong>Healer/Support:</strong> Score + 2</li>
+        <li><strong>Tank/Duelist:</strong> Score + 1</li>
+        <li><strong>Traitor:</strong> -Score</li>
+      </ul>
+    </div>
+    <div class="rule-section">
+      <h3>✨ Special Abilities</h3>
+      <p>Some characters have unique abilities that trigger based on their role or effect opponents!</p>
+    </div>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.remove();
+  };
+}
+
+function quitGame() {
+  if (state.room && state.player) {
+    db.ref(`rooms/${state.room}/players/${state.player}`).remove();
+  }
+  location.reload();
+}
+
+function showMessage(text, type) {
+  const messagesDiv = document.getElementById("messages");
+  const msgEl = document.createElement("div");
+  msgEl.className = type === "error" ? "error-msg" : "success-msg";
+  msgEl.innerText = text;
+  messagesDiv.innerHTML = "";
+  messagesDiv.appendChild(msgEl);
+}
+
+function toggleMusic() {
+  state.musicEnabled = !state.musicEnabled;
+  const btn = document.getElementById("musicBtn");
+  if (state.musicEnabled) {
+    bgm.volume = 0.2;
+    bgm.play().catch(e => {});
+    btn.innerText = "🔊 ON";
+  } else {
+    bgm.pause();
+    btn.innerText = "🔇 OFF";
+  }
+}
+
+function shuffle(arr) {
+  let a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function loadImage(imagePath) {
+  return new Promise((resolve) => {
+    if (state.images[imagePath]) {
+      resolve(state.images[imagePath]);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      state.images[imagePath] = img;
+      resolve(img);
+    };
+    img.onerror = () => resolve(null);
+    img.src = imagePath;
+  });
+}
+
+async function preloadImages() {
+  for (const char of state.characters) {
+    await loadImage(char.img);
+  }
+}
+
+function applyFormVariation(char) {
+  if (!char.forms || !Array.isArray(char.forms) || char.forms.length === 0) {
+    return {...char};
+  }
+
+  const form = char.forms[Math.floor(Math.random() * char.forms.length)];
+  return {
+    ...char,
+    ...form,
+    formLabel: form.name
+  };
+}
+
+function draw() {
+  const chars = state.characters;
+  if (chars.length === 0) return;
+
+  const centerX = 160;
+  const centerY = 160;
+  const radius = 130;
+  const slice = (Math.PI * 2) / chars.length;
+
+  ctx.fillStyle = "#0a0a12";
+  ctx.fillRect(0, 0, 320, 320);
+
+  for (let i = 0; i < chars.length; i++) {
+    const start = state.angle + i * slice;
+    const end = start + slice;
+    const mid = start + slice / 2;
+
+    ctx.fillStyle = "#1a3a5f";
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, radius, start, end);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = "#FFD700";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(mid);
+    ctx.fillStyle = "#FFD700";
+    ctx.font = "bold 9px Arial";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(chars[i].name, radius - 35, 0);
+    ctx.restore();
+
+    const img = state.images[chars[i].img];
+    if (img && img.complete) {
+      const x = centerX + Math.cos(mid) * 95;
+      const y = centerY + Math.sin(mid) * 95;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, 14, 0, Math.PI * 2);
+      ctx.strokeStyle = "#FFD700";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.clip();
+      ctx.drawImage(img, x - 14, y - 14, 28, 28);
+      ctx.restore();
+    } else {
+      const x = centerX + Math.cos(mid) * 95;
+      const y = centerY + Math.sin(mid) * 95;
+      ctx.fillStyle = "#333";
+      ctx.beginPath();
+      ctx.arc(x, y, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#FFD700";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  ctx.fillStyle = "#0a0a12";
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#FFD700";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = "#FFD700";
+  ctx.font = "bold 16px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("⚡", centerX, centerY);
+}
+
+function spin() {
+  if (state.spinning) return;
+  if (!state.myTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Not your turn!", "error");
+    return;
+  }
+  if (state.characters.length === 0) {
+    playSoundEffect('error');
+    showMessage("❌ No characters left!", "error");
+    return;
+  }
+  if (hasAllRolesSelected()) {
+    playSoundEffect('error');
+    showMessage("✅ All 7 roles are filled. No more spins for you!", "success");
+    spinBtn.disabled = true;
+    return;
+  }
+
+  playSoundEffect('spin');
+  state.spinning = true;
+  spinBtn.disabled = true;
+
+  let speed = 0.2;
+  let count = 0;
+  const maxSpins = 200;
+
+  let spinInterval = setInterval(() => {
+    state.angle += speed;
+    speed *= 0.98;
+
+    count++;
+    draw();
+
+    if (speed < 0.02 || count >= maxSpins) {
+      clearInterval(spinInterval);
+
+      const slice = (Math.PI * 2) / state.characters.length;
+      const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const index = Math.floor(normalized / slice) % state.characters.length;
+      const selected = state.characters[index];
+      const selectedWithForm = applyFormVariation(selected);
+      state.hasSpunThisTurn = true;
+
+      playSoundEffect('select');
+      showPopup(selectedWithForm);
+      state.spinning = false;
+      spinBtn.disabled = false;
+    }
+  }, 16);
+}
+
+
+function triggerSpecialParticleBurst(char) {
+  const isSpecial = (char.score >= 10) || Boolean(char.ability) || Boolean(char.formLabel);
+  if (!isSpecial) return;
+
+  const burstLayer = document.createElement("div");
+  burstLayer.className = "particle-burst";
+  document.body.appendChild(burstLayer);
+
+  const colors = ["#FFD700", "#FF4DA6", "#00E5FF", "#FFFFFF", "#FFA500"];
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  const particleCount = char.score >= 10 ? 38 : 24;
+
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+    particle.style.left = `${centerX}px`;
+    particle.style.top = `${centerY}px`;
+    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+    const angle = (Math.PI * 2 * i) / particleCount + (Math.random() * 0.4 - 0.2);
+    const distance = 70 + Math.random() * 180;
+    particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+    particle.style.animationDelay = `${Math.random() * 90}ms`;
+    burstLayer.appendChild(particle);
+  }
+
+  setTimeout(() => burstLayer.remove(), 1200);
+}
+
+function showPopup(char) {
+  const popup = document.createElement("div");
+  popup.className = "popup";
+  const content = document.createElement("div");
+  content.className = "popup-content";
+
+  content.innerHTML = `
+    <img class="popup-img" src="${char.img}">
+    <h2>${char.name}</h2>
+    <p>${char.formLabel ? "🧬 Form: " + char.formLabel : "🧬 Form: Base"}</p>
+    <p>⚡ Power: ${char.score}</p>
+    
+    <div class="attributes-grid">
+      <div class="attribute">
+        <span class="attribute-name">💪 STR</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.strength * 10}%"></div></div>
+        <span class="attribute-value">${char.strength}</span>
+      </div>
+      <div class="attribute">
+        <span class="attribute-name">⚡ SPD</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.speed * 10}%"></div></div>
+        <span class="attribute-value">${char.speed}</span>
+      </div>
+      <div class="attribute">
+        <span class="attribute-name">🛡️ DEF</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.defense * 10}%"></div></div>
+        <span class="attribute-value">${char.defense}</span>
+      </div>
+      <div class="attribute">
+        <span class="attribute-name">❤️ STA</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.stamina * 10}%"></div></div>
+        <span class="attribute-value">${char.stamina}</span>
+      </div>
+    </div>
+  `;
+
+  popup.appendChild(content);
+  document.body.appendChild(popup);
+  triggerSpecialParticleBurst(char);
+
+  if (char.ability) {
+    const abilityDiv = document.createElement("div");
+    abilityDiv.style.marginTop = "15px";
+    abilityDiv.style.padding = "10px";
+    abilityDiv.style.background = "rgba(255,215,0,0.1)";
+    abilityDiv.style.border = "1px solid gold";
+    abilityDiv.style.borderRadius = "8px";
+    abilityDiv.innerHTML = `
+      <strong>🔥 ${char.ability.name}</strong><br>
+      <span style="color:#88CCFF;font-size:12px;">
+        ${char.ability.description}
+      </span>
+    `;
+    content.appendChild(abilityDiv);
+  }
+
+  if (char.passiveAbility) {
+    const passiveDiv = document.createElement("div");
+    passiveDiv.style.marginTop = "8px";
+    passiveDiv.style.padding = "8px";
+    passiveDiv.style.background = "rgba(0,191,255,0.12)";
+    passiveDiv.style.border = "1px solid #00BFFF";
+    passiveDiv.style.borderRadius = "8px";
+    passiveDiv.innerHTML = `
+      <strong>🌀 ${char.passiveAbility.name}</strong><br>
+      <span style="color:#88CCFF;font-size:12px;">
+        ${char.passiveAbility.description}
+      </span>
+    `;
+    content.appendChild(passiveDiv);
+  }
+
+  const rolesContainer = document.createElement("div");
+  rolesContainer.className = "roles";
+  
+  ROLES.forEach(role => {
+    const btn = document.createElement("button");
+    btn.innerText = role;
+    
+    if (state.myFilledRoles[role]) {
+      btn.disabled = true;
+      btn.classList.add("taken");
+    } else {
+      btn.onclick = () => selectRole(role, popup, char);
+    }
+    
+    rolesContainer.appendChild(btn);
+  });
+
+  content.appendChild(rolesContainer);
+
+  const skipTurnBtn = document.createElement("button");
+  skipTurnBtn.innerText = "⏭️ SKIP THIS TURN";
+  skipTurnBtn.style.marginTop = "12px";
+  skipTurnBtn.onclick = () => {
+    popup.remove();
+    skipTurn();
+  };
+  content.appendChild(skipTurnBtn);
+
+  loadImage(char.img);
+}
+
+function selectRole(role, popup, char) {
+  db.ref(`rooms/${state.room}/players/${state.player}/slots/${role}`).set(char).then(() => {
+    state.characters = state.characters.filter(c => c.name !== char.name);
+    state.myFilledRoles[role] = true;
+    popup.remove();
+    document.getElementById("charCounter").innerText = state.characters.length;
+    draw();
+
+    state.hasSpunThisTurn = false;
+    state.skippedThisTurn = false;
+    const next = state.player === "Player1" ? "Player2" : "Player1";
+    db.ref(`rooms/${state.room}/turn`).set(next);
+  }).catch(err => {
+    showMessage("Error: " + err.message, "error");
+    console.error(err);
+  });
+}
+
+function skipTurn() {
+  if (!state.myTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Not your turn!", "error");
+    return;
+  }
+  if (!state.hasSpunThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Spin the wheel before skipping!", "error");
+    return;
+  }
+  if (state.skippedThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ You can only skip once per turn!", "error");
+    return;
+  }
+
+  playSoundEffect('skip');
+  state.skippedThisTurn = true;
+
+  const currentPenalty = state.skipPenalties[state.player] || 0;
+  const updatedPenalty = currentPenalty + 1;
+  state.skipPenalties[state.player] = updatedPenalty;
+  db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
+
+  const next = state.player === "Player1" ? "Player2" : "Player1";
+  db.ref(`rooms/${state.room}/turn`).set(next);
+}
+
+function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
+  let score = 0;
+
+  Object.entries(slots).forEach(([role, char]) => {
+    let base = char.score;
+
+    if (char.ability?.type === "ignoreRole") {
+      // Ignore multipliers
+    } else {
+      if (role === "Captain") base = Math.floor(base * 1.5);
+      else if (role === "Vice") base = Math.floor(base * 1.2);
+      else if (role === "Healer" || role === "Support") base += 2;
+      else if (role === "Tank" || role === "Duelist") base += 1;
+      else if (role === "Traitor") base = -char.score;
+    }
+
+    const attributeBonus = (char.strength + char.speed + char.defense + char.stamina) * 0.1;
+    base += Math.floor(attributeBonus);
+
+    if (char.ability?.type === "roleBonus" && role === char.ability.role) {
+      base += char.ability.value;
+    }
+
+    if (char.ability?.type === "healingMastery") {
+      if (role === "Healer") base += (char.ability.healerValue || 0);
+      else if (role === "Support") base += (char.ability.supportValue || 0);
+    }
+
+    if (char.passiveAbility?.type === "flatBonus") {
+      base += char.passiveAbility.value;
+    }
+
+    score += base;
+  });
+
+  Object.values(enemySlots).forEach(char => {
+    if (char.ability?.type === "enemyDebuff") {
+      score -= char.ability.value;
+    }
+  });
+
+  const teamNames = Object.values(slots).map(c => c.name);
+  Object.values(slots).forEach(char => {
+    if (char.ability?.type === "teamPair" && teamNames.includes(char.ability.partner)) {
+      score += char.ability.value;
+    }
+  });
+
+  // Apply ultimate bonus
+  score += ultimateBonus;
+
+  return score;
+}
+
+function getTeamThemeFromSlots(slots) {
+  const counters = { strength: 0, speed: 0, defense: 0, stamina: 0 };
+
+  Object.values(slots || {}).forEach(char => {
+    const stats = {
+      strength: char.strength || 0,
+      speed: char.speed || 0,
+      defense: char.defense || 0,
+      stamina: char.stamina || 0
+    };
+
+    const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+    if (!entries.length) return;
+
+    const top = entries[0][1];
+    const tied = entries.filter(([, value]) => value === top).map(([name]) => name);
+    tied.forEach(name => { counters[name] += 1 / tied.length; });
+  });
+
+  const sorted = Object.entries(counters).sort((a, b) => b[1] - a[1]);
+  if (!sorted.length || sorted[0][1] <= 0) return "balanced";
+
+  if (sorted.length > 1 && Math.abs(sorted[0][1] - sorted[1][1]) < 0.35) {
+    return "balanced";
+  }
+
+  return sorted[0][0];
+}
+
+function applyTeamTheme(slots) {
+  const theme = getTeamThemeFromSlots(slots);
+  document.body.classList.remove("theme-strength", "theme-speed", "theme-defense", "theme-stamina", "theme-balanced");
+  document.body.classList.add(`theme-${theme}`);
+}
+
+function showWinnerModal(winnerName, winnerScore, loserName, loserScore, winnerSlots = {}) {
+  const modal = document.createElement("div");
+  modal.className = "winner-modal";
+  const content = document.createElement("div");
+  content.className = "winner-content";
+
+  const draftedRows = Object.entries(winnerSlots)
+    .map(([role, char]) => {
+      const formSuffix = char.formLabel ? ` (${char.formLabel})` : "";
+      return `<div class="winning-draft-item"><span class="winning-draft-role">${role}</span><span>${char.name}${formSuffix}</span></div>`;
+    })
+    .join("");
+
+  const draftedHtml = draftedRows
+    ? `<div class="winning-draft"><h3>🎯 Winning Draft</h3><div class="winning-draft-list">${draftedRows}</div></div>`
+    : `<div class="winning-draft"><h3>🎯 Winning Draft</h3><div class="winning-draft-empty">No drafted characters available.</div></div>`;
+  
+  content.innerHTML = `
+    <div style="font-size: 80px;">🏆</div>
+    <h1>VICTORY!</h1>
+    <div class="winner-name">${winnerName}</div>
+    <div class="winner-score">Score: ${winnerScore} pts</div>
+    ${draftedHtml}
+    <div class="loser-info">
+      <p><strong>${loserName}</strong></p>
+      <p>Score: ${loserScore} pts</p>
+    </div>
+    
+    <div class="winner-buttons">
+      <button onclick="location.reload()">🔄 PLAY AGAIN</button>
+      <button onclick="quitGame()">🏠 QUIT</button>
+    </div>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  updateLeaderboard(winnerName, loserName);
+}
+
+function updateGameDisplay(data) {
+  if (!data || !data.players) return;
+  refreshCachedUltimateBonus();
+  renderChatMessages(data.chat || {});
+
+  const p1 = data.players.Player1?.slots || {};
+  const p2 = data.players.Player2?.slots || {};
+  const p1UltimateBonus = data.ultimateBonus?.Player1 || 0;
+  const p2UltimateBonus = data.ultimateBonus?.Player2 || 0;
+  const p1SkipPenalty = data.skipPenalties?.Player1 || 0;
+  const p2SkipPenalty = data.skipPenalties?.Player2 || 0;
+  state.skipPenalties.Player1 = p1SkipPenalty;
+  state.skipPenalties.Player2 = p2SkipPenalty;
+
+  const effectiveP1UltimateBonus = state.player === "Player1" ? Math.max(p1UltimateBonus, state.cachedUltimateBonus || 0) : p1UltimateBonus;
+  const effectiveP2UltimateBonus = state.player === "Player2" ? Math.max(p2UltimateBonus, state.cachedUltimateBonus || 0) : p2UltimateBonus;
+
+  if (state.player === "Player1") {
+    state.myFilledRoles = p1;
+    applyTeamTheme(p1);
+  }
+  else if (state.player === "Player2") {
+    state.myFilledRoles = p2;
+    applyTeamTheme(p2);
+  }
+
+  const p1HasPicks = Object.keys(p1).length > 0;
+  const p2HasPicks = Object.keys(p2).length > 0;
+
+  const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus) : 0;
+  const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus) : 0;
+  const s1 = s1Base - p1SkipPenalty;
+  const s2 = s2Base - p2SkipPenalty;
+
+  state.ultimateUsed = Boolean(data.ultimateBonus?.[state.player]);
+  ultimateBtn.disabled = state.ultimateUsed;
+
+  if (Object.keys(p1).length === 7 && Object.keys(p2).length === 7) {
+    if (!state.gameEnded) {
+      state.gameEnded = true;
+      const p1Name = data.players.Player1?.name || "Player 1";
+      const p2Name = data.players.Player2?.name || "Player 2";
+      
+      if (s1 > s2) showWinnerModal(p1Name, Math.floor(s1), p2Name, Math.floor(s2), p1);
+      else if (s2 > s1) showWinnerModal(p2Name, Math.floor(s2), p1Name, Math.floor(s1), p2);
+      else showWinnerModal("🤝 TIE!", Math.floor(s1), `${p1Name} vs ${p2Name}`, Math.floor(s2), {});
+    }
+    return;
+  }
+
+  const isNowMyTurn = data.turn === state.player;
+  if (state.myTurn !== isNowMyTurn && isNowMyTurn) {
+    playSoundEffect('turn');
+    state.hasSpunThisTurn = false;
+    state.skippedThisTurn = false;
+  }
+
+  let h1 = "";
+  Object.entries(p1).forEach(([r, c]) => {
+    let roleScore = c.score;
+    let isTraitor = false;
+    
+    if (c.ability?.type === "ignoreRole") {
+      roleScore = c.score;
+    } else {
+      if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
+      else if (r === "Vice") roleScore = Math.floor(roleScore * 1.2);
+      else if (r === "Healer" || r === "Support") roleScore += 2;
+      else if (r === "Tank" || r === "Duelist") roleScore += 1;
+      else if (r === "Traitor") { roleScore = -c.score; isTraitor = true; }
+    }
+    
+    const traitClass = isTraitor ? " traitor" : "";
+    const glowClass = getGlowClass(c.score);
+    const badges = [];
+    if (c.ability) badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
+    const abilityBadge = badges.join('');
+    h1 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
+  });
+
+  let h2 = "";
+  Object.entries(p2).forEach(([r, c]) => {
+    let roleScore = c.score;
+    let isTraitor = false;
+    
+    if (c.ability?.type === "ignoreRole") {
+      roleScore = c.score;
+    } else {
+      if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
+      else if (r === "Vice") roleScore = Math.floor(roleScore * 1.2);
+      else if (r === "Healer" || r === "Support") roleScore += 2;
+      else if (r === "Tank" || r === "Duelist") roleScore += 1;
+      else if (r === "Traitor") { roleScore = -c.score; isTraitor = true; }
+    }
+    
+    const traitClass = isTraitor ? " traitor" : "";
+    const glowClass = getGlowClass(c.score);
+    const badges = [];
+    if (c.ability) badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
+    const abilityBadge = badges.join('');
+    h2 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
+  });
+
+  document.getElementById("p1Chars").innerHTML = h1 || "<span style='color:#888;'>No characters yet</span>";
+  document.getElementById("p2Chars").innerHTML = h2 || "<span style='color:#888;'>No characters yet</span>";
+  document.getElementById("p1Score").innerText = Math.floor(s1);
+  document.getElementById("p2Score").innerText = Math.floor(s2);
+
+  state.myTurn = data.turn === state.player;
+  const allRolesFilled = hasAllRolesSelected();
+  spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
+  skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled;
+  document.getElementById("status").innerText = allRolesFilled
+    ? "✅ All 7 roles filled"
+    : (state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn");
+
+  document.getElementById("p1Panel").classList.remove("active");
+  document.getElementById("p2Panel").classList.remove("active");
+  if (state.myTurn && state.player === "Player1") document.getElementById("p1Panel").classList.add("active");
+  else if (state.myTurn && state.player === "Player2") document.getElementById("p2Panel").classList.add("active");
+
+  if (data.players) {
+    document.getElementById("p1Name").innerText = data.players.Player1?.name || "Player 1";
+    document.getElementById("p2Name").innerText = data.players.Player2?.name || "Player 2";
+  }
+}
+
+// ✅ FIXED joinGame FUNCTION - NOW COMPLETE!
+function joinGame() {
+  const name = document.getElementById("nameInput").value.trim();
+  const room = document.getElementById("roomInput").value.trim().toUpperCase();
+
+  if (!name || !room) {
+    showMessage("❌ Please fill in all fields!", "error");
+    return;
+  }
+
+  const joinBtn = document.querySelector("#joinSection button");
+  joinBtn.disabled = true;
+  showMessage("⏳ Joining...", "success");
+
+  state.room = room;
+  state.playerName = name;
+  state.characters = shuffle(CHARACTERS);
+  state.gameEnded = false;
+  state.ultimateUsed = false;
+  state.cachedUltimateBonus = 0;
+  state.hasSpunThisTurn = false;
+  state.skippedThisTurn = false;
+  state.skipPenalties = { Player1: 0, Player2: 0 };
+
+  const roomRef = db.ref(`rooms/${room}`);
+
+  roomRef.once("value").then((snap) => {
+    const roomData = snap.val() || {};
+    const players = roomData.players || {};
+
+    let playerSlot = null;
+
+    if (!players.Player1) playerSlot = "Player1";
+    else if (!players.Player2) playerSlot = "Player2";
+    else {
+      showMessage("❌ Room is full!", "error");
+      joinBtn.disabled = false;
+      return;
+    }
+
+    state.player = playerSlot;
+
+    db.ref(`rooms/${room}/players/${playerSlot}`).set({
+      name: name,
+      slots: {}
+    }).then(async () => {
+
+      // Auto remove on disconnect
+      db.ref(`rooms/${room}/players/${playerSlot}`)
+        .onDisconnect()
+        .remove();
+
+      // Set first turn if none exists
+      db.ref(`rooms/${room}/turn`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/turn`).set("Player1");
+        }
+      });
+
+      // Ensure skip penalties start at 0 for both players
+      db.ref(`rooms/${room}/skipPenalties`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/skipPenalties`).set({ Player1: 0, Player2: 0 });
+        }
+      });
+
+      await preloadImages();
+
+      setTimeout(() => {
+        document.getElementById("joinSection").style.display = "none";
+        document.getElementById("gameSection").style.display = "block";
+
+        document.getElementById("charCounter").innerText = state.characters.length;
+        document.getElementById("p1Score").innerText = "0";
+        document.getElementById("p2Score").innerText = "0";
+
+        draw();
+        spinBtn.disabled = true;
+        skipBtn.disabled = true;
+
+        if (state.musicEnabled) {
+          bgm.volume = 0.2;
+          bgm.play().catch(()=>{});
+        }
+
+        // Start listening to room updates
+        roomRef.on("value", (snap) => {
+          updateGameDisplay(snap.val());
         });
 
-        function spinRoulette() {
-            const roulette = document.getElementById('roulette');
-            roulette.style.transition = 'transform 2s ease';
-            roulette.style.transform = 'rotate(' + (Math.random() * 360 + 720) + 'deg)';
-            createParticles();
-        }
+      }, 1000);
 
-        function createParticles() {
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                document.getElementById('roulette').appendChild(particle);
+    }).catch(err => {
+      showMessage("❌ " + err.message, "error");
+      joinBtn.disabled = false;
+    });
 
-                // Remove particle after animation
-                particle.addEventListener('animationend', () => {
-                    particle.remove();
-                });
-            }
-        }
+  }).catch(err => {
+    showMessage("❌ Firebase error: " + err.message, "error");
+    joinBtn.disabled = false;
+  });
+}
+</script>
 
-        function playRaritySound() {
-            raritySound.currentTime = 0;
-            raritySound.play();
-        }
-    </script>
 </body>
 </html>
