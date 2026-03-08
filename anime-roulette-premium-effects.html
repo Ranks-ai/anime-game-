@@ -872,6 +872,54 @@ button:disabled {
   animation: burst-fly 950ms ease-out forwards;
 }
 
+body.rare-cinematic {
+  animation: rare-flash 450ms ease;
+}
+
+@keyframes rare-flash {
+  0% { filter: brightness(1); }
+  35% { filter: brightness(1.6) saturate(1.4); }
+  100% { filter: brightness(1); }
+}
+
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10002;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 14px;
+  opacity: 0.95;
+  animation: confetti-fall 1.8s linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg); }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}
+
+.mobile-tabs { display: none; }
+
+@media (max-width: 900px) {
+  .game-wrapper { flex-direction: column; align-items: stretch; }
+  .panel { width: 100%; max-height: none; }
+  canvas { width: 280px; height: 280px; margin: 10px auto; }
+  .mobile-tabs {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 10px 0;
+  }
+  .mobile-tabs button { font-size: 12px; padding: 8px 12px; }
+  .mobile-section { display: none !important; }
+  .mobile-section.active-mobile { display: block !important; }
+}
+
 @keyframes burst-fly {
   0% {
     opacity: 1;
@@ -903,6 +951,7 @@ button:disabled {
   <button onclick="toggleMusic()" id="musicBtn">🔊 ON</button>
   <button onclick="showRules()" class="rules-btn">📖 RULES</button>
   <button onclick="showLeaderboard()" class="leaderboard-btn">🏆 LEADERBOARD</button>
+  <button onclick="showEncyclopedia()" class="leaderboard-btn">📚 ENCYCLOPEDIA</button>
   <button onclick="quitGame()" class="quit-btn">❌ QUIT</button>
 </div>
 
@@ -919,16 +968,24 @@ button:disabled {
   <div class="top-bar">
     <div id="status">Waiting...</div>
     <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
+    <div class="character-counter" id="oddsDisplay">🎲 Odds: ...</div>
+  </div>
+
+  <div class="mobile-tabs" id="mobileTabs">
+    <button onclick="setMobileTab('p1')">Player 1</button>
+    <button onclick="setMobileTab('wheel')">Wheel</button>
+    <button onclick="setMobileTab('p2')">Player 2</button>
+    <button onclick="setMobileTab('chat')">Chat</button>
   </div>
 
   <div class="game-wrapper">
-    <div class="panel" id="p1Panel">
+    <div class="panel mobile-section" id="p1Panel" data-section="p1">
       <h3 id="p1Name">Player 1</h3>
       <div id="p1Chars"></div>
       <div class="score">Score: <span id="p1Score">0</span></div>
     </div>
 
-    <div style="display: flex; flex-direction: column; align-items: center;">
+    <div style="display: flex; flex-direction: column; align-items: center;" class="mobile-section" data-section="wheel">
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
         <button id="spinBtn" onclick="spin()">🎡 SPIN</button>
         <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
@@ -937,14 +994,14 @@ button:disabled {
       <canvas id="canvas" width="320" height="320"></canvas>
     </div>
 
-    <div class="panel" id="p2Panel">
+    <div class="panel mobile-section" id="p2Panel" data-section="p2">
       <h3 id="p2Name">Player 2</h3>
       <div id="p2Chars"></div>
       <div class="score">Score: <span id="p2Score">0</span></div>
     </div>
   </div>
 
-  <div class="chat-box" id="chatBox">
+  <div class="chat-box mobile-section" id="chatBox" data-section="chat">
     <div class="chat-header">💬 Room Chat (short messages)</div>
     <div id="chatMessages" class="chat-messages">
       <div class="chat-empty">No messages yet. Say hi 👋</div>
@@ -1119,7 +1176,9 @@ ultimateUsed: false,
   skipPenalties: {
     Player1: 0,
     Player2: 0
-  }
+  },
+  pityCounter: 0,
+  mobileTab: "wheel"
 };
 
 const canvas = document.getElementById("canvas");
@@ -1196,6 +1255,94 @@ function getGlowClass(score) {
   if (score >= 8) return "glow-8";
   if (score >= 7) return "glow-7";
   return "glow-6";
+}
+
+function getTier(char) {
+  if (!char) return 'common';
+  if (char.score >= 10) return 'legendary';
+  if (char.score >= 9) return 'epic';
+  if (char.score >= 8) return 'rare';
+  return 'common';
+}
+
+function updateOddsDisplay() {
+  const el = document.getElementById('oddsDisplay');
+  if (!el) return;
+  const total = state.characters.length || 1;
+  const counts = { legendary: 0, epic: 0, rare: 0, common: 0 };
+  state.characters.forEach(c => counts[getTier(c)]++);
+  const pct = (n) => ((n / total) * 100).toFixed(1);
+  el.innerText = `🎲 L:${pct(counts.legendary)}% E:${pct(counts.epic)}% R:${pct(counts.rare)}% C:${pct(counts.common)}% | Pity:${state.pityCounter}`;
+}
+
+function setMobileTab(tab) {
+  state.mobileTab = tab;
+  document.querySelectorAll('.mobile-section').forEach(el => {
+    if (el.dataset.section === tab) el.classList.add('active-mobile');
+    else el.classList.remove('active-mobile');
+  });
+}
+
+function playRareCinematic(char) {
+  if (!char || char.score < 10) return;
+  document.body.classList.add('rare-cinematic');
+  playSound([900, 700, 1000], [0.12, 0.12, 0.2]);
+  setTimeout(() => document.body.classList.remove('rare-cinematic'), 500);
+}
+
+function triggerWinConfetti() {
+  const layer = document.createElement('div');
+  layer.className = 'confetti-layer';
+  const bodyClass = document.body.className;
+  let colors = ['#FFD700', '#FF4DA6', '#00E5FF', '#FFFFFF'];
+  if (bodyClass.includes('theme-strength')) colors = ['#ff5757', '#ffb347', '#ffd166'];
+  else if (bodyClass.includes('theme-speed')) colors = ['#5de0ff', '#7c93ff', '#c2f2ff'];
+  else if (bodyClass.includes('theme-defense')) colors = ['#5bff95', '#2ed573', '#caffbf'];
+  else if (bodyClass.includes('theme-stamina')) colors = ['#ffd93d', '#ff9f1a', '#fff3b0'];
+
+  for (let i = 0; i < 90; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.left = `${Math.random() * 100}vw`;
+    c.style.top = `${-Math.random() * 20}vh`;
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDelay = `${Math.random() * 0.5}s`;
+    layer.appendChild(c);
+  }
+  document.body.appendChild(layer);
+  setTimeout(() => layer.remove(), 2300);
+}
+
+function showEncyclopedia() {
+  const modal = document.createElement('div');
+  modal.className = 'leaderboard-modal';
+  const content = document.createElement('div');
+  content.className = 'leaderboard-content';
+
+  const rows = BASE_CHARACTERS.map(c => {
+    const forms = c.forms?.map(f => f.name).join(', ') || 'Base only';
+    const ability = c.ability ? `${c.ability.name} — ${c.ability.description}` : 'None';
+    return `<tr><td class="leaderboard-name">${escapeHtml(c.name)}</td><td>${c.score}</td><td>${escapeHtml(forms)}</td><td>${escapeHtml(ability)}</td></tr>`;
+  }).join('');
+
+  content.innerHTML = `
+    <button class="modal-close" onclick="this.closest('.leaderboard-modal').remove()">✕</button>
+    <h2>📚 Character Encyclopedia</h2>
+    <input id="encyclopediaSearch" placeholder="Search character..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #FFB90F;background:#0b1326;color:#fff;margin-bottom:12px;" />
+    <div style="color:#88CCFF;margin-bottom:10px;font-size:12px;">Odds are dynamic from remaining pool (see top bar).</div>
+    <table class="leaderboard-table" id="encyclopediaTable"><thead><tr><th>Name</th><th>Score</th><th>Forms</th><th>Ability</th></tr></thead><tbody>${rows}</tbody></table>
+  `;
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  const search = content.querySelector('#encyclopediaSearch');
+  const tbody = content.querySelector('tbody');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    [...tbody.querySelectorAll('tr')].forEach(tr => {
+      tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 }
 
 async function showLeaderboard() {
@@ -1562,9 +1709,13 @@ function spin() {
       const selected = state.characters[index];
       const selectedWithForm = applyFormVariation(selected);
       state.hasSpunThisTurn = true;
+      if ((selectedWithForm.score || 0) >= 10) state.pityCounter = 0;
+      else state.pityCounter += 1;
 
       playSoundEffect('select');
+      playRareCinematic(selectedWithForm);
       showPopup(selectedWithForm);
+      updateOddsDisplay();
       state.spinning = false;
       spinBtn.disabled = false;
     }
@@ -1947,6 +2098,7 @@ function showWinnerModal(winnerName, winnerScore, loserName, loserScore, winnerS
   
   modal.appendChild(content);
   document.body.appendChild(modal);
+  triggerWinConfetti();
 
   updateLeaderboard(winnerName, loserName);
 }
@@ -1955,6 +2107,8 @@ function updateGameDisplay(data) {
   if (!data || !data.players) return;
   refreshCachedUltimateBonus();
   renderChatMessages(data.chat || {});
+  updateOddsDisplay();
+  if (window.innerWidth <= 900) setMobileTab(state.mobileTab || "wheel");
 
   const p1 = data.players.Player1?.slots || {};
   const p2 = data.players.Player2?.slots || {};
@@ -2158,6 +2312,8 @@ function joinGame() {
         document.getElementById("p2Score").innerText = "0";
 
         draw();
+        updateOddsDisplay();
+        setMobileTab(window.innerWidth <= 900 ? "wheel" : state.mobileTab);
         spinBtn.disabled = true;
         skipBtn.disabled = true;
 
