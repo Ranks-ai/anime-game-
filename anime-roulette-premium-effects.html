@@ -1018,34 +1018,34 @@ function playSoundEffect(type) {
 }
 
 const BASE_CHARACTERS = [
-  {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}]},
+  {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}],ability:{name:"Saiyan Surge",description:"If score ≥ 9, +20% total team",type:"teamMultiplier",threshold:9,multiplier:0.2}},
   {name:"Vegeta",score:10,img:"images/vegeta.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Prince's Pride",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
   {name:"Madara",score:10,img:"images/madara.png",strength:9,speed:8,defense:9,stamina:10,ability:{name:"Infinite Tsukuyomi",description:"Enemy team -5 total",type:"enemyDebuff",value:5}},
   {name:"Gojo",score:10,img:"images/gojo.png",strength:8,speed:9,defense:10,stamina:8,ability:{name:"Limitless",description:"+3 if Captain",type:"roleBonus",role:"Captain",value:3}},
   {name:"Saitama",score:10,img:"images/saitama.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"Serious Punch",description:"+2 if Duelist",type:"roleBonus",role:"Duelist",value:2}},
   {name:"Shanks",score:10,img:"images/shanks.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Conqueror's Haki",description:"+6 if Captain",type:"roleBonus",role:"Captain",value:6}},
   {name:"Giorno",score:10,img:"images/giorno.png",strength:8,speed:8,defense:8,stamina:9},
-  {name:"Unohana",score:10,img:"images/unohana.png",strength:9,speed:8,defense:9,stamina:10},
+  {name:"Unohana",score:10,img:"images/unohana.png",strength:9,speed:8,defense:9,stamina:10,ability:{name:"Healing Shield",description:"Negates 1 enemy debuff",type:"shield",value:1}},
   {name:"Yamamoto",score:10,img:"images/yamamoto.png",strength:10,speed:7,defense:9,stamina:10,ability:{name:"Zanka no Tachi",description:"Burn enemy team -3 total",type:"enemyDebuff",value:3}},
   {name:"Naruto",score:9,img:"images/naruto.png",strength:8,speed:8,defense:7,stamina:9,forms:[{name:"Sage Mode",score:10,strength:9,speed:8,defense:8,stamina:9},{name:"Kurama Link",score:11,strength:9,speed:9,defense:8,stamina:10}],ability:{name:"Shadow Clone",description:"+3 bonus if assigned as Duelist",type:"roleBonus",role:"Duelist",value:3}},
   {name:"Sasuke",score:9,img:"images/sasuke.png",strength:8,speed:9,defense:7,stamina:8,forms:[{name:"Mangekyo",score:10,strength:8,speed:9,defense:8,stamina:8},{name:"Rinnegan",score:11,strength:9,speed:9,defense:8,stamina:9}]},
   {name:"Luffy",score:9,img:"images/luffy.png",strength:9,speed:8,defense:7,stamina:10,forms:[{name:"Gear 4",score:10,strength:10,speed:8,defense:8,stamina:10},{name:"Gear 5",score:11,strength:10,speed:9,defense:8,stamina:10}],ability:{name:"Straw Hat Duo",description:"+4 if Zoro is on your team",type:"teamPair",partner:"Zoro",value:4}},
-  {name:"Zoro",score:9,img:"images/zoro.png",strength:9,speed:7,defense:8,stamina:8},
+  {name:"Zoro",score:9,img:"images/zoro.png",strength:9,speed:7,defense:8,stamina:8,ability:{name:"King of Hell",description:"Late game: +6 when 5+ roles filled",type:"lateGame",minRoles:5,value:6}},
   {name:"Ichigo",score:9,img:"images/ichigo.png",strength:9,speed:8,defense:7,stamina:8,forms:[{name:"Bankai",score:10,strength:9,speed:9,defense:7,stamina:8},{name:"Horn of Salvation",score:11,strength:10,speed:9,defense:8,stamina:9}]},
   {name:"Asta",score:9,img:"images/asta.png",strength:7,speed:8,defense:6,stamina:9,ability:{name:"Anti-Magic",description:"Ignores role multipliers",type:"ignoreRole"}},
-  {name:"Itachi",score:9,img:"images/itachi.png",strength:7,speed:8,defense:8,stamina:8},
+  {name:"Itachi",score:9,img:"images/itachi.png",strength:7,speed:8,defense:8,stamina:8,ability:{name:"Tsukuyomi Silence",description:"Silence enemy bonuses",type:"statusEffect",effect:"Silence"}},
   {name:"Obito",score:9,img:"images/obito.png",strength:7,speed:8,defense:9,stamina:7},
   {name:"Pain",score:9,img:"images/pain.png",strength:8,speed:7,defense:8,stamina:8},
   {name:"Hisoka",score:9,img:"images/hisoka.png",strength:8,speed:8,defense:6,stamina:8},
   {name:"Yami",score:9,img:"images/yami.png",strength:9,speed:7,defense:8,stamina:8},
-  {name:"Law",score:9,img:"images/law.png",strength:7,speed:8,defense:7,stamina:8},
+  {name:"Law",score:9,img:"images/law.png",strength:7,speed:8,defense:7,stamina:8,ability:{name:"Room Theft",description:"30% chance to steal enemy lowest role score",type:"steal",chance:0.3,factor:1}},
   {name:"Jotaro",score:9,img:"images/jotaro.png",strength:8,speed:9,defense:8,stamina:8},
   {name:"Tsunade",score:9,img:"images/tsunade.png",strength:8,speed:7,defense:8,stamina:9,ability:{name:"Creation Rebirth",description:"+4 if Healer, +2 if Support",type:"healingMastery",healerValue:4,supportValue:2}},
   {name:"Akaza",score:9,img:"images/akaza.png",strength:9,speed:9,defense:8,stamina:9},
   {name:"SoiFon",score:9,img:"images/soifon.png",strength:8,speed:10,defense:7,stamina:8},
   {name:"Gin",score:9,img:"images/gin.png",strength:8,speed:9,defense:7,stamina:8},
   {name:"Byakuya",score:9,img:"images/byakuya.png",strength:8,speed:9,defense:8,stamina:8,ability:{name:"Senbonzakura",description:"+4 if Captain",type:"roleBonus",role:"Captain",value:4}},
-  {name:"Toshiro",score:9,img:"images/toshiro.png",strength:8,speed:9,defense:7,stamina:8},
+  {name:"Toshiro",score:9,img:"images/toshiro.png",strength:8,speed:9,defense:7,stamina:8,ability:{name:"Ice Prison",description:"Freeze enemy bonus effects",type:"statusEffect",effect:"Freeze"}},
   {name:"Komamura",score:9,img:"images/komamura.png",strength:9,speed:6,defense:10,stamina:9},
   {name:"Ukitake",score:9,img:"images/ukitake.png",strength:8,speed:7,defense:8,stamina:9},
   {name:"Eren",score:8,img:"images/eren.png",strength:8,speed:7,defense:6,stamina:8},
@@ -1061,7 +1061,7 @@ const BASE_CHARACTERS = [
   {name:"Rengoku",score:8,img:"images/rengoku.png",strength:8,speed:8,defense:7,stamina:8},
   {name:"Orihime",score:8,img:"images/orihime.png",strength:5,speed:6,defense:8,stamina:8,ability:{name:"Soten Kisshun",description:"Strongest healer: +7 if Healer, +3 if Support",type:"healingMastery",healerValue:7,supportValue:3}},
   {name:"Elizabeth",score:8,img:"images/elizabeth.png",strength:6,speed:7,defense:7,stamina:8},
-  {name:"Ace",score:8,img:"images/ace.png",strength:7,speed:8,defense:7,stamina:7},
+  {name:"Ace",score:8,img:"images/ace.png",strength:7,speed:8,defense:7,stamina:7,ability:{name:"Flame Emperor",description:"Burn enemy team",type:"statusEffect",effect:"Burn",value:3}},
   {name:"Shinji",score:8,img:"images/shinji.png",strength:7,speed:8,defense:7,stamina:8},
   {name:"Mayuri",score:8,img:"images/mayuri.png",strength:6,speed:7,defense:8,stamina:8},
   {name:"Rose",score:8,img:"images/rose.png",strength:7,speed:7,defense:7,stamina:8},
@@ -1087,6 +1087,18 @@ const CHARACTERS = BASE_CHARACTERS.map(char => ({
 }));
 
 const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Traitor"];
+
+const SERIES_MAP = {
+  Goku: "Dragon Ball", Vegeta: "Dragon Ball",
+  Naruto: "Naruto", Sasuke: "Naruto", Itachi: "Naruto", Madara: "Naruto", Obito: "Naruto", Pain: "Naruto", Kakashi: "Naruto", Boruto: "Naruto", Sarada: "Naruto", Sakura: "Naruto", Tsunade: "Naruto",
+  Luffy: "One Piece", Zoro: "One Piece", Shanks: "One Piece", Law: "One Piece", Ace: "One Piece",
+  Ichigo: "Bleach", Byakuya: "Bleach", Toshiro: "Bleach", Yamamoto: "Bleach", Unohana: "Bleach", Ukitake: "Bleach", Komamura: "Bleach", Shinji: "Bleach", SoiFon: "Bleach", Gin: "Bleach", Mayuri: "Bleach", Rose: "Bleach",
+  Asta: "Black Clover", Yami: "Black Clover", Mimosa: "Black Clover",
+  Tanjiro: "Demon Slayer", Rengoku: "Demon Slayer", Muichiro: "Demon Slayer", Tengen: "Demon Slayer", Akaza: "Demon Slayer",
+  Deku: "MHA", Bakugo: "MHA",
+  Gon: "Hunter x Hunter", Killua: "Hunter x Hunter", Hisoka: "Hunter x Hunter",
+  Eren: "AOT", Levi: "AOT"
+};
 
 let state = {
 ultimateUsed: false,
@@ -1753,51 +1765,110 @@ function skipTurn() {
 
 function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
   let score = 0;
+  const ownChars = Object.values(slots || {});
+  const enemyChars = Object.values(enemySlots || {});
+
+  const hasEnemyFreeze = enemyChars.some(c => c.ability?.type === "statusEffect" && c.ability?.effect === "Freeze");
+  const hasEnemySilence = enemyChars.some(c => c.ability?.type === "statusEffect" && c.ability?.effect === "Silence");
+  const burnStacks = enemyChars.filter(c => c.ability?.type === "statusEffect" && c.ability?.effect === "Burn").length;
+
+  const effectsDisabled = hasEnemyFreeze || hasEnemySilence;
+
+  const roleBaseValue = (role, char) => {
+    let val = char.score;
+    if (char.ability?.type !== "ignoreRole" || effectsDisabled) {
+      if (role === "Captain") val = Math.floor(val * 1.5);
+      else if (role === "Vice") val = Math.floor(val * 1.2);
+      else if (role === "Healer" || role === "Support") val += 2;
+      else if (role === "Tank" || role === "Duelist") val += 1;
+      else if (role === "Traitor") val = -char.score;
+    }
+    val += Math.floor((char.strength + char.speed + char.defense + char.stamina) * 0.1);
+    return val;
+  };
+
+  let teamMultiplier = 0;
+  let lateGameBonus = 0;
+  let stealExpected = 0;
 
   Object.entries(slots).forEach(([role, char]) => {
-    let base = char.score;
+    let base = roleBaseValue(role, char);
 
-    if (char.ability?.type === "ignoreRole") {
-      // Ignore multipliers
-    } else {
-      if (role === "Captain") base = Math.floor(base * 1.5);
-      else if (role === "Vice") base = Math.floor(base * 1.2);
-      else if (role === "Healer" || role === "Support") base += 2;
-      else if (role === "Tank" || role === "Duelist") base += 1;
-      else if (role === "Traitor") base = -char.score;
-    }
-
-    const attributeBonus = (char.strength + char.speed + char.defense + char.stamina) * 0.1;
-    base += Math.floor(attributeBonus);
-
-    if (char.ability?.type === "roleBonus" && role === char.ability.role) {
+    if (!effectsDisabled && char.ability?.type === "roleBonus" && role === char.ability.role) {
       base += char.ability.value;
     }
 
-    if (char.ability?.type === "healingMastery") {
+    if (!effectsDisabled && char.ability?.type === "healingMastery") {
       if (role === "Healer") base += (char.ability.healerValue || 0);
       else if (role === "Support") base += (char.ability.supportValue || 0);
     }
 
-    if (char.passiveAbility?.type === "flatBonus") {
+    if (!effectsDisabled && char.passiveAbility?.type === "flatBonus") {
       base += char.passiveAbility.value;
+    }
+
+    if (!effectsDisabled && char.ability?.type === "teamMultiplier" && (char.score || 0) >= (char.ability.threshold || 9)) {
+      teamMultiplier = Math.max(teamMultiplier, char.ability.multiplier || 0);
+    }
+
+    if (!effectsDisabled && char.ability?.type === "lateGame" && Object.keys(slots).length >= (char.ability.minRoles || 5)) {
+      lateGameBonus += (char.ability.value || 0);
     }
 
     score += base;
   });
 
-  Object.values(enemySlots).forEach(char => {
-    if (char.ability?.type === "enemyDebuff") {
-      score -= char.ability.value;
-    }
+  // Team set bonus: drafting 3+ from same anime series grants buffs
+  const seriesCounts = {};
+  ownChars.forEach(char => {
+    const series = SERIES_MAP[char.name];
+    if (!series) return;
+    seriesCounts[series] = (seriesCounts[series] || 0) + 1;
+  });
+  Object.values(seriesCounts).forEach(count => {
+    if (count >= 3) score += 5;
   });
 
-  const teamNames = Object.values(slots).map(c => c.name);
-  Object.values(slots).forEach(char => {
-    if (char.ability?.type === "teamPair" && teamNames.includes(char.ability.partner)) {
-      score += char.ability.value;
-    }
-  });
+  const ownShields = effectsDisabled ? 0 : ownChars.filter(c => c.ability?.type === "shield").length;
+  const enemyDebuffTotal = enemyChars
+    .filter(c => c.ability?.type === "enemyDebuff")
+    .reduce((sum, c) => sum + (c.ability.value || 0), 0);
+  score -= Math.max(0, enemyDebuffTotal - ownShields);
+
+  // Steal (expected value): chance to steal opponent's lowest role score
+  if (!effectsDisabled) {
+    const enemyRoleValues = Object.entries(enemySlots || {}).map(([r, c]) => roleBaseValue(r, c)).filter(v => v > 0);
+    const lowestEnemyRole = enemyRoleValues.length ? Math.min(...enemyRoleValues) : 0;
+    ownChars.forEach(char => {
+      if (char.ability?.type === "steal") {
+        const chance = char.ability.chance || 0;
+        const factor = char.ability.factor || 1;
+        stealExpected += Math.floor(lowestEnemyRole * chance * factor);
+      }
+    });
+  }
+
+  score += lateGameBonus;
+  score += stealExpected;
+
+  if (!effectsDisabled && teamMultiplier > 0) {
+    score = Math.floor(score * (1 + teamMultiplier));
+  }
+
+  // Team pair bonuses are disabled while frozen/silenced
+  if (!effectsDisabled) {
+    const teamNames = ownChars.map(c => c.name);
+    ownChars.forEach(char => {
+      if (char.ability?.type === "teamPair" && teamNames.includes(char.ability.partner)) {
+        score += char.ability.value;
+      }
+    });
+  }
+
+  // Burn is a simple status that chips team score
+  if (burnStacks > 0) {
+    score -= burnStacks * 3;
+  }
 
   // Apply ultimate bonus
   score += ultimateBonus;
