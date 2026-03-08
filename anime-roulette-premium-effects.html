@@ -738,6 +738,31 @@ button:disabled {
   color: #FFD700;
 }
 
+.collapsible-block {
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.collapsible-block summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 14px;
+  color: #FFD700;
+  font-weight: bold;
+  background: rgba(255, 215, 0, 0.08);
+}
+
+.collapsible-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible-content {
+  padding: 12px 14px;
+}
+
 .modal-close {
   position: absolute;
   top: 10px;
@@ -1328,9 +1353,21 @@ function showEncyclopedia() {
   content.innerHTML = `
     <button class="modal-close" onclick="this.closest('.leaderboard-modal').remove()">✕</button>
     <h2>📚 Character Encyclopedia</h2>
-    <input id="encyclopediaSearch" placeholder="Search character..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #FFB90F;background:#0b1326;color:#fff;margin-bottom:12px;" />
-    <div style="color:#88CCFF;margin-bottom:10px;font-size:12px;">Odds are dynamic from remaining pool (see top bar).</div>
-    <table class="leaderboard-table" id="encyclopediaTable"><thead><tr><th>Name</th><th>Score</th><th>Forms</th><th>Ability</th></tr></thead><tbody>${rows}</tbody></table>
+
+    <details class="collapsible-block" open>
+      <summary>🔎 Search & Odds Info</summary>
+      <div class="collapsible-content">
+        <input id="encyclopediaSearch" placeholder="Search character..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #FFB90F;background:#0b1326;color:#fff;margin-bottom:10px;" />
+        <div style="color:#88CCFF;font-size:12px;">Odds are dynamic from remaining pool (see top bar).</div>
+      </div>
+    </details>
+
+    <details class="collapsible-block" open>
+      <summary>📘 Character Database</summary>
+      <div class="collapsible-content">
+        <table class="leaderboard-table" id="encyclopediaTable"><thead><tr><th>Name</th><th>Score</th><th>Forms</th><th>Ability</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>
+    </details>
   `;
   modal.appendChild(content);
   document.body.appendChild(modal);
@@ -1344,6 +1381,7 @@ function showEncyclopedia() {
   });
   modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 }
+
 
 async function showLeaderboard() {
   playSoundEffect('select');
@@ -1486,24 +1524,33 @@ function showRules() {
   content.innerHTML = `
     <button class="modal-close" onclick="this.closest('.rules-modal').remove()">✕</button>
     <h2>📖 Game Rules</h2>
-    <div class="rule-section">
-      <h3>🎮 Objective</h3>
-      <p>Spin to select anime characters and assign them to 7 roles. Highest score wins!</p>
-    </div>
-    <div class="rule-section">
-      <h3>⭐ Role Multipliers</h3>
-      <ul>
-        <li><strong>Captain:</strong> Score × 1.5</li>
-        <li><strong>Vice:</strong> Score × 1.2</li>
-        <li><strong>Healer/Support:</strong> Score + 2</li>
-        <li><strong>Tank/Duelist:</strong> Score + 1</li>
-        <li><strong>Traitor:</strong> -Score</li>
-      </ul>
-    </div>
-    <div class="rule-section">
-      <h3>✨ Special Abilities</h3>
-      <p>Some characters have unique abilities that trigger based on their role or effect opponents!</p>
-    </div>
+
+    <details class="collapsible-block" open>
+      <summary>🎮 Objective</summary>
+      <div class="collapsible-content">
+        <p>Spin to select anime characters and assign them to 7 roles. Highest score wins!</p>
+      </div>
+    </details>
+
+    <details class="collapsible-block" open>
+      <summary>⭐ Role Multipliers</summary>
+      <div class="collapsible-content">
+        <ul>
+          <li><strong>Captain:</strong> Score × 1.5</li>
+          <li><strong>Vice:</strong> Score × 1.2</li>
+          <li><strong>Healer/Support:</strong> Score + 2</li>
+          <li><strong>Tank/Duelist:</strong> Score + 1</li>
+          <li><strong>Traitor:</strong> -Score</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="collapsible-block" open>
+      <summary>✨ Special Abilities & Effects</summary>
+      <div class="collapsible-content">
+        <p>Abilities can trigger role bonuses, debuffs, shield effects, steal effects, multipliers, and late-game boosts.</p>
+      </div>
+    </details>
   `;
   
   modal.appendChild(content);
@@ -1512,6 +1559,7 @@ function showRules() {
     if (e.target === modal) modal.remove();
   };
 }
+
 
 function quitGame() {
   if (state.room && state.player) {
