@@ -1266,6 +1266,16 @@ function hasAllRolesSelected() {
 
 function activateUltimate() {
   if (state.ultimateUsed || !state.room || !state.player) return;
+  if (!state.myTurn) {
+    playSoundEffect('error');
+    showMessage("❌ You can only use Ultimate on your turn!", "error");
+    return;
+  }
+  if (!state.hasSpunThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Spin first, then use Ultimate.", "error");
+    return;
+  }
 
   db.ref(`rooms/${state.room}/players/${state.player}/slots`)
     .once("value")
@@ -2388,6 +2398,7 @@ function updateGameDisplay(data) {
   const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
   spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
   skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled || skipLimitReached;
+  ultimateBtn.disabled = state.ultimateUsed || !state.myTurn || !state.hasSpunThisTurn || allRolesFilled;
   document.getElementById("status").innerText = allRolesFilled
     ? "✅ All 7 roles filled"
     : (state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn");
