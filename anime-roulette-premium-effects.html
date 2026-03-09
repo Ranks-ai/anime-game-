@@ -1167,6 +1167,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let audioContext = null;
+let uiSoundBound = false;
 
 function getAudioContext() {
   if (!audioContext) {
@@ -1176,35 +1177,128 @@ function getAudioContext() {
   return audioContext;
 }
 
-function playSound(frequencies, durations) {
+function playToneSequence(notes = [], options = {}) {
   try {
     const ctx = getAudioContext();
-    frequencies.forEach((freq, idx) => {
+    const wave = options.wave || 'sine';
+    const spacing = options.spacing ?? 80;
+    const volume = options.volume ?? 0.26;
+    const attack = options.attack ?? 0.005;
+    const releasePad = options.releasePad ?? 0.01;
+    const pitchBend = options.pitchBend || 0;
+
+    notes.forEach((note, idx) => {
+      const freq = typeof note === 'number' ? note : note.freq;
+      const duration = Math.max(0.04, typeof note === 'number' ? (options.defaultDuration || 0.12) : (note.duration || options.defaultDuration || 0.12));
+      const noteVolume = typeof note === 'number' ? volume : (note.volume ?? volume);
+      const noteWave = typeof note === 'number' ? wave : (note.wave || wave);
+      const detune = typeof note === 'number' ? 0 : (note.detune || 0);
+
       setTimeout(() => {
         try {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
+          const now = ctx.currentTime;
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.type = 'sine';
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + durations[idx]);
-          osc.start(ctx.currentTime);
-          osc.stop(ctx.currentTime + durations[idx]);
+
+          osc.type = noteWave;
+          osc.frequency.setValueAtTime(freq, now);
+          osc.detune.setValueAtTime(detune, now);
+          if (pitchBend) {
+            osc.frequency.exponentialRampToValueAtTime(Math.max(30, freq + pitchBend), now + duration);
+          }
+
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, noteVolume), now + attack);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration + releasePad);
+
+          osc.start(now);
+          osc.stop(now + duration + releasePad + 0.005);
         } catch(e) {}
-      }, idx * 80);
+      }, idx * spacing);
     });
   } catch(e) {}
 }
 
-function playSoundEffect(type) {
-  if (type === 'spin') playSound([200, 250, 300], [0.1, 0.1, 0.15]);
-  else if (type === 'select') playSound([400, 600, 800], [0.1, 0.15, 0.2]);
-  else if (type === 'skip') playSound([600, 400], [0.1, 0.15]);
-  else if (type === 'turn') playSound([440, 440], [0.1, 0.15]);
-  else if (type === 'error') playSound([150, 100], [0.1, 0.1]);
+function playNoiseBurst(duration = 0.08, volume = 0.05) {
+  try {
+    const ctx = getAudioContext();
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - (i / bufferSize));
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 900;
+
+    const gain = ctx.createGain();
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(now);
+    source.stop(now + duration + 0.02);
+  } catch(e) {}
 }
+
+function playSound(frequencies, durations) {
+  const notes = frequencies.map((freq, i) => ({ freq, duration: durations?.[i] || 0.12 }));
+  playToneSequence(notes, { wave: 'sine', spacing: 80, volume: 0.26 });
+}
+
+function playSoundEffect(type, meta = {}) {
+  if (type === 'spin') playToneSequence([{freq:180,duration:0.08,wave:'triangle'},{freq:240,duration:0.1,wave:'triangle'},{freq:320,duration:0.12,wave:'sine'}], {spacing:70, volume:0.24});
+  else if (type === 'spinTick') playToneSequence([{freq: meta.high ? 860 : 630, duration:0.028, wave: meta.high ? 'triangle' : 'square', volume: meta.high ? 0.22 : 0.16}], {spacing:0});
+  else if (type === 'select') playToneSequence([{freq:420,duration:0.09,wave:'triangle'},{freq:620,duration:0.12,wave:'sine'},{freq:860,duration:0.18,wave:'sine'}], {spacing:65, volume:0.28});
+  else if (type === 'selectLegendary') {
+    playToneSequence([{freq:320,duration:0.09,wave:'triangle'},{freq:480,duration:0.09,wave:'triangle'},{freq:720,duration:0.12,wave:'sawtooth'},{freq:980,duration:0.2,wave:'sine'}], {spacing:58, volume:0.3});
+    playNoiseBurst(0.12, 0.045);
+  }
+  else if (type === 'skip') playToneSequence([{freq:610,duration:0.08,wave:'square'},{freq:430,duration:0.13,wave:'triangle'}], {spacing:95, volume:0.2});
+  else if (type === 'turn') playToneSequence([{freq:440,duration:0.1,wave:'sine'},{freq:554,duration:0.12,wave:'sine'}], {spacing:80, volume:0.2});
+  else if (type === 'error') playToneSequence([{freq:160,duration:0.1,wave:'sawtooth'},{freq:110,duration:0.11,wave:'square'}], {spacing:70, volume:0.2});
+  else if (type === 'ultimate') playToneSequence([{freq:360,duration:0.09,wave:'sawtooth'},{freq:540,duration:0.12,wave:'sawtooth'},{freq:760,duration:0.16,wave:'triangle'},{freq:1080,duration:0.2,wave:'sine'}], {spacing:55, volume:0.3, pitchBend: 20});
+  else if (type === 'win') {
+    playToneSequence([{freq:523,duration:0.12,wave:'triangle'},{freq:659,duration:0.12,wave:'triangle'},{freq:784,duration:0.15,wave:'triangle'},{freq:1047,duration:0.28,wave:'sine'}], {spacing:85, volume:0.28});
+    setTimeout(() => playNoiseBurst(0.1, 0.03), 120);
+  }
+  else if (type === 'chat') playToneSequence([{freq:740,duration:0.05,wave:'sine'},{freq:880,duration:0.06,wave:'triangle'}], {spacing:45, volume:0.12});
+  else if (type === 'hover') playToneSequence([{freq:580,duration:0.03,wave:'sine',volume:0.06}], {spacing:0});
+  else if (type === 'click') playToneSequence([{freq:460,duration:0.04,wave:'triangle',volume:0.08}], {spacing:0});
+}
+
+function bindDynamicUiSounds() {
+  if (uiSoundBound) return;
+  uiSoundBound = true;
+
+  let lastHoverAt = 0;
+  document.addEventListener('mouseover', (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (!target.closest('button')) return;
+    const now = Date.now();
+    if (now - lastHoverAt < 90) return;
+    lastHoverAt = now;
+    playSoundEffect('hover');
+  });
+
+  document.addEventListener('click', (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.closest('button')) playSoundEffect('click');
+  });
+}
+
+bindDynamicUiSounds();
 
 const BASE_CHARACTERS = [
   {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}],ability:{name:"Saiyan Surge",description:"If score ≥ 9, +20% total team",type:"teamMultiplier",threshold:9,multiplier:0.2}},
@@ -1289,6 +1383,8 @@ const SERIES_MAP = {
   Eren: "AOT", Levi: "AOT"
 };
 
+let lastRenderedChatCount = 0;
+
 let state = {
 ultimateUsed: false,
   room: null,
@@ -1368,6 +1464,7 @@ function activateUltimate() {
       return db.ref(`rooms/${state.room}/ultimateBonus/${state.player}`).set(bonus)
         .then(() => {
           state.ultimateUsed = true;
+          playSoundEffect('ultimate');
           ultimateBtn.disabled = true;
           alert("🔥 " + ultimateName + " Activated! +" + bonus + " Team Power");
         });
@@ -1620,6 +1717,11 @@ function renderChatMessages(chatData = {}) {
     .filter(m => m && m.text)
     .sort((a, b) => (a.ts || 0) - (b.ts || 0))
     .slice(-40);
+
+  if (lastRenderedChatCount && msgs.length > lastRenderedChatCount) {
+    playSoundEffect('chat');
+  }
+  lastRenderedChatCount = msgs.length;
 
   if (msgs.length === 0) {
     chatMessagesEl.innerHTML = `<div class="chat-empty">No messages yet. Say hi 👋</div>`;
@@ -1908,7 +2010,7 @@ function spin() {
       const now = Date.now();
       const tickGap = isHigh ? 90 : 150;
       if (now - lastTickAt > tickGap && speed > 0.03) {
-        playSound([isHigh ? 820 : 620], [0.03]);
+        playSoundEffect('spinTick', { high: isHigh });
         lastTickAt = now;
       }
 
@@ -1945,7 +2047,7 @@ function spin() {
       else state.pityCounter += 1;
 
       const reveal = () => {
-        playSoundEffect('select');
+        playSoundEffect((selectedWithForm.score || 0) >= 10 ? 'selectLegendary' : 'select');
         playRareCinematic(selectedWithForm);
         showPopup(selectedWithForm);
         updateOddsDisplay();
@@ -2339,6 +2441,7 @@ function showWinnerModal(winnerName, winnerScore, loserName, loserScore, winnerS
   modal.appendChild(content);
   document.body.appendChild(modal);
   triggerWinConfetti();
+  playSoundEffect('win');
 
   updateLeaderboard(winnerName, loserName);
 }
