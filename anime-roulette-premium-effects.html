@@ -558,6 +558,13 @@ button:disabled {
   font-weight: bold;
 }
 
+.odds-inline {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.92;
+  width: fit-content;
+}
+
 .winner-modal {
   position: fixed;
   top: 0;
@@ -1038,7 +1045,6 @@ body.rare-cinematic {
   <div class="top-bar">
     <div id="status">Waiting...</div>
     <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
-    <div class="character-counter" id="oddsDisplay">🎲 Odds: ...</div>
   </div>
 
   <div class="mobile-tabs" id="mobileTabs">
@@ -1062,6 +1068,7 @@ body.rare-cinematic {
         <button id="ultimateBtn" onclick="activateUltimate()">🔥 ULTIMATE</button>
       </div>
       <canvas id="canvas" width="320" height="320"></canvas>
+      <div class="character-counter odds-inline" id="oddsDisplay">🎲 Odds: ...</div>
     </div>
 
     <div class="panel mobile-section" id="p2Panel" data-section="p2">
@@ -1352,7 +1359,7 @@ function updateOddsDisplay() {
   const counts = { legendary: 0, epic: 0, rare: 0, common: 0 };
   state.characters.forEach(c => counts[getTier(c)]++);
   const pct = (n) => ((n / total) * 100).toFixed(1);
-  el.innerText = `🎲 L:${pct(counts.legendary)}% E:${pct(counts.epic)}% R:${pct(counts.rare)}% C:${pct(counts.common)}% | Pity:${state.pityCounter}`;
+  el.innerText = `🎲 Spin Odds — Legendary ${pct(counts.legendary)}% • Epic ${pct(counts.epic)}% • Rare ${pct(counts.rare)}% • Common ${pct(counts.common)}% • Pity ${state.pityCounter}`;
 }
 
 function setMobileTab(tab) {
