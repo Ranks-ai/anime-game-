@@ -1422,6 +1422,18 @@ function hasAllRolesSelected() {
   return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
 }
 
+function getForcedTurnFromCounts(p1Count, p2Count) {
+  if (p1Count >= ROLES.length && p2Count < ROLES.length) return "Player2";
+  if (p2Count >= ROLES.length && p1Count < ROLES.length) return "Player1";
+  return null;
+}
+
+function getNextTurnByDraftProgress(p1Slots = {}, p2Slots = {}, defaultNext = "Player1") {
+  const p1Count = Object.keys(p1Slots || {}).length;
+  const p2Count = Object.keys(p2Slots || {}).length;
+  return getForcedTurnFromCounts(p1Count, p2Count) || defaultNext;
+}
+
 function activateUltimate() {
   if (state.ultimateUsed || !state.room || !state.player) return;
   if (!state.myTurn) {
@@ -2213,8 +2225,15 @@ function selectRole(role, popup, char) {
 
     state.hasSpunThisTurn = false;
     state.skippedThisTurn = false;
-    const next = state.player === "Player1" ? "Player2" : "Player1";
-    db.ref(`rooms/${state.room}/turn`).set(next);
+
+    return db.ref(`rooms/${state.room}/players`).once("value").then(snap => {
+      const players = snap.val() || {};
+      const p1Slots = players.Player1?.slots || {};
+      const p2Slots = players.Player2?.slots || {};
+      const defaultNext = state.player === "Player1" ? "Player2" : "Player1";
+      const next = getNextTurnByDraftProgress(p1Slots, p2Slots, defaultNext);
+      return db.ref(`rooms/${state.room}/turn`).set(next);
+    });
   }).catch(err => {
     showMessage("Error: " + err.message, "error");
     console.error(err);
@@ -2252,8 +2271,16 @@ function skipTurn() {
   state.skipPenalties[state.player] = updatedPenalty;
   db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
 
-  const next = state.player === "Player1" ? "Player2" : "Player1";
-  db.ref(`rooms/${state.room}/turn`).set(next);
+  const defaultNext = state.player === "Player1" ? "Player2" : "Player1";
+  db.ref(`rooms/${state.room}/players`).once("value").then(snap => {
+    const players = snap.val() || {};
+    const p1Slots = players.Player1?.slots || {};
+    const p2Slots = players.Player2?.slots || {};
+    const next = getNextTurnByDraftProgress(p1Slots, p2Slots, defaultNext);
+    return db.ref(`rooms/${state.room}/turn`).set(next);
+  }).catch(err => {
+    showMessage("❌ Skip update failed: " + err.message, "error");
+  });
 }
 
 function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
@@ -2474,8 +2501,15 @@ function updateGameDisplay(data) {
     applyTeamTheme(p2);
   }
 
-  const p1HasPicks = Object.keys(p1).length > 0;
-  const p2HasPicks = Object.keys(p2).length > 0;
+  const p1Count = Object.keys(p1).length;
+  const p2Count = Object.keys(p2).length;
+  const forcedTurn = getForcedTurnFromCounts(p1Count, p2Count);
+  if (forcedTurn && data.turn !== forcedTurn && !state.gameEnded) {
+    db.ref(`rooms/${state.room}/turn`).set(forcedTurn).catch(() => {});
+  }
+
+  const p1HasPicks = p1Count > 0;
+  const p2HasPicks = p2Count > 0;
 
   const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus) : 0;
   const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus) : 0;
