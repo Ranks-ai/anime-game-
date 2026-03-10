@@ -2246,19 +2246,22 @@ function skipTurn() {
     showMessage("❌ Not your turn!", "error");
     return;
   }
-  if (!state.hasSpunThisTurn) {
-    playSoundEffect('error');
-    showMessage("❌ Spin the wheel before skipping!", "error");
-    return;
-  }
   if (state.skippedThisTurn) {
     playSoundEffect('error');
     showMessage("❌ You can only skip once per turn!", "error");
     return;
   }
 
+  const completedAllRoles = hasAllRolesSelected();
   const currentPenalty = state.skipPenalties[state.player] || 0;
-  if (currentPenalty >= 2) {
+
+  if (!completedAllRoles && !state.hasSpunThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Spin the wheel before skipping!", "error");
+    return;
+  }
+
+  if (!completedAllRoles && currentPenalty >= 2) {
     playSoundEffect('error');
     showMessage("❌ Skip limit reached (2 per game)", "error");
     return;
@@ -2267,9 +2270,11 @@ function skipTurn() {
   playSoundEffect('skip');
   state.skippedThisTurn = true;
 
-  const updatedPenalty = currentPenalty + 1;
-  state.skipPenalties[state.player] = updatedPenalty;
-  db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
+  if (!completedAllRoles) {
+    const updatedPenalty = currentPenalty + 1;
+    state.skipPenalties[state.player] = updatedPenalty;
+    db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
+  }
 
   const defaultNext = state.player === "Player1" ? "Player2" : "Player1";
   db.ref(`rooms/${state.room}/players`).once("value").then(snap => {
@@ -2595,11 +2600,12 @@ function updateGameDisplay(data) {
   state.myTurn = data.turn === state.player;
   const allRolesFilled = hasAllRolesSelected();
   const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
+  const canFreePass = allRolesFilled;
   spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
-  skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled || skipLimitReached;
+  skipBtn.disabled = !state.myTurn || state.skippedThisTurn || (!canFreePass && (!state.hasSpunThisTurn || skipLimitReached));
   ultimateBtn.disabled = state.ultimateUsed || !state.myTurn || !state.hasSpunThisTurn || allRolesFilled;
   document.getElementById("status").innerText = allRolesFilled
-    ? "✅ All 7 roles filled"
+    ? (state.myTurn ? "✅ All 7 roles filled — you can pass turn" : "✅ All 7 roles filled")
     : (state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn");
 
   document.getElementById("p1Panel").classList.remove("active");
