@@ -2513,6 +2513,17 @@ function updateGameDisplay(data) {
     db.ref(`rooms/${state.room}/turn`).set(forcedTurn).catch(() => {});
   }
 
+  const myCount = state.player === "Player1" ? p1Count : p2Count;
+  const enemyCount = state.player === "Player1" ? p2Count : p1Count;
+  const iCompletedDraft = myCount >= ROLES.length;
+  const enemyStillDrafting = enemyCount < ROLES.length;
+
+  // Safety auto-pass: if completed player still owns turn, force handoff to unfinished player
+  if (!state.gameEnded && iCompletedDraft && enemyStillDrafting && data.turn === state.player) {
+    const enemy = state.player === "Player1" ? "Player2" : "Player1";
+    db.ref(`rooms/${state.room}/turn`).set(enemy).catch(() => {});
+  }
+
   const p1HasPicks = p1Count > 0;
   const p2HasPicks = p2Count > 0;
 
@@ -2605,7 +2616,7 @@ function updateGameDisplay(data) {
   skipBtn.disabled = !state.myTurn || state.skippedThisTurn || (!canFreePass && (!state.hasSpunThisTurn || skipLimitReached));
   ultimateBtn.disabled = state.ultimateUsed || !state.myTurn || !state.hasSpunThisTurn || allRolesFilled;
   document.getElementById("status").innerText = allRolesFilled
-    ? (state.myTurn ? "✅ All 7 roles filled — you can pass turn" : "✅ All 7 roles filled")
+    ? (state.myTurn ? "✅ All 7 roles filled — passing turn to opponent..." : "✅ All 7 roles filled")
     : (state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn");
 
   document.getElementById("p1Panel").classList.remove("active");
