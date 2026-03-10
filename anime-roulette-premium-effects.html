@@ -2201,11 +2201,6 @@ function showPopup(char) {
   const skipTurnBtn = document.createElement("button");
   skipTurnBtn.innerText = "⏭️ SKIP THIS TURN";
   skipTurnBtn.style.marginTop = "12px";
-  const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
-  if (skipLimitReached) {
-    skipTurnBtn.disabled = true;
-    skipTurnBtn.title = "Skip limit reached (2 per game)";
-  }
   skipTurnBtn.onclick = () => {
     popup.remove();
     skipTurn();
@@ -2258,12 +2253,6 @@ function skipTurn() {
   if (!completedAllRoles && !state.hasSpunThisTurn) {
     playSoundEffect('error');
     showMessage("❌ Spin the wheel before skipping!", "error");
-    return;
-  }
-
-  if (!completedAllRoles && currentPenalty >= 2) {
-    playSoundEffect('error');
-    showMessage("❌ Skip limit reached (2 per game)", "error");
     return;
   }
 
@@ -2610,10 +2599,9 @@ function updateGameDisplay(data) {
 
   state.myTurn = data.turn === state.player;
   const allRolesFilled = hasAllRolesSelected();
-  const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
   const canFreePass = allRolesFilled;
   spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
-  skipBtn.disabled = !state.myTurn || state.skippedThisTurn || (!canFreePass && (!state.hasSpunThisTurn || skipLimitReached));
+  skipBtn.disabled = !state.myTurn || state.skippedThisTurn || (!canFreePass && !state.hasSpunThisTurn);
   ultimateBtn.disabled = state.ultimateUsed || !state.myTurn || !state.hasSpunThisTurn || allRolesFilled;
   document.getElementById("status").innerText = allRolesFilled
     ? (state.myTurn ? "✅ All 7 roles filled — passing turn to opponent..." : "✅ All 7 roles filled")
