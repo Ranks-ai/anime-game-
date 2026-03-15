@@ -1406,7 +1406,8 @@ ultimateUsed: false,
     Player2: 0
   },
   pityCounter: 0,
-  mobileTab: "wheel"
+  mobileTab: "wheel",
+  lastTurnFixAt: 0
 };
 
 const canvas = document.getElementById("canvas");
@@ -1432,6 +1433,12 @@ function getNextTurnByDraftProgress(p1Slots = {}, p2Slots = {}, defaultNext = "P
   const p1Count = Object.keys(p1Slots || {}).length;
   const p2Count = Object.keys(p2Slots || {}).length;
   return getForcedTurnFromCounts(p1Count, p2Count) || defaultNext;
+}
+
+function resolveTurnForDraft(p1Slots = {}, p2Slots = {}, currentTurn = "Player1") {
+  const p1Count = Object.keys(p1Slots || {}).length;
+  const p2Count = Object.keys(p2Slots || {}).length;
+  return getForcedTurnFromCounts(p1Count, p2Count) || currentTurn || "Player1";
 }
 
 function activateUltimate() {
@@ -2497,20 +2504,13 @@ function updateGameDisplay(data) {
 
   const p1Count = Object.keys(p1).length;
   const p2Count = Object.keys(p2).length;
-  const forcedTurn = getForcedTurnFromCounts(p1Count, p2Count);
-  if (forcedTurn && data.turn !== forcedTurn && !state.gameEnded) {
-    db.ref(`rooms/${state.room}/turn`).set(forcedTurn).catch(() => {});
-  }
-
-  const myCount = state.player === "Player1" ? p1Count : p2Count;
-  const enemyCount = state.player === "Player1" ? p2Count : p1Count;
-  const iCompletedDraft = myCount >= ROLES.length;
-  const enemyStillDrafting = enemyCount < ROLES.length;
-
-  // Safety auto-pass: if completed player still owns turn, force handoff to unfinished player
-  if (!state.gameEnded && iCompletedDraft && enemyStillDrafting && data.turn === state.player) {
-    const enemy = state.player === "Player1" ? "Player2" : "Player1";
-    db.ref(`rooms/${state.room}/turn`).set(enemy).catch(() => {});
+  const resolvedTurn = resolveTurnForDraft(p1, p2, data.turn);
+  if (!state.gameEnded && data.turn !== resolvedTurn) {
+    const now = Date.now();
+    if (now - (state.lastTurnFixAt || 0) > 500) {
+      state.lastTurnFixAt = now;
+      db.ref(`rooms/${state.room}/turn`).set(resolvedTurn).catch(() => {});
+    }
   }
 
   const p1HasPicks = p1Count > 0;
@@ -2537,7 +2537,7 @@ function updateGameDisplay(data) {
     return;
   }
 
-  const isNowMyTurn = data.turn === state.player;
+  const isNowMyTurn = resolvedTurn === state.player;
   if (state.myTurn !== isNowMyTurn && isNowMyTurn) {
     playSoundEffect('turn');
     state.hasSpunThisTurn = false;
@@ -2597,7 +2597,7 @@ function updateGameDisplay(data) {
   document.getElementById("p1Score").innerText = Math.floor(s1);
   document.getElementById("p2Score").innerText = Math.floor(s2);
 
-  state.myTurn = data.turn === state.player;
+  state.myTurn = resolvedTurn === state.player;
   const allRolesFilled = hasAllRolesSelected();
   const canFreePass = allRolesFilled;
   spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
