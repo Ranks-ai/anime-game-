@@ -30,26 +30,46 @@ body {
 body::before {
   content: "";
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    from 0deg,
-    var(--energy-a),
-    var(--energy-b),
-    var(--energy-c),
-    var(--energy-a)
-  );
-  animation: spinEnergy 20s linear infinite;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      110deg,
+      rgba(255,255,255,0.04) 0px,
+      rgba(255,255,255,0.04) 2px,
+      transparent 2px,
+      transparent 18px
+    ),
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.10), transparent 40%),
+    radial-gradient(circle at 80% 75%, rgba(255,215,0,0.10), transparent 45%);
+  animation: animeSpeedLines 14s linear infinite;
   z-index: -2;
   pointer-events: none;
 }
 
-@keyframes spinEnergy {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.04); }
-  100% { transform: rotate(360deg) scale(1); }
+body::after {
+  content: "⚡  ✦  ⚔️  ☄️";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  font-size: 22px;
+  letter-spacing: 26px;
+  text-align: center;
+  opacity: 0.2;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.35));
+  animation: animeGlyphFloat 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes animeSpeedLines {
+  0% { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(-80px, 0, 0); }
+}
+
+@keyframes animeGlyphFloat {
+  0%,100% { transform: translateY(0px); opacity: 0.16; }
+  50% { transform: translateY(-6px); opacity: 0.28; }
 }
 
 body.theme-strength {
@@ -178,6 +198,62 @@ canvas {
   border-radius: 50%;
   box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(138, 43, 226, 0.4);
   cursor: pointer;
+}
+
+.wheel-stage {
+  position: relative;
+  width: 360px;
+  height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.2));
+}
+
+.wheel-energy-ring,
+.wheel-energy-ring::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.wheel-energy-ring {
+  border: 2px dashed rgba(255, 215, 0, 0.35);
+  animation: orbit 7s linear infinite;
+}
+
+.wheel-energy-ring::before {
+  inset: 18px;
+  border: 2px solid rgba(140, 80, 255, 0.35);
+  animation: orbitReverse 10s linear infinite;
+}
+
+.wheel-pointer {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 22px solid #ffd700;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.95));
+  z-index: 3;
+  pointer-events: none;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orbitReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }
 
 button {
@@ -932,6 +1008,8 @@ body.rare-cinematic {
 @media (max-width: 900px) {
   .game-wrapper { flex-direction: column; align-items: stretch; }
   .panel { width: 100%; max-height: none; }
+  .wheel-stage { width: 300px; height: 300px; }
+  .wheel-pointer { right: -4px; border-top-width: 10px; border-bottom-width: 10px; border-left-width: 18px; }
   canvas { width: 280px; height: 280px; margin: 10px auto; }
   .mobile-tabs {
     display: flex;
@@ -1016,7 +1094,11 @@ body.rare-cinematic {
         <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
         <button id="ultimateBtn" onclick="activateUltimate()">🔥 ULTIMATE</button>
       </div>
-      <canvas id="canvas" width="320" height="320"></canvas>
+      <div class="wheel-stage">
+        <div class="wheel-energy-ring"></div>
+        <div class="wheel-pointer"></div>
+        <canvas id="canvas" width="320" height="320"></canvas>
+      </div>
     </div>
 
     <div class="panel mobile-section" id="p2Panel" data-section="p2">
@@ -1106,6 +1188,18 @@ const BASE_CHARACTERS = [
   {name:"Gojo",score:10,img:"images/gojo.png",strength:8,speed:9,defense:10,stamina:8,ability:{name:"Limitless",description:"+3 if Captain",type:"roleBonus",role:"Captain",value:3}},
   {name:"Saitama",score:10,img:"images/saitama.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"Serious Punch",description:"+2 if Duelist",type:"roleBonus",role:"Duelist",value:2}},
   {name:"Shanks",score:10,img:"images/shanks.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Conqueror's Haki",description:"+6 if Captain",type:"roleBonus",role:"Captain",value:6}},
+  {name:"Roger Prime",score:10,img:"images/roger_prime.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"King's Ambition",description:"+4 if Captain",type:"roleBonus",role:"Captain",value:4}},
+  {name:"Whitebeard Prime",score:10,img:"images/whitebeard_prime.png",strength:10,speed:7,defense:10,stamina:10,ability:{name:"Gura Overload",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
+  {name:"Big Mom (Young)",score:10,img:"images/big_mom_young.png",strength:10,speed:6,defense:10,stamina:10,ability:{name:"Soul Pocus",description:"+2 if Tank",type:"roleBonus",role:"Tank",value:2}},
+  {name:"Kaido (Young)",score:10,img:"images/kaido_young.png",strength:10,speed:7,defense:10,stamina:10,ability:{name:"Hybrid Rampage",description:"Late game: +5 when 5+ roles filled",type:"lateGame",minRoles:5,value:5}},
+  {name:"Katakuri",score:9,img:"images/katakuri.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Future Sight",description:"+3 if Duelist",type:"roleBonus",role:"Duelist",value:3}},
+  {name:"Smoothie",score:9,img:"images/smoothie.png",strength:8,speed:8,defense:8,stamina:9},
+  {name:"Marco",score:9,img:"images/marco.png",strength:8,speed:9,defense:8,stamina:9,ability:{name:"Blue Flame Heal",description:"+4 if Healer, +2 if Support",type:"healingMastery",healerValue:4,supportValue:2}},
+  {name:"Jozu",score:9,img:"images/jozu.png",strength:9,speed:6,defense:10,stamina:9,ability:{name:"Diamond Body",description:"+3 if Tank",type:"roleBonus",role:"Tank",value:3}},
+  {name:"Rayleigh (Young)",score:9,img:"images/rayleigh_young.png",strength:9,speed:8,defense:8,stamina:9,ability:{name:"Dark King's Guidance",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
+  {name:"Scopper Gaban (Young)",score:9,img:"images/scopper_gaban_young.png",strength:9,speed:8,defense:8,stamina:8},
+  {name:"King",score:9,img:"images/king.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Lunarian Guard",description:"+3 if Tank",type:"roleBonus",role:"Tank",value:3}},
+  {name:"Queen",score:9,img:"images/queen.png",strength:9,speed:6,defense:9,stamina:9,ability:{name:"Plague Burst",description:"Enemy team -2 total",type:"enemyDebuff",value:2}},
   {name:"Giorno",score:10,img:"images/giorno.png",strength:8,speed:8,defense:8,stamina:9},
   {name:"Unohana",score:10,img:"images/unohana.png",strength:9,speed:8,defense:9,stamina:10,ability:{name:"Healing Shield",description:"Negates 1 enemy debuff",type:"shield",value:1}},
   {name:"Yamamoto",score:10,img:"images/yamamoto.png",strength:10,speed:7,defense:9,stamina:10,ability:{name:"Zanka no Tachi",description:"Burn enemy team -3 total",type:"enemyDebuff",value:3}},
@@ -1173,7 +1267,7 @@ const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Trait
 const SERIES_MAP = {
   Goku: "Dragon Ball", Vegeta: "Dragon Ball",
   Naruto: "Naruto", Sasuke: "Naruto", Itachi: "Naruto", Madara: "Naruto", Obito: "Naruto", Pain: "Naruto", Kakashi: "Naruto", Boruto: "Naruto", Sarada: "Naruto", Sakura: "Naruto", Tsunade: "Naruto",
-  Luffy: "One Piece", Zoro: "One Piece", Shanks: "One Piece", Law: "One Piece", Ace: "One Piece",
+  Luffy: "One Piece", Zoro: "One Piece", Shanks: "One Piece", Law: "One Piece", Ace: "One Piece", "Roger Prime": "One Piece", "Whitebeard Prime": "One Piece", "Big Mom (Young)": "One Piece", "Kaido (Young)": "One Piece", Katakuri: "One Piece", Smoothie: "One Piece", Marco: "One Piece", Jozu: "One Piece", "Rayleigh (Young)": "One Piece", "Scopper Gaban (Young)": "One Piece", King: "One Piece", Queen: "One Piece",
   Ichigo: "Bleach", Byakuya: "Bleach", Toshiro: "Bleach", Yamamoto: "Bleach", Unohana: "Bleach", Ukitake: "Bleach", Komamura: "Bleach", Shinji: "Bleach", SoiFon: "Bleach", Gin: "Bleach", Mayuri: "Bleach", Rose: "Bleach",
   Asta: "Black Clover", Yami: "Black Clover", Mimosa: "Black Clover",
   Tanjiro: "Demon Slayer", Rengoku: "Demon Slayer", Muichiro: "Demon Slayer", Tengen: "Demon Slayer", Akaza: "Demon Slayer",
