@@ -1072,6 +1072,7 @@ body.rare-cinematic {
     <div id="status">Waiting...</div>
     <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
     <div class="character-counter" id="oddsDisplay">🎲 Odds: ...</div>
+    <div class="character-counter" id="phaseDisplay">🧠 Early Game → build team</div>
   </div>
 
   <div class="mobile-tabs" id="mobileTabs">
@@ -1263,6 +1264,7 @@ const CHARACTERS = BASE_CHARACTERS.map(char => ({
 }));
 
 const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Traitor"];
+const LEGENDARY_SCORE_THRESHOLD = 10;
 
 const SERIES_MAP = {
   Goku: "Dragon Ball", Vegeta: "Dragon Ball",
@@ -1311,6 +1313,45 @@ const chatInputEl = document.getElementById("chatInput");
 
 function hasAllRolesSelected() {
   return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
+}
+
+function getGamePhaseBySpins() {
+  const filled = Object.keys(state.myFilledRoles || {}).length;
+  if (filled <= 2) return "early";      // First 3 spins
+  if (filled <= 4) return "mid";        // Mid game adaptation
+  return "late";                        // Last 2 spins
+}
+
+function updatePhaseDisplay() {
+  const el = document.getElementById("phaseDisplay");
+  if (!el) return;
+  const phase = getGamePhaseBySpins();
+  if (phase === "early") {
+    el.innerText = "🧠 Early Game → build team";
+  } else if (phase === "mid") {
+    el.innerText = "🧩 Mid Game → adapt";
+  } else {
+    el.innerText = "🔥 Late Game → power spikes (legendary boost)";
+  }
+}
+
+function pickIndexForPhase(chars) {
+  if (!chars.length) return 0;
+  const phase = getGamePhaseBySpins();
+  const legendaryIndexes = [];
+  for (let i = 0; i < chars.length; i++) {
+    if ((chars[i].score || 0) >= LEGENDARY_SCORE_THRESHOLD) legendaryIndexes.push(i);
+  }
+
+  let legendaryChance = 0;
+  if (phase === "mid") legendaryChance = 0.2;
+  if (phase === "late") legendaryChance = 0.55; // Last 2 spins = higher chance of legendary
+
+  if (legendaryIndexes.length && Math.random() < legendaryChance) {
+    return legendaryIndexes[Math.floor(Math.random() * legendaryIndexes.length)];
+  }
+
+  return Math.floor(Math.random() * chars.length);
 }
 
 function activateUltimate() {
@@ -1846,6 +1887,8 @@ function spin() {
       clearInterval(spinInterval);
 
       const slice = (Math.PI * 2) / state.characters.length;
+      const weightedIndex = pickIndexForPhase(state.characters);
+      state.angle = weightedIndex * slice + 0.001;
       const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const index = Math.floor(normalized / slice) % state.characters.length;
       const selected = state.characters[index];
@@ -1858,6 +1901,7 @@ function spin() {
       playRareCinematic(selectedWithForm);
       showPopup(selectedWithForm);
       updateOddsDisplay();
+      updatePhaseDisplay();
       state.spinning = false;
       spinBtn.disabled = false;
     }
@@ -2010,6 +2054,7 @@ function selectRole(role, popup, char) {
     popup.remove();
     document.getElementById("charCounter").innerText = state.characters.length;
     draw();
+    updatePhaseDisplay();
 
     state.hasSpunThisTurn = false;
     state.skippedThisTurn = false;
@@ -2272,6 +2317,7 @@ function updateGameDisplay(data) {
     state.myFilledRoles = p2;
     applyTeamTheme(p2);
   }
+  updatePhaseDisplay();
 
   const p1HasPicks = Object.keys(p1).length > 0;
   const p2HasPicks = Object.keys(p2).length > 0;
@@ -2455,6 +2501,7 @@ function joinGame() {
 
         draw();
         updateOddsDisplay();
+        updatePhaseDisplay();
         setMobileTab(window.innerWidth <= 900 ? "wheel" : state.mobileTab);
         spinBtn.disabled = true;
         skipBtn.disabled = true;
