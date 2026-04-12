@@ -2351,6 +2351,25 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
     if (count >= 3) score += 5;
   });
 
+  // One Piece Yonko + Commander team power-ups
+  const onePieceNames = ownChars.map(c => c.name);
+  const hasAny = (arr) => arr.some(name => onePieceNames.includes(name));
+  const yonkoGroups = [
+    { yonko: "Roger", commanders: ["Shanks", "Ace"], bonus: 6 },
+    { yonko: "Shanks", commanders: ["Law", "Ace"], bonus: 5 },
+    { yonko: "Luffy", commanders: ["Zoro", "Law"], bonus: 4 }
+  ];
+
+  yonkoGroups.forEach(group => {
+    if (onePieceNames.includes(group.yonko) && hasAny(group.commanders)) {
+      score += group.bonus;
+    }
+  });
+
+  if (onePieceNames.includes("Roger") && onePieceNames.includes("Shanks")) {
+    score += 4;
+  }
+
   const ownShields = effectsDisabled ? 0 : ownChars.filter(c => c.ability?.type === "shield").length;
   const enemyDebuffTotal = enemyChars
     .filter(c => c.ability?.type === "enemyDebuff")
