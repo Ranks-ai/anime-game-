@@ -141,6 +141,16 @@ h1 {
   width: 250px;
 }
 
+#joinSection select {
+  padding: 12px 15px;
+  border: 2px solid #FFD700;
+  background: #1a1a2b;
+  color: white;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 250px;
+}
+
 #joinSection button {
   padding: 12px 25px;
   background: linear-gradient(135deg, #FFD700, #FFA500);
@@ -592,9 +602,9 @@ button:disabled {
   background: linear-gradient(135deg, #FFD700, #FFA500);
   border: 5px solid #FF0000;
   border-radius: 20px;
-  padding: 60px 40px;
+  padding: 36px 28px;
   text-align: center;
-  max-width: 500px;
+  max-width: 420px;
   box-shadow: 0 0 100px rgba(255, 215, 0, 0.8);
   animation: winnerAppear 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
@@ -606,15 +616,15 @@ button:disabled {
 
 .winner-content h1 {
   color: #FF0000;
-  font-size: 48px;
-  margin-bottom: 20px;
+  font-size: 38px;
+  margin-bottom: 14px;
 }
 
 .winner-name {
   color: #0a0a14;
-  font-size: 36px;
+  font-size: 28px;
   font-weight: bold;
-  margin: 20px 0;
+  margin: 14px 0;
 }
 
 .winner-score {
@@ -1005,6 +1015,10 @@ body.rare-cinematic {
 <div id="joinSection">
   <input id="nameInput" placeholder="👤 Enter your name" type="text">
   <input id="roomInput" placeholder="🏠 Enter room code" type="text">
+  <select id="modeSelect">
+    <option value="enhanced">⚡ Enhanced Mode (events on)</option>
+    <option value="classic">🎮 Classic Mode (no random events)</option>
+  </select>
   <button onclick="joinGame()">🎮 START GAME</button>
   <div id="messages"></div>
 </div>
@@ -1257,6 +1271,7 @@ ultimateUsed: false,
     block: false,
     debuff: false
   },
+  gameMode: "enhanced",
   lastEventTurnSeen: 0,
   pityCounter: 0,
   mobileTab: "wheel"
@@ -1319,6 +1334,10 @@ function addMomentumFromSpin(char) {
 function updateEventDisplay(activeEvent) {
   const el = document.getElementById("eventDisplay");
   if (!el) return;
+  if (state.gameMode === "classic") {
+    el.innerText = "🎮 Classic Mode: Events OFF";
+    return;
+  }
   if (!activeEvent?.type) {
     el.innerText = "🌪️ Event: None";
     return;
@@ -1353,9 +1372,10 @@ async function maybeTriggerTurnEvent(nextTurn) {
   const snap = await roomRef.once("value");
   const roomData = snap.val() || {};
   const turnCount = (roomData.turnCount || 0) + 1;
+  const mode = roomData.settings?.gameMode || state.gameMode || "enhanced";
   const updates = { turn: nextTurn, turnCount };
   let chosenEvent = null;
-  if (turnCount % EVENT_INTERVAL_TURNS === 0) {
+  if (mode !== "classic" && turnCount % EVENT_INTERVAL_TURNS === 0) {
     const eventTypes = ["storm", "blessing", "chaos"];
     const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
     chosenEvent = { type, turn: turnCount, by: state.player };
@@ -1822,6 +1842,7 @@ function showRules() {
           <li><strong>Momentum:</strong> Good spins (9+) build momentum. At 3 stacks you enter <em>Ultimate Boost Mode</em>.</li>
           <li><strong>Game Phases:</strong> Early = build, Mid = adapt, Late = power spike with better legendary odds.</li>
           <li><strong>Timed Events (every 3 turns):</strong> Storm (-2), Blessing (9+ gain +2), Chaos Swap (random role swap).</li>
+          <li><strong>Classic Mode:</strong> disables random timed events (including Chaos Swap) for a cleaner draft battle.</li>
           <li><strong>Synergy Bonuses:</strong> Same anime +3, One Piece crew +5, Naruto + Sasuke rival combo bonus.</li>
           <li><strong>Hidden Info:</strong> Drafted picks can hide true ability/multiplier and show decoy data.</li>
         </ul>
@@ -2555,6 +2576,7 @@ function showWinnerModal(winnerName, winnerScore, loserName, loserScore, winnerS
 
 function updateGameDisplay(data) {
   if (!data || !data.players) return;
+  state.gameMode = data.settings?.gameMode || state.gameMode || "enhanced";
   refreshCachedUltimateBonus();
   renderChatMessages(data.chat || {});
   updateOddsDisplay();
@@ -2595,7 +2617,7 @@ function updateGameDisplay(data) {
   state.interactionUsed.steal = !!interactionsUsed.steal;
   state.interactionUsed.block = !!interactionsUsed.block;
   state.interactionUsed.debuff = !!interactionsUsed.debuff;
-  if (activeEvent?.turn && activeEvent.turn !== state.lastEventTurnSeen) {
+  if (state.gameMode !== "classic" && activeEvent?.turn && activeEvent.turn !== state.lastEventTurnSeen) {
     state.lastEventTurnSeen = activeEvent.turn;
     showMessage(`🌪️ Event Triggered: ${activeEvent.type.toUpperCase()}`, "success");
   }
@@ -2605,7 +2627,7 @@ function updateGameDisplay(data) {
 
   const p1MomentumBonus = p1Momentum >= MOMENTUM_MAX ? MOMENTUM_BOOST_BONUS : 0;
   const p2MomentumBonus = p2Momentum >= MOMENTUM_MAX ? MOMENTUM_BOOST_BONUS : 0;
-  const eventType = activeEvent?.type || "";
+  const eventType = state.gameMode === "classic" ? "" : (activeEvent?.type || "");
   const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus, p1MomentumBonus, eventType) : 0;
   const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus, p2MomentumBonus, eventType) : 0;
   const s1 = s1Base - p1SkipPenalty - p1TeamDebuff;
@@ -2724,6 +2746,7 @@ function updateGameDisplay(data) {
 function joinGame() {
   const name = document.getElementById("nameInput").value.trim();
   const room = document.getElementById("roomInput").value.trim().toUpperCase();
+  const requestedMode = document.getElementById("modeSelect")?.value || "enhanced";
 
   if (!name || !room) {
     showMessage("❌ Please fill in all fields!", "error");
@@ -2736,6 +2759,7 @@ function joinGame() {
 
   state.room = room;
   state.playerName = name;
+  state.gameMode = requestedMode;
   state.characters = shuffle(CHARACTERS);
   state.gameEnded = false;
   state.ultimateUsed = false;
@@ -2750,6 +2774,8 @@ function joinGame() {
   roomRef.once("value").then((snap) => {
     const roomData = snap.val() || {};
     const players = roomData.players || {};
+    const existingMode = roomData.settings?.gameMode;
+    state.gameMode = existingMode || requestedMode;
 
     let playerSlot = null;
 
@@ -2767,6 +2793,10 @@ function joinGame() {
       name: name,
       slots: {}
     }).then(async () => {
+
+      db.ref(`rooms/${room}/settings/gameMode`).once("value").then(modeSnap => {
+        if (!modeSnap.val()) db.ref(`rooms/${room}/settings/gameMode`).set(state.gameMode || "enhanced");
+      });
 
       // Auto remove on disconnect
       db.ref(`rooms/${room}/players/${playerSlot}`)
