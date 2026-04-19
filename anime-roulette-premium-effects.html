@@ -1966,9 +1966,22 @@ function draw() {
   const centerX = 160;
   const centerY = 160;
   const radius = 130;
+  const innerRadius = 30;
   const slice = (Math.PI * 2) / chars.length;
+  const t = Date.now() * 0.0025;
 
-  ctx.fillStyle = "#0a0a12";
+  const bodyClass = document.body.className || "";
+  let palette = ["#5de0ff", "#a075ff", "#ff66c4", "#ffd166"];
+  if (bodyClass.includes("theme-strength")) palette = ["#ff6b6b", "#ff8e53", "#ff5ca8", "#ffd166"];
+  else if (bodyClass.includes("theme-speed")) palette = ["#6cf4ff", "#62c8ff", "#7fa6ff", "#c2f2ff"];
+  else if (bodyClass.includes("theme-defense")) palette = ["#52ffa8", "#38d99d", "#95ff7d", "#cbffbf"];
+  else if (bodyClass.includes("theme-stamina")) palette = ["#ffe066", "#ffb347", "#ffcf6b", "#fff2b2"];
+
+  ctx.clearRect(0, 0, 320, 320);
+  const bgGrad = ctx.createRadialGradient(centerX, centerY, 18, centerX, centerY, 165);
+  bgGrad.addColorStop(0, "rgba(255,255,255,0.06)");
+  bgGrad.addColorStop(1, "rgba(10,10,18,0.98)");
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, 320, 320);
 
   for (let i = 0; i < chars.length; i++) {
@@ -1976,21 +1989,32 @@ function draw() {
     const end = start + slice;
     const mid = start + slice / 2;
 
-    ctx.fillStyle = "#1a3a5f";
+    const colorA = palette[i % palette.length];
+    const colorB = palette[(i + 1) % palette.length];
+    const wedgeGrad = ctx.createLinearGradient(
+      centerX + Math.cos(start) * 20,
+      centerY + Math.sin(start) * 20,
+      centerX + Math.cos(mid) * radius,
+      centerY + Math.sin(mid) * radius
+    );
+    wedgeGrad.addColorStop(0, colorA);
+    wedgeGrad.addColorStop(1, colorB);
+
+    ctx.fillStyle = wedgeGrad;
     ctx.beginPath();
     ctx.moveTo(centerX, centerY);
     ctx.arc(centerX, centerY, radius, start, end);
     ctx.closePath();
     ctx.fill();
 
-    ctx.strokeStyle = "#FFD700";
+    ctx.strokeStyle = "rgba(255, 225, 140, 0.92)";
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(mid);
-    ctx.fillStyle = "#FFD700";
+    ctx.fillStyle = "#fef6c7";
     ctx.font = "bold 9px Arial";
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
@@ -2005,7 +2029,7 @@ function draw() {
       ctx.save();
       ctx.beginPath();
       ctx.arc(x, y, 14, 0, Math.PI * 2);
-      ctx.strokeStyle = "#FFD700";
+      ctx.strokeStyle = "rgba(255, 240, 160, 0.95)";
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.clip();
@@ -2018,19 +2042,36 @@ function draw() {
       ctx.beginPath();
       ctx.arc(x, y, 14, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "#FFD700";
+      ctx.strokeStyle = "rgba(255, 240, 160, 0.95)";
       ctx.lineWidth = 1;
       ctx.stroke();
     }
   }
 
+  ctx.save();
+  ctx.globalAlpha = 0.6 + Math.sin(t) * 0.15;
+  ctx.strokeStyle = "rgba(255, 215, 0, 0.45)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius + 2, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
   ctx.fillStyle = "#0a0a12";
   ctx.beginPath();
-  ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "#FFD700";
+  ctx.strokeStyle = "rgba(255, 215, 0, 0.95)";
   ctx.lineWidth = 2;
   ctx.stroke();
+
+  const coreGrad = ctx.createRadialGradient(centerX, centerY, 2, centerX, centerY, innerRadius);
+  coreGrad.addColorStop(0, "rgba(255,255,255,0.9)");
+  coreGrad.addColorStop(1, "rgba(255,215,0,0.35)");
+  ctx.fillStyle = coreGrad;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, innerRadius - 4, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.fillStyle = "#FFD700";
   ctx.font = "bold 16px Arial";
