@@ -469,6 +469,8 @@ button:disabled {
   border: 2px solid #FFD700;
   display: flex;
   gap: 10px;
+  align-items: center;
+  transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
 .volume-control button {
@@ -477,6 +479,15 @@ button:disabled {
   padding: 8px 15px;
   font-size: 12px;
   margin: 0;
+}
+
+.volume-control.collapsed {
+  transform: translateX(calc(100% - 42px));
+  opacity: 0.9;
+}
+
+.volume-control.collapsed .toolbar-item {
+  display: none;
 }
 
 .quit-btn {
@@ -1003,11 +1014,12 @@ body.rare-cinematic {
 <body>
 
 <div class="volume-control">
-  <button onclick="toggleMusic()" id="musicBtn">🔊 ON</button>
-  <button onclick="showRules()" class="rules-btn">📖 RULES</button>
-  <button onclick="showLeaderboard()" class="leaderboard-btn">🏆 LEADERBOARD</button>
-  <button onclick="showEncyclopedia()" class="leaderboard-btn">📚 ENCYCLOPEDIA</button>
-  <button onclick="quitGame()" class="quit-btn">❌ QUIT</button>
+  <button onclick="toggleToolbar()" id="toolbarToggle">☰</button>
+  <button onclick="toggleMusic()" id="musicBtn" class="toolbar-item">🔊 ON</button>
+  <button onclick="showRules()" class="rules-btn toolbar-item">📖 RULES</button>
+  <button onclick="showLeaderboard()" class="leaderboard-btn toolbar-item">🏆 LEADERBOARD</button>
+  <button onclick="showEncyclopedia()" class="leaderboard-btn toolbar-item">📚 ENCYCLOPEDIA</button>
+  <button onclick="quitGame()" class="quit-btn toolbar-item">❌ QUIT</button>
 </div>
 
 <h1>🎯 Anime Roulette Ultimate</h1>
@@ -1890,6 +1902,12 @@ function characterKey(name) {
   return String(name || "").replace(/[.#$/\[\]]/g, "_");
 }
 
+function toggleToolbar() {
+  const bar = document.querySelector(".volume-control");
+  if (!bar) return;
+  bar.classList.toggle("collapsed");
+}
+
 function toggleMusic() {
   state.musicEnabled = !state.musicEnabled;
   const btn = document.getElementById("musicBtn");
@@ -2647,6 +2665,16 @@ function updateGameDisplay(data) {
       else showWinnerModal("🤝 TIE!", Math.floor(s1), `${p1Name} vs ${p2Name}`, Math.floor(s2), {});
     }
     return;
+  }
+
+  const p1FilledAll = Object.keys(p1).length === 7;
+  const p2FilledAll = Object.keys(p2).length === 7;
+  if (p1FilledAll !== p2FilledAll) {
+    const expectedTurn = p1FilledAll ? "Player2" : "Player1";
+    if (data.turn !== expectedTurn) {
+      db.ref(`rooms/${state.room}/turn`).set(expectedTurn);
+      return;
+    }
   }
 
   const isNowMyTurn = data.turn === state.player;
