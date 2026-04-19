@@ -119,16 +119,10 @@ body.theme-balanced {
 h1 {
   color: #FFD700;
   text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
-  font-size: 2.1em;
-  margin: 0 auto 12px;
-  position: sticky;
-  top: 8px;
-  z-index: 80;
-  background: rgba(10, 10, 20, 0.72);
-  border: 1px solid rgba(255, 215, 0, 0.35);
-  border-radius: 10px;
-  padding: 8px 14px;
-  width: fit-content;
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 #joinSection {
@@ -211,15 +205,13 @@ h1 {
 }
 
 body.in-game {
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 body.in-game #gameSection {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 150px);
-  min-height: 0;
-  overflow-y: auto;
+  display: block;
+  height: auto;
+  overflow: visible;
 }
 
 canvas {
@@ -265,6 +257,7 @@ button:disabled {
   justify-content: center;
   gap: 20px;
   min-height: 0;
+  align-items: flex-start;
 }
 
 .panel {
@@ -565,19 +558,11 @@ button:disabled {
   text-align: left;
 }
 
-body.in-game .game-wrapper {
-  flex: 1;
-}
-
-body.in-game #chatBox {
-  flex: 0 0 auto;
-  max-height: 34vh;
-  overflow: auto;
-  display: block !important;
-}
-
-body.in-game .chat-messages {
-  max-height: 130px;
+.wheel-column {
+  min-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .chat-box summary {
@@ -1063,9 +1048,9 @@ body.rare-cinematic {
   .mobile-tabs button { font-size: 12px; padding: 8px 12px; }
   .mobile-section { display: none !important; }
   .mobile-section.active-mobile { display: block !important; }
-  h1 { font-size: 1.5em; padding: 6px 10px; }
-  body.in-game #gameSection { height: calc(100vh - 125px); }
+  h1 { font-size: 1.7em; }
   .chat-messages { max-height: 120px; }
+  .wheel-column { min-width: 0; }
 }
 
 @keyframes burst-fly {
@@ -1147,7 +1132,7 @@ body.rare-cinematic {
       <div class="score">Score: <span id="p1Score">0</span></div>
     </div>
 
-    <div style="display: flex; flex-direction: column; align-items: center;" class="mobile-section" data-section="wheel">
+    <div class="mobile-section wheel-column" data-section="wheel">
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
         <button id="spinBtn" onclick="spin()">🎡 SPIN</button>
         <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
@@ -1168,25 +1153,25 @@ body.rare-cinematic {
     </div>
   </div>
 
-  <details class="chat-box mobile-section" id="chatBox" data-section="chat" open>
-    <summary class="chat-header">💬 Room Chat (short messages)</summary>
+  <div class="chat-box mobile-section" id="chatBox" data-section="chat">
+    <div class="chat-header">💬 Room Chat (short messages)</div>
     <div class="chat-body">
-      <div id="chatMessages" class="chat-messages">
-        <div class="chat-empty">No messages yet. Say hi 👋</div>
-      </div>
-      <div class="emoji-row">
-        <button onclick="addEmojiToChat('🔥')">🔥</button>
-        <button onclick="addEmojiToChat('😂')">😂</button>
-        <button onclick="addEmojiToChat('😈')">😈</button>
-        <button onclick="addEmojiToChat('💀')">💀</button>
-        <button onclick="addEmojiToChat('👏')">👏</button>
-      </div>
-      <div class="chat-input-row">
-        <input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" />
-        <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
-      </div>
+    <div id="chatMessages" class="chat-messages">
+      <div class="chat-empty">No messages yet. Say hi 👋</div>
     </div>
-  </details>
+    <div class="emoji-row">
+      <button onclick="addEmojiToChat('🔥')">🔥</button>
+      <button onclick="addEmojiToChat('😂')">😂</button>
+      <button onclick="addEmojiToChat('😈')">😈</button>
+      <button onclick="addEmojiToChat('💀')">💀</button>
+      <button onclick="addEmojiToChat('👏')">👏</button>
+    </div>
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" />
+      <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
+    </div>
+    </div>
+  </div>
 </div>
 
 <audio id="bgm" loop preload="auto">
