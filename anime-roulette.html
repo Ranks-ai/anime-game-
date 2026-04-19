@@ -1814,6 +1814,31 @@ function showRules() {
         <p>Abilities can trigger role bonuses, debuffs, shield effects, steal effects, multipliers, and late-game boosts.</p>
       </div>
     </details>
+
+    <details class="collapsible-block" open>
+      <summary>🔥 New Power-Ups & Systems</summary>
+      <div class="collapsible-content">
+        <ul>
+          <li><strong>Momentum:</strong> Good spins (9+) build momentum. At 3 stacks you enter <em>Ultimate Boost Mode</em>.</li>
+          <li><strong>Game Phases:</strong> Early = build, Mid = adapt, Late = power spike with better legendary odds.</li>
+          <li><strong>Timed Events (every 3 turns):</strong> Storm (-2), Blessing (9+ gain +2), Chaos Swap (random role swap).</li>
+          <li><strong>Synergy Bonuses:</strong> Same anime +3, One Piece crew +5, Naruto + Sasuke rival combo bonus.</li>
+          <li><strong>Hidden Info:</strong> Drafted picks can hide true ability/multiplier and show decoy data.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="collapsible-block" open>
+      <summary>⚔️ PvP Interactions & Mind Games</summary>
+      <div class="collapsible-content">
+        <ul>
+          <li><strong>Steal / Block / Debuff:</strong> One-time action buttons to disrupt opponent plans.</li>
+          <li><strong>No duplicate drafting:</strong> Once a character is claimed in the room, nobody can draft that character again.</li>
+          <li><strong>Chat Commands:</strong> <code>/bluff</code>, <code>/fakeup</code>, <code>/emote fire|ice|taunt</code> for psychological pressure and tactical effects.</li>
+          <li><strong>Ranked Progression:</strong> Bronze → Silver → Gold → Yonko with streak tracking and streak bonuses.</li>
+        </ul>
+      </div>
+    </details>
   `;
   
   modal.appendChild(content);
@@ -1838,6 +1863,10 @@ function showMessage(text, type) {
   msgEl.innerText = text;
   messagesDiv.innerHTML = "";
   messagesDiv.appendChild(msgEl);
+}
+
+function characterKey(name) {
+  return String(name || "").replace(/[.#$/\[\]]/g, "_");
 }
 
 function toggleMusic() {
@@ -2183,6 +2212,16 @@ function selectRole(role, popup, char) {
       showMessage(`❌ ${role} is blocked this round!`, "error");
       return;
     }
+
+    const claimKey = characterKey(char.name);
+    const claimRef = db.ref(`rooms/${state.room}/selectedCharacters/${claimKey}`);
+    claimRef.transaction(current => current || state.player).then(claimResult => {
+      if (!claimResult.committed || claimResult.snapshot.val() !== state.player) {
+        showMessage(`❌ ${char.name} was already drafted. Spin again!`, "error");
+        popup.remove();
+        return;
+      }
+
     const maskedChar = {
       ...char,
       hiddenAbility: true,
@@ -2203,9 +2242,14 @@ function selectRole(role, popup, char) {
     const next = state.player === "Player1" ? "Player2" : "Player1";
     maybeTriggerTurnEvent(next).catch(() => db.ref(`rooms/${state.room}/turn`).set(next));
   }).catch(err => {
+    claimRef.remove().catch(() => {});
     showMessage("Error: " + err.message, "error");
     console.error(err);
   });
+    }).catch(err => {
+      showMessage("Error: " + err.message, "error");
+      console.error(err);
+    });
   });
 }
 
@@ -2767,6 +2811,10 @@ function joinGame() {
 
       db.ref(`rooms/${room}/turnCount`).once("value").then(snap => {
         if (snap.val() == null) db.ref(`rooms/${room}/turnCount`).set(0);
+      });
+
+      db.ref(`rooms/${room}/selectedCharacters`).once("value").then(snap => {
+        if (!snap.val()) db.ref(`rooms/${room}/selectedCharacters`).set({});
       });
 
       await preloadImages();
