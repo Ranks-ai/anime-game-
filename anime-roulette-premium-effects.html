@@ -30,26 +30,46 @@ body {
 body::before {
   content: "";
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    from 0deg,
-    var(--energy-a),
-    var(--energy-b),
-    var(--energy-c),
-    var(--energy-a)
-  );
-  animation: spinEnergy 20s linear infinite;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      110deg,
+      rgba(255,255,255,0.04) 0px,
+      rgba(255,255,255,0.04) 2px,
+      transparent 2px,
+      transparent 18px
+    ),
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.10), transparent 40%),
+    radial-gradient(circle at 80% 75%, rgba(255,215,0,0.10), transparent 45%);
+  animation: animeSpeedLines 14s linear infinite;
   z-index: -2;
   pointer-events: none;
 }
 
-@keyframes spinEnergy {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.04); }
-  100% { transform: rotate(360deg) scale(1); }
+body::after {
+  content: "⚡  ✦  ⚔️  ☄️";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  font-size: 22px;
+  letter-spacing: 26px;
+  text-align: center;
+  opacity: 0.2;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.35));
+  animation: animeGlyphFloat 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes animeSpeedLines {
+  0% { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(-80px, 0, 0); }
+}
+
+@keyframes animeGlyphFloat {
+  0%,100% { transform: translateY(0px); opacity: 0.16; }
+  50% { transform: translateY(-6px); opacity: 0.28; }
 }
 
 body.theme-strength {
@@ -994,6 +1014,10 @@ body.rare-cinematic {
     <div id="status">Waiting...</div>
     <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
     <div class="character-counter" id="oddsDisplay">🎲 Odds: ...</div>
+    <div class="character-counter" id="phaseDisplay">🧠 Early Game → build team</div>
+    <div class="character-counter" id="momentumDisplay">🔥 Momentum: 0/3</div>
+    <div class="character-counter" id="eventDisplay">🌪️ Event: None</div>
+    <div class="character-counter" id="mindGameDisplay">💬 Mind Game: Neutral</div>
   </div>
 
   <div class="mobile-tabs" id="mobileTabs">
@@ -1015,6 +1039,11 @@ body.rare-cinematic {
         <button id="spinBtn" onclick="spin()">🎡 SPIN</button>
         <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
         <button id="ultimateBtn" onclick="activateUltimate()">🔥 ULTIMATE</button>
+      </div>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center;">
+        <button id="stealBtn" onclick="useSteal()">🕶️ STEAL</button>
+        <button id="blockBtn" onclick="useBlock()">🧱 BLOCK ROLE</button>
+        <button id="debuffBtn" onclick="useDebuff()">☠️ DEBUFF</button>
       </div>
       <canvas id="canvas" width="320" height="320"></canvas>
     </div>
@@ -1106,6 +1135,18 @@ const BASE_CHARACTERS = [
   {name:"Gojo",score:10,img:"images/gojo.png",strength:8,speed:9,defense:10,stamina:8,ability:{name:"Limitless",description:"+3 if Captain",type:"roleBonus",role:"Captain",value:3}},
   {name:"Saitama",score:10,img:"images/saitama.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"Serious Punch",description:"+2 if Duelist",type:"roleBonus",role:"Duelist",value:2}},
   {name:"Shanks",score:10,img:"images/shanks.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Conqueror's Haki",description:"+6 if Captain",type:"roleBonus",role:"Captain",value:6}},
+  {name:"Roger Prime",score:10,img:"images/roger_prime.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"King's Ambition",description:"+4 if Captain",type:"roleBonus",role:"Captain",value:4}},
+  {name:"Whitebeard Prime",score:10,img:"images/whitebeard_prime.png",strength:10,speed:7,defense:10,stamina:10,ability:{name:"Gura Overload",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
+  {name:"Big Mom (Young)",score:10,img:"images/big_mom_young.png",strength:10,speed:6,defense:10,stamina:10,ability:{name:"Soul Pocus",description:"+2 if Tank",type:"roleBonus",role:"Tank",value:2}},
+  {name:"Kaido (Young)",score:10,img:"images/kaido_young.png",strength:10,speed:7,defense:10,stamina:10,ability:{name:"Hybrid Rampage",description:"Late game: +5 when 5+ roles filled",type:"lateGame",minRoles:5,value:5}},
+  {name:"Katakuri",score:9,img:"images/katakuri.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Future Sight",description:"+3 if Duelist",type:"roleBonus",role:"Duelist",value:3}},
+  {name:"Smoothie",score:9,img:"images/smoothie.png",strength:8,speed:8,defense:8,stamina:9},
+  {name:"Marco",score:9,img:"images/marco.png",strength:8,speed:9,defense:8,stamina:9,ability:{name:"Blue Flame Heal",description:"+4 if Healer, +2 if Support",type:"healingMastery",healerValue:4,supportValue:2}},
+  {name:"Jozu",score:9,img:"images/jozu.png",strength:9,speed:6,defense:10,stamina:9,ability:{name:"Diamond Body",description:"+3 if Tank",type:"roleBonus",role:"Tank",value:3}},
+  {name:"Rayleigh (Young)",score:9,img:"images/rayleigh_young.png",strength:9,speed:8,defense:8,stamina:9,ability:{name:"Dark King's Guidance",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
+  {name:"Scopper Gaban (Young)",score:9,img:"images/scopper_gaban_young.png",strength:9,speed:8,defense:8,stamina:8},
+  {name:"King",score:9,img:"images/king.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Lunarian Guard",description:"+3 if Tank",type:"roleBonus",role:"Tank",value:3}},
+  {name:"Queen",score:9,img:"images/queen.png",strength:9,speed:6,defense:9,stamina:9,ability:{name:"Plague Burst",description:"Enemy team -2 total",type:"enemyDebuff",value:2}},
   {name:"Giorno",score:10,img:"images/giorno.png",strength:8,speed:8,defense:8,stamina:9},
   {name:"Unohana",score:10,img:"images/unohana.png",strength:9,speed:8,defense:9,stamina:10,ability:{name:"Healing Shield",description:"Negates 1 enemy debuff",type:"shield",value:1}},
   {name:"Yamamoto",score:10,img:"images/yamamoto.png",strength:10,speed:7,defense:9,stamina:10,ability:{name:"Zanka no Tachi",description:"Burn enemy team -3 total",type:"enemyDebuff",value:3}},
@@ -1169,11 +1210,16 @@ const CHARACTERS = BASE_CHARACTERS.map(char => ({
 }));
 
 const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Traitor"];
+const LEGENDARY_SCORE_THRESHOLD = 10;
+const MOMENTUM_MAX = 3;
+const MOMENTUM_GOOD_SPIN_SCORE = 9;
+const MOMENTUM_BOOST_BONUS = 6;
+const EVENT_INTERVAL_TURNS = 3;
 
 const SERIES_MAP = {
   Goku: "Dragon Ball", Vegeta: "Dragon Ball",
   Naruto: "Naruto", Sasuke: "Naruto", Itachi: "Naruto", Madara: "Naruto", Obito: "Naruto", Pain: "Naruto", Kakashi: "Naruto", Boruto: "Naruto", Sarada: "Naruto", Sakura: "Naruto", Tsunade: "Naruto",
-  Luffy: "One Piece", Zoro: "One Piece", Shanks: "One Piece", Law: "One Piece", Ace: "One Piece",
+  Luffy: "One Piece", Zoro: "One Piece", Shanks: "One Piece", Law: "One Piece", Ace: "One Piece", "Roger Prime": "One Piece", "Whitebeard Prime": "One Piece", "Big Mom (Young)": "One Piece", "Kaido (Young)": "One Piece", Katakuri: "One Piece", Smoothie: "One Piece", Marco: "One Piece", Jozu: "One Piece", "Rayleigh (Young)": "One Piece", "Scopper Gaban (Young)": "One Piece", King: "One Piece", Queen: "One Piece",
   Ichigo: "Bleach", Byakuya: "Bleach", Toshiro: "Bleach", Yamamoto: "Bleach", Unohana: "Bleach", Ukitake: "Bleach", Komamura: "Bleach", Shinji: "Bleach", SoiFon: "Bleach", Gin: "Bleach", Mayuri: "Bleach", Rose: "Bleach",
   Asta: "Black Clover", Yami: "Black Clover", Mimosa: "Black Clover",
   Tanjiro: "Demon Slayer", Rengoku: "Demon Slayer", Muichiro: "Demon Slayer", Tengen: "Demon Slayer", Akaza: "Demon Slayer",
@@ -1202,6 +1248,16 @@ ultimateUsed: false,
     Player1: 0,
     Player2: 0
   },
+  momentum: {
+    Player1: 0,
+    Player2: 0
+  },
+  interactionUsed: {
+    steal: false,
+    block: false,
+    debuff: false
+  },
+  lastEventTurnSeen: 0,
   pityCounter: 0,
   mobileTab: "wheel"
 };
@@ -1211,12 +1267,143 @@ const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spinBtn");
 const skipBtn = document.getElementById("skipBtn");
 const ultimateBtn = document.getElementById("ultimateBtn");
+const stealBtn = document.getElementById("stealBtn");
+const blockBtn = document.getElementById("blockBtn");
+const debuffBtn = document.getElementById("debuffBtn");
 const bgm = document.getElementById("bgm");
 const chatMessagesEl = document.getElementById("chatMessages");
 const chatInputEl = document.getElementById("chatInput");
 
 function hasAllRolesSelected() {
   return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
+}
+
+function getGamePhaseBySpins() {
+  const filled = Object.keys(state.myFilledRoles || {}).length;
+  if (filled <= 2) return "early";      // First 3 spins
+  if (filled <= 4) return "mid";        // Mid game adaptation
+  return "late";                        // Last 2 spins
+}
+
+function updatePhaseDisplay() {
+  const el = document.getElementById("phaseDisplay");
+  if (!el) return;
+  const phase = getGamePhaseBySpins();
+  if (phase === "early") {
+    el.innerText = "🧠 Early Game → build team";
+  } else if (phase === "mid") {
+    el.innerText = "🧩 Mid Game → adapt";
+  } else {
+    el.innerText = "🔥 Late Game → power spikes (legendary boost)";
+  }
+}
+
+function updateMomentumDisplay() {
+  const el = document.getElementById("momentumDisplay");
+  if (!el || !state.player) return;
+  const value = Math.min(MOMENTUM_MAX, state.momentum?.[state.player] || 0);
+  if (value >= MOMENTUM_MAX) {
+    el.innerText = `🔥 Momentum: ${value}/${MOMENTUM_MAX} — ULTIMATE BOOST MODE`;
+  } else {
+    el.innerText = `🔥 Momentum: ${value}/${MOMENTUM_MAX}`;
+  }
+}
+
+function addMomentumFromSpin(char) {
+  if (!state.room || !state.player || !char) return;
+  if ((char.score || 0) < MOMENTUM_GOOD_SPIN_SCORE) return;
+  const momentumRef = db.ref(`rooms/${state.room}/momentum/${state.player}`);
+  momentumRef.transaction(current => Math.min(MOMENTUM_MAX, (current || 0) + 1));
+}
+
+function updateEventDisplay(activeEvent) {
+  const el = document.getElementById("eventDisplay");
+  if (!el) return;
+  if (!activeEvent?.type) {
+    el.innerText = "🌪️ Event: None";
+    return;
+  }
+  const labels = {
+    storm: "🌩️ Storm: All scores -2",
+    blessing: "✨ Blessing: 9+ chars gain +2",
+    chaos: "🌀 Chaos Swap: 1 role swapped"
+  };
+  el.innerText = labels[activeEvent.type] || "🌪️ Event: Unknown";
+}
+
+function updateMindGameDisplay(signalData = {}) {
+  const el = document.getElementById("mindGameDisplay");
+  if (!el || !state.player) return;
+  const enemy = state.player === "Player1" ? "Player2" : "Player1";
+  const enemySignal = signalData?.[enemy];
+  if (!enemySignal || !enemySignal.ts) {
+    el.innerText = "💬 Mind Game: Neutral";
+    return;
+  }
+  const ageMs = Date.now() - enemySignal.ts;
+  if (ageMs > 30000) {
+    el.innerText = "💬 Mind Game: Neutral";
+    return;
+  }
+  el.innerText = `🎭 Opponent Signal: ${enemySignal.text}`;
+}
+
+async function maybeTriggerTurnEvent(nextTurn) {
+  const roomRef = db.ref(`rooms/${state.room}`);
+  const snap = await roomRef.once("value");
+  const roomData = snap.val() || {};
+  const turnCount = (roomData.turnCount || 0) + 1;
+  const updates = { turn: nextTurn, turnCount };
+  let chosenEvent = null;
+  if (turnCount % EVENT_INTERVAL_TURNS === 0) {
+    const eventTypes = ["storm", "blessing", "chaos"];
+    const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+    chosenEvent = { type, turn: turnCount, by: state.player };
+    updates.activeEvent = chosenEvent;
+  }
+  await roomRef.update(updates);
+  if (chosenEvent?.type === "chaos") {
+    await applyChaosSwap();
+  }
+}
+
+async function applyChaosSwap() {
+  const roomRef = db.ref(`rooms/${state.room}`);
+  const snap = await roomRef.once("value");
+  const data = snap.val() || {};
+  const p1 = data.players?.Player1?.slots || {};
+  const p2 = data.players?.Player2?.slots || {};
+  const r1 = Object.keys(p1);
+  const r2 = Object.keys(p2);
+  if (!r1.length || !r2.length) return;
+  const role1 = r1[Math.floor(Math.random() * r1.length)];
+  const role2 = r2[Math.floor(Math.random() * r2.length)];
+  const c1 = p1[role1];
+  const c2 = p2[role2];
+  if (!c1 || !c2) return;
+  const updates = {};
+  updates[`players/Player1/slots/${role1}`] = c2;
+  updates[`players/Player2/slots/${role2}`] = c1;
+  await roomRef.update(updates);
+}
+
+function pickIndexForPhase(chars) {
+  if (!chars.length) return 0;
+  const phase = getGamePhaseBySpins();
+  const legendaryIndexes = [];
+  for (let i = 0; i < chars.length; i++) {
+    if ((chars[i].score || 0) >= LEGENDARY_SCORE_THRESHOLD) legendaryIndexes.push(i);
+  }
+
+  let legendaryChance = 0;
+  if (phase === "mid") legendaryChance = 0.2;
+  if (phase === "late") legendaryChance = 0.55; // Last 2 spins = higher chance of legendary
+
+  if (legendaryIndexes.length && Math.random() < legendaryChance) {
+    return legendaryIndexes[Math.floor(Math.random() * legendaryIndexes.length)];
+  }
+
+  return Math.floor(Math.random() * chars.length);
 }
 
 function activateUltimate() {
@@ -1415,7 +1602,7 @@ async function showLeaderboard() {
     const players = Object.values(data).sort((a, b) => b.wins - a.wins);
     const topPlayers = players.slice(0, 50);
 
-    let html = `<table class="leaderboard-table"><thead><tr><th>RANK</th><th>PLAYER</th><th>WINS</th><th>LOSSES</th><th>WIN RATE</th></tr></thead><tbody>`;
+    let html = `<table class="leaderboard-table"><thead><tr><th>RANK</th><th>PLAYER</th><th>TIER</th><th>WINS</th><th>LOSSES</th><th>STREAK</th><th>WIN RATE</th></tr></thead><tbody>`;
 
     topPlayers.forEach((player, index) => {
       const totalGames = (player.wins || 0) + (player.losses || 0);
@@ -1424,7 +1611,8 @@ async function showLeaderboard() {
       const medal = medals[index] || '';
       const rowClass = index < 3 ? `rank-${index + 1}` : '';
 
-      html += `<tr class="${rowClass}"><td>${medal} ${index + 1}</td><td><span class="leaderboard-name">${player.name}</span></td><td class="leaderboard-stat wins">${player.wins || 0}</td><td>${player.losses || 0}</td><td class="leaderboard-stat winrate">${winRate}%</td></tr>`;
+      const tier = getRankTier(player.wins || 0);
+      html += `<tr class="${rowClass}"><td>${medal} ${index + 1}</td><td><span class="leaderboard-name">${player.name}</span></td><td>${tier}</td><td class="leaderboard-stat wins">${player.wins || 0}</td><td>${player.losses || 0}</td><td>${player.streak || 0}</td><td class="leaderboard-stat winrate">${winRate}%</td></tr>`;
     });
 
     html += `</tbody></table>`;
@@ -1441,22 +1629,35 @@ async function updateLeaderboard(winnerName, loserName) {
     if (winnerSnapshot.exists()) {
       const winnerKey = Object.keys(winnerSnapshot.val())[0];
       const winnerData = winnerSnapshot.val()[winnerKey];
-      await leaderboardRef.child(winnerKey).update({wins: (winnerData.wins || 0) + 1});
+      const nextStreak = (winnerData.streak || 0) + 1;
+      const streakBonus = nextStreak >= 3 ? 1 : 0;
+      await leaderboardRef.child(winnerKey).update({
+        wins: (winnerData.wins || 0) + 1 + streakBonus,
+        streak: nextStreak,
+        bestStreak: Math.max(nextStreak, winnerData.bestStreak || 0)
+      });
     } else {
-      await leaderboardRef.push({name: winnerName, wins: 1, losses: 0});
+      await leaderboardRef.push({name: winnerName, wins: 1, losses: 0, streak: 1, bestStreak: 1});
     }
 
     const loserSnapshot = await leaderboardRef.orderByChild('name').equalTo(loserName).once('value');
     if (loserSnapshot.exists()) {
       const loserKey = Object.keys(loserSnapshot.val())[0];
       const loserData = loserSnapshot.val()[loserKey];
-      await leaderboardRef.child(loserKey).update({losses: (loserData.losses || 0) + 1});
+      await leaderboardRef.child(loserKey).update({losses: (loserData.losses || 0) + 1, streak: 0});
     } else {
-      await leaderboardRef.push({name: loserName, wins: 0, losses: 1});
+      await leaderboardRef.push({name: loserName, wins: 0, losses: 1, streak: 0, bestStreak: 0});
     }
   } catch(e) {
     console.error("Leaderboard error:", e);
   }
+}
+
+function getRankTier(wins) {
+  if (wins >= 60) return "👑 Yonko";
+  if (wins >= 35) return "🥇 Gold";
+  if (wins >= 15) return "🥈 Silver";
+  return "🥉 Bronze";
 }
 
 function escapeHtml(text) {
@@ -1486,7 +1687,10 @@ function renderChatMessages(chatData = {}) {
   }
 
   chatMessagesEl.innerHTML = msgs
-    .map(m => `<div class="chat-line"><span class="name">${escapeHtml(m.name || 'Player')}</span><span class="time">${formatChatTime(m.ts)}</span><br>${escapeHtml(m.text)}</div>`)
+    .map(m => {
+      const label = m.type === "system" ? "SYSTEM" : (m.name || "Player");
+      return `<div class="chat-line"><span class="name">${escapeHtml(label)}</span><span class="time">${formatChatTime(m.ts)}</span><br>${escapeHtml(m.text)}</div>`;
+    })
     .join('');
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
 }
@@ -1495,6 +1699,65 @@ function sendChatMessage() {
   if (!state.room || !state.player || !chatInputEl) return;
   const text = chatInputEl.value.trim().slice(0, 80);
   if (!text) return;
+
+  const lower = text.toLowerCase();
+  const roomRef = db.ref(`rooms/${state.room}`);
+  const enemy = state.player === "Player1" ? "Player2" : "Player1";
+
+  if (lower.startsWith("/bluff")) {
+    roomRef.child("chat").push({
+      type: "system",
+      name: "SYSTEM",
+      text: `🎭 ${state.playerName || state.player} sends a bluff signal...`,
+      ts: Date.now()
+    });
+    roomRef.child(`psychSignals/${state.player}`).set({ text: "BLUFF", ts: Date.now() });
+    chatInputEl.value = "";
+    return;
+  }
+
+  if (lower.startsWith("/fakeup")) {
+    roomRef.child("chat").push({
+      type: "system",
+      name: "SYSTEM",
+      text: `⚡ ${state.playerName || state.player} appears to power up! (or did they?)`,
+      ts: Date.now()
+    });
+    roomRef.child(`psychSignals/${state.player}`).set({ text: "FAKE POWER-UP", ts: Date.now() });
+    chatInputEl.value = "";
+    return;
+  }
+
+  if (lower.startsWith("/emote")) {
+    const token = (text.split(" ")[1] || "").toLowerCase();
+    let emote = "😶";
+    const updates = {};
+    if (token === "fire" || token === "🔥") {
+      emote = "🔥";
+      const me = state.momentum?.[state.player] || 0;
+      updates[`momentum/${state.player}`] = Math.min(MOMENTUM_MAX, me + 1);
+    } else if (token === "ice" || token === "🧊") {
+      emote = "🧊";
+      const enemyMomentum = state.momentum?.[enemy] || 0;
+      updates[`momentum/${enemy}`] = Math.max(0, enemyMomentum - 1);
+    } else if (token === "taunt" || token === "😈") {
+      emote = "😈";
+      roomRef.child(`teamDebuff/${enemy}`).once("value").then(s => {
+        const currentDebuff = s.val() || 0;
+        roomRef.child(`teamDebuff/${enemy}`).set(currentDebuff + 1);
+      });
+    }
+    updates[`psychSignals/${state.player}`] = { text: `EMOTE ${emote}`, ts: Date.now() };
+    roomRef.update(updates).catch(() => {});
+    roomRef.child("chat").push({
+      type: "system",
+      name: "SYSTEM",
+      text: `${emote} ${state.playerName || state.player} used an emote effect`,
+      ts: Date.now()
+    });
+    chatInputEl.value = "";
+    return;
+  }
 
   db.ref(`rooms/${state.room}/chat`).push({
     name: state.playerName || state.player,
@@ -1752,11 +2015,14 @@ function spin() {
       clearInterval(spinInterval);
 
       const slice = (Math.PI * 2) / state.characters.length;
+      const weightedIndex = pickIndexForPhase(state.characters);
+      state.angle = weightedIndex * slice + 0.001;
       const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const index = Math.floor(normalized / slice) % state.characters.length;
       const selected = state.characters[index];
       const selectedWithForm = applyFormVariation(selected);
       state.hasSpunThisTurn = true;
+      addMomentumFromSpin(selectedWithForm);
       if ((selectedWithForm.score || 0) >= 10) state.pityCounter = 0;
       else state.pityCounter += 1;
 
@@ -1764,6 +2030,8 @@ function spin() {
       playRareCinematic(selectedWithForm);
       showPopup(selectedWithForm);
       updateOddsDisplay();
+      updatePhaseDisplay();
+      updateMomentumDisplay();
       state.spinning = false;
       spinBtn.disabled = false;
     }
@@ -1910,20 +2178,34 @@ function showPopup(char) {
 }
 
 function selectRole(role, popup, char) {
-  db.ref(`rooms/${state.room}/players/${state.player}/slots/${role}`).set(char).then(() => {
+  db.ref(`rooms/${state.room}/blockedRoles/${state.player}/${role}`).once("value").then(blockedSnap => {
+    if (blockedSnap.val()) {
+      showMessage(`❌ ${role} is blocked this round!`, "error");
+      return;
+    }
+    const maskedChar = {
+      ...char,
+      hiddenAbility: true,
+      hiddenMultiplier: true,
+      trueMultiplier: +(0.9 + Math.random() * 0.35).toFixed(2),
+      decoyMultiplier: (0.8 + Math.random() * 0.7).toFixed(2)
+    };
+  db.ref(`rooms/${state.room}/players/${state.player}/slots/${role}`).set(maskedChar).then(() => {
     state.characters = state.characters.filter(c => c.name !== char.name);
     state.myFilledRoles[role] = true;
     popup.remove();
     document.getElementById("charCounter").innerText = state.characters.length;
     draw();
+    updatePhaseDisplay();
 
     state.hasSpunThisTurn = false;
     state.skippedThisTurn = false;
     const next = state.player === "Player1" ? "Player2" : "Player1";
-    db.ref(`rooms/${state.room}/turn`).set(next);
+    maybeTriggerTurnEvent(next).catch(() => db.ref(`rooms/${state.room}/turn`).set(next));
   }).catch(err => {
     showMessage("Error: " + err.message, "error");
     console.error(err);
+  });
   });
 }
 
@@ -1959,10 +2241,70 @@ function skipTurn() {
   db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
 
   const next = state.player === "Player1" ? "Player2" : "Player1";
-  db.ref(`rooms/${state.room}/turn`).set(next);
+  maybeTriggerTurnEvent(next).catch(() => db.ref(`rooms/${state.room}/turn`).set(next));
 }
 
-function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
+async function useSteal() {
+  if (!state.myTurn || state.spinning) return showMessage("❌ Use actions on your turn while not spinning.", "error");
+  if (state.interactionUsed.steal) return showMessage("❌ Steal already used this match.", "error");
+  const enemy = state.player === "Player1" ? "Player2" : "Player1";
+  const roomRef = db.ref(`rooms/${state.room}`);
+  const snap = await roomRef.once("value");
+  const data = snap.val() || {};
+  const mySlots = data.players?.[state.player]?.slots || {};
+  const enemySlots = data.players?.[enemy]?.slots || {};
+  const enemyRoles = Object.keys(enemySlots);
+  const openRoles = ROLES.filter(r => !mySlots[r]);
+  if (!enemyRoles.length || !openRoles.length) return showMessage("❌ Need enemy pick and your open role to steal.", "error");
+  const fromRole = enemyRoles[Math.floor(Math.random() * enemyRoles.length)];
+  const toRole = openRoles[Math.floor(Math.random() * openRoles.length)];
+  const stolen = enemySlots[fromRole];
+  if (!stolen) return;
+  const updates = {};
+  updates[`players/${enemy}/slots/${fromRole}`] = null;
+  updates[`players/${state.player}/slots/${toRole}`] = stolen;
+  updates[`interactionsUsed/${state.player}/steal`] = true;
+  await roomRef.update(updates);
+  state.interactionUsed.steal = true;
+  showMessage(`🕶️ Stole ${stolen.name} into ${toRole}!`, "success");
+}
+
+async function useBlock() {
+  if (!state.myTurn || state.spinning) return showMessage("❌ Use actions on your turn while not spinning.", "error");
+  if (state.interactionUsed.block) return showMessage("❌ Block already used this match.", "error");
+  const enemy = state.player === "Player1" ? "Player2" : "Player1";
+  const roomRef = db.ref(`rooms/${state.room}`);
+  const snap = await roomRef.once("value");
+  const data = snap.val() || {};
+  const enemySlots = data.players?.[enemy]?.slots || {};
+  const openRoles = ROLES.filter(r => !enemySlots[r]);
+  if (!openRoles.length) return showMessage("❌ No enemy open role to block.", "error");
+  const role = openRoles[Math.floor(Math.random() * openRoles.length)];
+  const updates = {};
+  updates[`blockedRoles/${enemy}/${role}`] = true;
+  updates[`interactionsUsed/${state.player}/block`] = true;
+  await roomRef.update(updates);
+  state.interactionUsed.block = true;
+  showMessage(`🧱 Blocked enemy role: ${role}`, "success");
+}
+
+async function useDebuff() {
+  if (!state.myTurn || state.spinning) return showMessage("❌ Use actions on your turn while not spinning.", "error");
+  if (state.interactionUsed.debuff) return showMessage("❌ Debuff already used this match.", "error");
+  const enemy = state.player === "Player1" ? "Player2" : "Player1";
+  const roomRef = db.ref(`rooms/${state.room}`);
+  const debuffRef = db.ref(`rooms/${state.room}/teamDebuff/${enemy}`);
+  const snap = await debuffRef.once("value");
+  const nextDebuff = (snap.val() || 0) + 3;
+  const updates = {};
+  updates[`teamDebuff/${enemy}`] = nextDebuff;
+  updates[`interactionsUsed/${state.player}/debuff`] = true;
+  await roomRef.update(updates);
+  state.interactionUsed.debuff = true;
+  showMessage("☠️ Enemy team debuffed by -3!", "success");
+}
+
+function calculateScore(slots, enemySlots = {}, ultimateBonus = 0, momentumBonus = 0, activeEventType = "") {
   let score = 0;
   const ownChars = Object.values(slots || {});
   const enemyChars = Object.values(enemySlots || {});
@@ -1983,6 +2325,12 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
       else if (role === "Traitor") val = -char.score;
     }
     val += Math.floor((char.strength + char.speed + char.defense + char.stamina) * 0.1);
+    if (char.hiddenMultiplier && char.trueMultiplier) {
+      val = Math.floor(val * char.trueMultiplier);
+    }
+    if (activeEventType === "blessing" && (char.score || 0) >= 9) {
+      val += 2;
+    }
     return val;
   };
 
@@ -2017,16 +2365,24 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
     score += base;
   });
 
-  // Team set bonus: drafting 3+ from same anime series grants buffs
+  // Synergy system:
+  // - Same anime (2+) => +3
+  // - One Piece crew (2+) => +5
+  // - Rival combo Naruto + Sasuke => special +6
   const seriesCounts = {};
   ownChars.forEach(char => {
     const series = SERIES_MAP[char.name];
     if (!series) return;
     seriesCounts[series] = (seriesCounts[series] || 0) + 1;
   });
-  Object.values(seriesCounts).forEach(count => {
-    if (count >= 3) score += 5;
+  Object.entries(seriesCounts).forEach(([series, count]) => {
+    if (count >= 2) score += 3;
+    if (series === "One Piece" && count >= 2) score += 5;
   });
+  const ownNames = ownChars.map(c => c.name);
+  if (ownNames.includes("Naruto") && ownNames.includes("Sasuke")) {
+    score += 6;
+  }
 
   const ownShields = effectsDisabled ? 0 : ownChars.filter(c => c.ability?.type === "shield").length;
   const enemyDebuffTotal = enemyChars
@@ -2071,6 +2427,8 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
 
   // Apply ultimate bonus
   score += ultimateBonus;
+  score += momentumBonus;
+  if (activeEventType === "storm") score -= 2;
 
   return score;
 }
@@ -2162,8 +2520,16 @@ function updateGameDisplay(data) {
   const p2 = data.players.Player2?.slots || {};
   const p1UltimateBonus = data.ultimateBonus?.Player1 || 0;
   const p2UltimateBonus = data.ultimateBonus?.Player2 || 0;
+  const activeEvent = data.activeEvent || null;
+  const p1TeamDebuff = data.teamDebuff?.Player1 || 0;
+  const p2TeamDebuff = data.teamDebuff?.Player2 || 0;
+  const interactionsUsed = data.interactionsUsed?.[state.player] || {};
+  const p1Momentum = data.momentum?.Player1 || 0;
+  const p2Momentum = data.momentum?.Player2 || 0;
   const p1SkipPenalty = data.skipPenalties?.Player1 || 0;
   const p2SkipPenalty = data.skipPenalties?.Player2 || 0;
+  state.momentum.Player1 = p1Momentum;
+  state.momentum.Player2 = p2Momentum;
   state.skipPenalties.Player1 = p1SkipPenalty;
   state.skipPenalties.Player2 = p2SkipPenalty;
 
@@ -2178,14 +2544,28 @@ function updateGameDisplay(data) {
     state.myFilledRoles = p2;
     applyTeamTheme(p2);
   }
+  updatePhaseDisplay();
+  updateMomentumDisplay();
+  updateEventDisplay(activeEvent);
+  updateMindGameDisplay(data.psychSignals || {});
+  state.interactionUsed.steal = !!interactionsUsed.steal;
+  state.interactionUsed.block = !!interactionsUsed.block;
+  state.interactionUsed.debuff = !!interactionsUsed.debuff;
+  if (activeEvent?.turn && activeEvent.turn !== state.lastEventTurnSeen) {
+    state.lastEventTurnSeen = activeEvent.turn;
+    showMessage(`🌪️ Event Triggered: ${activeEvent.type.toUpperCase()}`, "success");
+  }
 
   const p1HasPicks = Object.keys(p1).length > 0;
   const p2HasPicks = Object.keys(p2).length > 0;
 
-  const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus) : 0;
-  const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus) : 0;
-  const s1 = s1Base - p1SkipPenalty;
-  const s2 = s2Base - p2SkipPenalty;
+  const p1MomentumBonus = p1Momentum >= MOMENTUM_MAX ? MOMENTUM_BOOST_BONUS : 0;
+  const p2MomentumBonus = p2Momentum >= MOMENTUM_MAX ? MOMENTUM_BOOST_BONUS : 0;
+  const eventType = activeEvent?.type || "";
+  const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus, p1MomentumBonus, eventType) : 0;
+  const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus, p2MomentumBonus, eventType) : 0;
+  const s1 = s1Base - p1SkipPenalty - p1TeamDebuff;
+  const s2 = s2Base - p2SkipPenalty - p2TeamDebuff;
 
   state.ultimateUsed = Boolean(data.ultimateBonus?.[state.player]);
   ultimateBtn.disabled = state.ultimateUsed;
@@ -2228,7 +2608,12 @@ function updateGameDisplay(data) {
     const traitClass = isTraitor ? " traitor" : "";
     const glowClass = getGlowClass(c.score);
     const badges = [];
-    if (c.ability) badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    if (c.hiddenAbility) {
+      badges.push(`<span class="ability-badge">❓ Hidden Ability</span>`);
+      badges.push(`<span class="ability-badge">🎭 Decoy x${c.decoyMultiplier || "?"}</span>`);
+    } else if (c.ability) {
+      badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    }
     if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
     const abilityBadge = badges.join('');
     h1 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
@@ -2252,7 +2637,12 @@ function updateGameDisplay(data) {
     const traitClass = isTraitor ? " traitor" : "";
     const glowClass = getGlowClass(c.score);
     const badges = [];
-    if (c.ability) badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    if (c.hiddenAbility) {
+      badges.push(`<span class="ability-badge">❓ Hidden Ability</span>`);
+      badges.push(`<span class="ability-badge">🎭 Decoy x${c.decoyMultiplier || "?"}</span>`);
+    } else if (c.ability) {
+      badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    }
     if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
     const abilityBadge = badges.join('');
     h2 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
@@ -2268,6 +2658,9 @@ function updateGameDisplay(data) {
   const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
   spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
   skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled || skipLimitReached;
+  stealBtn.disabled = !state.myTurn || state.spinning || state.interactionUsed.steal;
+  blockBtn.disabled = !state.myTurn || state.spinning || state.interactionUsed.block;
+  debuffBtn.disabled = !state.myTurn || state.spinning || state.interactionUsed.debuff;
   document.getElementById("status").innerText = allRolesFilled
     ? "✅ All 7 roles filled"
     : (state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn");
@@ -2306,6 +2699,7 @@ function joinGame() {
   state.hasSpunThisTurn = false;
   state.skippedThisTurn = false;
   state.skipPenalties = { Player1: 0, Player2: 0 };
+  state.momentum = { Player1: 0, Player2: 0 };
 
   const roomRef = db.ref(`rooms/${room}`);
 
@@ -2349,6 +2743,32 @@ function joinGame() {
         }
       });
 
+      // Ensure momentum starts at 0 for both players
+      db.ref(`rooms/${room}/momentum`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/momentum`).set({ Player1: 0, Player2: 0 });
+        }
+      });
+
+      db.ref(`rooms/${room}/teamDebuff`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/teamDebuff`).set({ Player1: 0, Player2: 0 });
+        }
+      });
+
+      db.ref(`rooms/${room}/interactionsUsed`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/interactionsUsed`).set({
+            Player1: { steal: false, block: false, debuff: false },
+            Player2: { steal: false, block: false, debuff: false }
+          });
+        }
+      });
+
+      db.ref(`rooms/${room}/turnCount`).once("value").then(snap => {
+        if (snap.val() == null) db.ref(`rooms/${room}/turnCount`).set(0);
+      });
+
       await preloadImages();
 
       setTimeout(() => {
@@ -2361,6 +2781,8 @@ function joinGame() {
 
         draw();
         updateOddsDisplay();
+        updatePhaseDisplay();
+        updateMomentumDisplay();
         setMobileTab(window.innerWidth <= 900 ? "wheel" : state.mobileTab);
         spinBtn.disabled = true;
         skipBtn.disabled = true;
