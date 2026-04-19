@@ -115,10 +115,16 @@ body.theme-balanced {
 h1 {
   color: #FFD700;
   text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
-  font-size: 2.5em;
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 1;
+  font-size: 2.1em;
+  margin: 0 auto 12px;
+  position: sticky;
+  top: 8px;
+  z-index: 120;
+  background: rgba(10, 10, 20, 0.72);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 10px;
+  padding: 8px 14px;
+  width: fit-content;
 }
 
 #joinSection {
@@ -200,6 +206,17 @@ h1 {
   z-index: 1;
 }
 
+body.in-game {
+  overflow: hidden;
+}
+
+body.in-game #gameSection {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 150px);
+  min-height: 0;
+}
+
 canvas {
   border: 3px solid #FFD700;
   background: #0a0a12;
@@ -242,6 +259,7 @@ button:disabled {
   display: flex;
   justify-content: center;
   gap: 20px;
+  min-height: 0;
 }
 
 .panel {
@@ -250,7 +268,7 @@ button:disabled {
   padding: 20px;
   border-radius: 10px;
   width: 280px;
-  max-height: 500px;
+  max-height: 42vh;
   overflow-y: auto;
   transition: all 0.3s;
 }
@@ -532,7 +550,7 @@ button:disabled {
 }
 
 .chat-box {
-  margin: 20px auto 0;
+  margin: 12px auto 0;
   width: 100%;
   max-width: 900px;
   border: 2px solid #00BFFF;
@@ -540,6 +558,15 @@ button:disabled {
   background: rgba(8, 15, 30, 0.72);
   padding: 12px;
   text-align: left;
+}
+
+.chat-box summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.chat-body {
+  margin-top: 8px;
 }
 
 .chat-header {
@@ -585,6 +612,19 @@ button:disabled {
   margin-top: 10px;
   display: flex;
   gap: 8px;
+}
+
+.emoji-row {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.emoji-row button {
+  padding: 6px 8px;
+  min-width: 34px;
+  line-height: 1;
 }
 
 #chatInput {
@@ -1003,6 +1043,9 @@ body.rare-cinematic {
   .mobile-tabs button { font-size: 12px; padding: 8px 12px; }
   .mobile-section { display: none !important; }
   .mobile-section.active-mobile { display: block !important; }
+  h1 { font-size: 1.5em; padding: 6px 10px; }
+  body.in-game #gameSection { height: calc(100vh - 125px); }
+  .chat-messages { max-height: 120px; }
 }
 
 @keyframes burst-fly {
@@ -1105,16 +1148,25 @@ body.rare-cinematic {
     </div>
   </div>
 
-  <div class="chat-box mobile-section" id="chatBox" data-section="chat">
-    <div class="chat-header">💬 Room Chat (short messages)</div>
-    <div id="chatMessages" class="chat-messages">
-      <div class="chat-empty">No messages yet. Say hi 👋</div>
+  <details class="chat-box mobile-section" id="chatBox" data-section="chat" open>
+    <summary class="chat-header">💬 Room Chat (short messages)</summary>
+    <div class="chat-body">
+      <div id="chatMessages" class="chat-messages">
+        <div class="chat-empty">No messages yet. Say hi 👋</div>
+      </div>
+      <div class="emoji-row">
+        <button onclick="addEmojiToChat('🔥')">🔥</button>
+        <button onclick="addEmojiToChat('😂')">😂</button>
+        <button onclick="addEmojiToChat('😈')">😈</button>
+        <button onclick="addEmojiToChat('💀')">💀</button>
+        <button onclick="addEmojiToChat('👏')">👏</button>
+      </div>
+      <div class="chat-input-row">
+        <input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" />
+        <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
+      </div>
     </div>
-    <div class="chat-input-row">
-      <input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" />
-      <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
-    </div>
-  </div>
+  </details>
 </div>
 
 <audio id="bgm" loop preload="auto">
@@ -1825,6 +1877,12 @@ function sendChatMessage() {
   }).catch(err => {
     showMessage("❌ Chat failed: " + err.message, "error");
   });
+}
+
+function addEmojiToChat(emoji) {
+  if (!chatInputEl) return;
+  chatInputEl.value = `${chatInputEl.value || ""}${emoji}`;
+  chatInputEl.focus();
 }
 
 if (chatInputEl) {
@@ -2904,6 +2962,7 @@ function joinGame() {
       setTimeout(() => {
         document.getElementById("joinSection").style.display = "none";
         document.getElementById("gameSection").style.display = "block";
+        document.body.classList.add("in-game");
 
         document.getElementById("charCounter").innerText = state.characters.length;
         document.getElementById("p1Score").innerText = "0";
