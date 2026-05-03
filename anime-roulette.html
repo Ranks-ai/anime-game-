@@ -1150,7 +1150,8 @@ body.rare-cinematic {
         <button id="stealBtn" onclick="useSteal()">🕶️ STEAL</button>
         <button id="blockBtn" onclick="useBlock()">🧱 BLOCK ROLE</button>
         <button id="debuffBtn" onclick="useDebuff()">☠️ DEBUFF</button>
-      </div>
++  },
++  blockedRoles: {}
       <canvas id="canvas" width="320" height="320"></canvas>
     </div>
 
@@ -1727,9 +1728,46 @@ async function showLeaderboard() {
     }
 
     const players = Object.values(data).sort((a, b) => b.wins - a.wins);
-    const topPlayers = players.slice(0, 50);
++    } else if (isRoleBlocked(role)) {
++      btn.disabled = true;
++      btn.classList.add("taken");
++      btn.title = "Temporarily blocked this turn";
++function getRoleBlockForPlayer(role, player = state.player) {
+  const roleBlock = state.blockedRoles?.[player]?.[role];
+  if (!roleBlock) return null;
+  if (typeof roleBlock === "boolean") return { remainingOwnTurns: 1 };
+  return roleBlock;
+}
 
-    let html = `<table class="leaderboard-table"><thead><tr><th>RANK</th><th>PLAYER</th><th>TIER</th><th>WINS</th><th>LOSSES</th><th>STREAK</th><th>WIN RATE</th></tr></thead><tbody>`;
+function isRoleBlocked(role, player = state.player) {
+  const block = getRoleBlockForPlayer(role, player);
+  return Boolean(block && (block.remainingOwnTurns ?? 1) > 0);
+}
+
+function decrementRoleBlocksForPlayer(player = state.player) {
+  const current = state.blockedRoles?.[player] || {};
+  const next = {};
+  Object.entries(current).forEach(([role, blockValue]) => {
+    const normalized = typeof blockValue === "boolean" ? { remainingOwnTurns: 1 } : blockValue;
+    const remaining = (normalized.remainingOwnTurns ?? 1) - 1;
+    if (remaining > 0) next[role] = { remainingOwnTurns: remaining };
+  });
+  state.blockedRoles[player] = next;
+  return db.ref(`rooms/${state.room}/blockedRoles/${player}`).set(next);
+}
+
+function selectRole(role, popup, char) {
++  if (isRoleBlocked(role)) {
++    showMessage("❌ That role is temporarily blocked this turn.", "error");
++    return;
++  }
++
++    decrementRoleBlocksForPlayer(state.player).finally(() => {
++      db.ref(`rooms/${state.room}/turn`).set(next);
++    });
++  decrementRoleBlocksForPlayer(state.player).finally(() => {
++    db.ref(`rooms/${state.room}/turn`).set(next);
++  });
 
     topPlayers.forEach((player, index) => {
       const totalGames = (player.wins || 0) + (player.losses || 0);
@@ -1961,6 +1999,7 @@ function showRules() {
         </ul>
       </div>
     </details>
+  state.blockedRoles = data.blockedRoles || {};
 
     <details class="collapsible-block" open>
       <summary>⚔️ PvP Interactions & Mind Games</summary>
