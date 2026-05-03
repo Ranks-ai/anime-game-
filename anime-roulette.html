@@ -1429,9 +1429,12 @@ function toggleMusic() {
 function setGameMode(mode) {
   const allowedModes = new Set(["classic", "draft", "enhanced"]);
   state.gameMode = allowedModes.has(mode) ? mode : "classic";
-  document.getElementById("modeClassic")?.classList.toggle("active", state.gameMode === "classic");
-  document.getElementById("modeDraft")?.classList.toggle("active", state.gameMode === "draft");
-  document.getElementById("modeEnhanced")?.classList.toggle("active", state.gameMode === "enhanced");
+  var modeClassicBtn = document.getElementById("modeClassic");
+  if (modeClassicBtn) modeClassicBtn.classList.toggle("active", state.gameMode === "classic");
+  var modeDraftBtn = document.getElementById("modeDraft");
+  if (modeDraftBtn) modeDraftBtn.classList.toggle("active", state.gameMode === "draft");
+  var modeEnhancedBtn = document.getElementById("modeEnhanced");
+  if (modeEnhancedBtn) modeEnhancedBtn.classList.toggle("active", state.gameMode === "enhanced");
 }
 
 function toggleControlBar() {
@@ -1769,10 +1772,10 @@ function showPopup(char) {
   loadImage(char.img);
 }
 function getRoleBlockForPlayer(role, player = state.player) {
-  if (isRoleBlocked(role)) {
-    showMessage("❌ That role is temporarily blocked this turn.", "error");
-    return;
-  }
+  const roleBlock = ((state.blockedRoles && state.blockedRoles[player]) ? state.blockedRoles[player][role] : undefined);
+  return Boolean(block && ((block.remainingOwnTurns !== undefined && block.remainingOwnTurns !== null) ? block.remainingOwnTurns : 1) > 0);
+  const current = (state.blockedRoles && state.blockedRoles[player]) || {};
+    const remaining = ((normalized.remainingOwnTurns !== undefined && normalized.remainingOwnTurns !== null) ? normalized.remainingOwnTurns : 1) - 1;
 
   db.ref(`rooms/${state.room}/players/${state.player}/slots/${role}`).set(char).then(() => {
     state.characters = state.characters.filter(c => c.name !== char.name);
@@ -1846,19 +1849,19 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
       else if (role === "Traitor") base = -char.score;
     }
 
-    const attributeBonus = (char.strength + char.speed + char.defense + char.stamina) * 0.1;
+    if ((char.ability && char.ability.type) === "ignoreRole") {
     base += Math.floor(attributeBonus);
 
-    if (char.ability?.type === "roleBonus" && role === char.ability.role) {
+    if ((char.ability && char.ability.type) === "roleBonus" && role === char.ability.role) {
       base += char.ability.value;
     }
 
-    if (char.ability?.type === "healingMastery") {
+    if ((char.ability && char.ability.type) === "healingMastery") {
       if (role === "Healer") base += (char.ability.healerValue || 0);
       else if (role === "Support") base += (char.ability.supportValue || 0);
     }
 
-    if (char.passiveAbility?.type === "flatBonus") {
+    if ((char.passiveAbility && char.passiveAbility.type) === "flatBonus") {
       base += char.passiveAbility.value;
     }
 
@@ -1871,14 +1874,14 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
   });
 
   Object.values(enemySlots).forEach(char => {
-    if (char.ability?.type === "enemyDebuff") {
+    if ((char.ability && char.ability.type) === "enemyDebuff") {
       score -= char.ability.value;
     }
   });
 
   const teamNames = Object.values(slots).map(c => c.name);
   Object.values(slots).forEach(char => {
-    if (char.ability?.type === "teamPair" && teamNames.includes(char.ability.partner)) {
+    if ((char.ability && char.ability.type) === "teamPair" && teamNames.includes(char.ability.partner)) {
       score += char.ability.value;
     }
   });
@@ -1978,12 +1981,12 @@ function updateGameDisplay(data) {
   state.skipPenalties.Player1 = p1SkipPenalty;
   state.skipPenalties.Player2 = p2SkipPenalty;
 
-  const effectiveP1UltimateBonus = state.player === "Player1" ? Math.max(p1UltimateBonus, state.cachedUltimateBonus || 0) : p1UltimateBonus;
-  const effectiveP2UltimateBonus = state.player === "Player2" ? Math.max(p2UltimateBonus, state.cachedUltimateBonus || 0) : p2UltimateBonus;
-
-  if (state.player === "Player1") {
-    state.myFilledRoles = p1;
-    applyTeamTheme(p1);
+  const p1 = (data.players.Player1 && data.players.Player1.slots) || {};
+  const p2 = (data.players.Player2 && data.players.Player2.slots) || {};
+  const p1UltimateBonus = (data.ultimateBonus && data.ultimateBonus.Player1) || 0;
+  const p2UltimateBonus = (data.ultimateBonus && data.ultimateBonus.Player2) || 0;
+  const p1SkipPenalty = (data.skipPenalties && data.skipPenalties.Player1) || 0;
+  const p2SkipPenalty = (data.skipPenalties && data.skipPenalties.Player2) || 0;
   }
   else if (state.player === "Player2") {
     state.myFilledRoles = p2;
@@ -1998,14 +2001,14 @@ function updateGameDisplay(data) {
   const s1 = s1Base - p1SkipPenalty;
   const s2 = s2Base - p2SkipPenalty;
 
-  state.ultimateUsed = Boolean(data.ultimateBonus?.[state.player]);
+  state.ultimateUsed = Boolean((data.ultimateBonus && data.ultimateBonus[state.player]));
   ultimateBtn.disabled = state.ultimateUsed;
 
   if (Object.keys(p1).length === 7 && Object.keys(p2).length === 7) {
     if (!state.gameEnded) {
       state.gameEnded = true;
-      const p1Name = data.players.Player1?.name || "Player 1";
-      const p2Name = data.players.Player2?.name || "Player 2";
+      const p1Name = (data.players.Player1 && data.players.Player1.name) || "Player 1";
+      const p2Name = (data.players.Player2 && data.players.Player2.name) || "Player 2";
       
       if (s1 > s2) showWinnerModal(p1Name, Math.floor(s1), p2Name, Math.floor(s2), p1);
       else if (s2 > s1) showWinnerModal(p2Name, Math.floor(s2), p1Name, Math.floor(s1), p2);
@@ -2026,7 +2029,7 @@ function updateGameDisplay(data) {
     let roleScore = c.score;
     let isTraitor = false;
     
-    if (c.ability?.type === "ignoreRole") {
+    if ((c.ability && c.ability.type) === "ignoreRole") {
       roleScore = c.score;
     } else {
       if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
@@ -2050,7 +2053,7 @@ function updateGameDisplay(data) {
     let roleScore = c.score;
     let isTraitor = false;
     
-    if (c.ability?.type === "ignoreRole") {
+    if ((c.ability && c.ability.type) === "ignoreRole") {
       roleScore = c.score;
     } else {
       if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
@@ -2089,8 +2092,8 @@ function updateGameDisplay(data) {
   else if (state.myTurn && state.player === "Player2") document.getElementById("p2Panel").classList.add("active");
 
   if (data.players) {
-    document.getElementById("p1Name").innerText = data.players.Player1?.name || "Player 1";
-    document.getElementById("p2Name").innerText = data.players.Player2?.name || "Player 2";
+    document.getElementById("p1Name").innerText = (data.players.Player1 && data.players.Player1.name) || "Player 1";
+    document.getElementById("p2Name").innerText = (data.players.Player2 && data.players.Player2.name) || "Player 2";
   }
 }
 
