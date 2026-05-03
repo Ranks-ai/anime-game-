@@ -94,6 +94,7 @@ h1 {
   color: #FFD700;
   text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
   font-size: 2.5em;
+  margin-top: 90px;
   margin-bottom: 20px;
   position: relative;
   z-index: 1;
@@ -138,6 +139,24 @@ h1 {
 #joinSection button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.mode-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 2px;
+}
+.mode-btn {
+  background: #222 !important;
+  color: #fff !important;
+  border: 1px solid #00BFFF !important;
+  padding: 7px 10px !important;
+  font-size: 12px !important;
+}
+.mode-btn.active {
+  background: #00BFFF !important;
+  color: #001022 !important;
+  border-color: #7fdfff !important;
 }
 
 .error-msg {
@@ -906,7 +925,7 @@ button:disabled {
 }
 </style>
 
-<div class="volume-control">
+<div class="volume-control collapsed">
   <button onclick="toggleControlBar()" id="collapseBtn" class="collapse-btn">▾</button>
   <button onclick="toggleMusic()" id="musicBtn">🔊 ON</button>
   <button onclick="showRules()" class="rules-btn">📖 RULES</button>
@@ -919,7 +938,11 @@ button:disabled {
 <div id="joinSection">
   <input id="nameInput" placeholder="👤 Enter your name" type="text">
   <input id="roomInput" placeholder="🏠 Enter room code" type="text">
-  <button onclick="joinGame()">🎮 START GAME</button>
+  <div class="mode-switch">
+    <button type="button" class="mode-btn active" onclick="setGameMode('classic')" id="modeClassic">Classic</button>
+    <button type="button" class="mode-btn" onclick="setGameMode('draft')" id="modeDraft">Draft</button>
+  </div>
+  <button id="startGameBtn" onclick="joinGame()">🎮 START GAME</button>
   <div id="messages"></div>
 </div>
 
@@ -1128,7 +1151,8 @@ ultimateUsed: false,
     Player1: 0,
     Player2: 0
   },
-  blockedRoles: {}
+  blockedRoles: {},
+  gameMode: "classic"
 };
 
 const canvas = document.getElementById("canvas");
@@ -1399,6 +1423,12 @@ function toggleMusic() {
     bgm.pause();
     btn.innerText = "🔇 OFF";
   }
+}
+
+function setGameMode(mode) {
+  state.gameMode = mode === "draft" ? "draft" : "classic";
+  document.getElementById("modeClassic")?.classList.toggle("active", state.gameMode === "classic");
+  document.getElementById("modeDraft")?.classList.toggle("active", state.gameMode === "draft");
 }
 
 function toggleControlBar() {
@@ -2081,7 +2111,7 @@ function joinGame() {
   state.gameEnded = false;
   state.ultimateUsed = false;
   state.cachedUltimateBonus = 0;
-  state.hasSpunThisTurn = false;
+  const joinBtn = document.getElementById("startGameBtn");
   state.skippedThisTurn = false;
   state.skipPenalties = { Player1: 0, Player2: 0 };
 
@@ -2105,6 +2135,7 @@ function joinGame() {
 
     db.ref(`rooms/${room}/players/${playerSlot}`).set({
       name: name,
+      mode: state.gameMode,
       slots: {}
     }).then(async () => {
 
