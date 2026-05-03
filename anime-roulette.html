@@ -1083,6 +1083,7 @@ body.rare-cinematic {
 <div class="volume-control">
   <button onclick="toggleToolbar()" id="toolbarToggle">☰</button>
   <button onclick="toggleMusic()" id="musicBtn" class="toolbar-item">🔊 ON</button>
+  <button onclick="nextBgmTrack()" id="bgmTrackBtn" class="toolbar-item">🎵 TRACK 1</button>
   <button onclick="showRules()" class="rules-btn toolbar-item">📖 RULES</button>
   <button onclick="showLeaderboard()" class="leaderboard-btn toolbar-item">🏆 LEADERBOARD</button>
   <button onclick="showEncyclopedia()" class="leaderboard-btn toolbar-item">📚 ENCYCLOPEDIA</button>
@@ -1174,9 +1175,7 @@ body.rare-cinematic {
   </div>
 </div>
 
-<audio id="bgm" loop preload="auto">
-  <source src="bgm.mp3" type="audio/mpeg">
-</audio>
+<audio id="bgm" loop preload="auto"></audio>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -1194,6 +1193,11 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const BGM_TRACKS = [
+  { name: "Track 1", file: "bgm.mp3" },
+  { name: "Track 2", file: "bgm2.mp3" },
+  { name: "Track 3", file: "bgm3.mp3" }
+];
 
 let audioContext = null;
 
@@ -1364,6 +1368,7 @@ ultimateUsed: false,
     block: false,
     debuff: false
   },
+  bgmTrackIndex: 0,
   gameMode: "enhanced",
   lastEventTurnSeen: 0,
   pityCounter: 0,
@@ -1381,6 +1386,8 @@ const debuffBtn = document.getElementById("debuffBtn");
 const bgm = document.getElementById("bgm");
 const chatMessagesEl = document.getElementById("chatMessages");
 const chatInputEl = document.getElementById("chatInput");
+
+setBgmTrack(0, false);
 
 function hasAllRolesSelected() {
   return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
@@ -1995,11 +2002,36 @@ function toggleToolbar() {
   bar.classList.toggle("collapsed");
 }
 
+function updateBgmTrackButton() {
+  const btn = document.getElementById("bgmTrackBtn");
+  if (!btn) return;
+  const track = BGM_TRACKS[state.bgmTrackIndex] || BGM_TRACKS[0];
+  btn.innerText = `🎵 ${track.name}`;
+}
+
+function setBgmTrack(index, shouldAutoPlay = false) {
+  if (!BGM_TRACKS.length) return;
+  state.bgmTrackIndex = ((index % BGM_TRACKS.length) + BGM_TRACKS.length) % BGM_TRACKS.length;
+  const track = BGM_TRACKS[state.bgmTrackIndex];
+  bgm.src = track.file;
+  bgm.load();
+  updateBgmTrackButton();
+  if (state.musicEnabled && shouldAutoPlay) {
+    bgm.volume = 0.2;
+    bgm.play().catch(() => {});
+  }
+}
+
+function nextBgmTrack() {
+  setBgmTrack(state.bgmTrackIndex + 1, true);
+}
+
 function toggleMusic() {
   state.musicEnabled = !state.musicEnabled;
   const btn = document.getElementById("musicBtn");
   if (state.musicEnabled) {
     bgm.volume = 0.2;
+    if (!bgm.src) setBgmTrack(state.bgmTrackIndex, false);
     bgm.play().catch(e => {});
     btn.innerText = "🔊 ON";
   } else {
