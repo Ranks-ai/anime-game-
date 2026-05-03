@@ -1,6 +1,4 @@
-<!DOCTYPE html>
 <html>
-<head>
 <meta charset="UTF-8">
 <title>Anime Roulette Ultimate</title>
 <style>
@@ -30,50 +28,26 @@ body {
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
-  background:
-    repeating-linear-gradient(
-      110deg,
-      rgba(255,255,255,0.04) 0px,
-      rgba(255,255,255,0.04) 2px,
-      transparent 2px,
-      transparent 18px
-    ),
-    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.10), transparent 40%),
-    radial-gradient(circle at 80% 75%, rgba(255,215,0,0.10), transparent 45%);
-  animation: animeSpeedLines 14s linear infinite;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    var(--energy-a),
+    var(--energy-b),
+    var(--energy-c),
+    var(--energy-a)
+  );
+  animation: spinEnergy 20s linear infinite;
   z-index: -2;
   pointer-events: none;
 }
 
-body::after {
-  content: "⚡  ✦  ⚔️  ☄️";
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 14px;
-  font-size: 22px;
-  letter-spacing: 26px;
-  text-align: center;
-  opacity: 0.2;
-  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.35));
-  animation: animeGlyphFloat 6s ease-in-out infinite;
-  pointer-events: none;
-  z-index: -1;
-}
-
-body.in-game::after {
-  display: none;
-}
-
-@keyframes animeSpeedLines {
-  0% { transform: translate3d(0,0,0); }
-  100% { transform: translate3d(-80px, 0, 0); }
-}
-
-@keyframes animeGlyphFloat {
-  0%,100% { transform: translateY(0px); opacity: 0.16; }
-  50% { transform: translateY(-6px); opacity: 0.28; }
+@keyframes spinEnergy {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.04); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 
 body.theme-strength {
@@ -145,16 +119,6 @@ h1 {
   width: 250px;
 }
 
-#joinSection select {
-  padding: 12px 15px;
-  border: 2px solid #FFD700;
-  background: #1a1a2b;
-  color: white;
-  border-radius: 5px;
-  font-size: 14px;
-  width: 250px;
-}
-
 #joinSection button {
   padding: 12px 25px;
   background: linear-gradient(135deg, #FFD700, #FFA500);
@@ -204,16 +168,6 @@ h1 {
   z-index: 1;
 }
 
-body.in-game {
-  overflow-x: hidden;
-}
-
-body.in-game #gameSection {
-  display: block;
-  height: auto;
-  overflow: visible;
-}
-
 canvas {
   border: 3px solid #FFD700;
   background: #0a0a12;
@@ -247,17 +201,15 @@ button:disabled {
 
 #status {
   color: #FFD700;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
-  margin: 0;
+  margin: 20px 0;
 }
 
 .game-wrapper {
   display: flex;
   justify-content: center;
   gap: 20px;
-  min-height: 0;
-  align-items: flex-start;
 }
 
 .panel {
@@ -266,7 +218,7 @@ button:disabled {
   padding: 20px;
   border-radius: 10px;
   width: 280px;
-  max-height: 42vh;
+  max-height: 500px;
   overflow-y: auto;
   transition: all 0.3s;
 }
@@ -478,15 +430,19 @@ button:disabled {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 140;
+  z-index: 100;
   background: rgba(0, 0, 0, 0.7);
   padding: 15px;
   border-radius: 10px;
   border: 2px solid #FFD700;
   display: flex;
   gap: 10px;
-  align-items: center;
-  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.volume-control.collapsed {
+  padding: 8px;
+}
+.volume-control.collapsed button:not(.collapse-btn) {
+  display: none;
 }
 
 .volume-control button {
@@ -496,14 +452,10 @@ button:disabled {
   font-size: 12px;
   margin: 0;
 }
-
-.volume-control.collapsed {
-  transform: translateX(calc(100% - 42px));
-  opacity: 0.9;
-}
-
-.volume-control.collapsed .toolbar-item {
-  display: none;
+.collapse-btn {
+  background: #333 !important;
+  color: #FFD700 !important;
+  font-weight: bold;
 }
 
 .quit-btn {
@@ -522,33 +474,16 @@ button:disabled {
 }
 
 .top-bar {
-  margin-bottom: 14px;
-  background: rgba(7, 14, 28, 0.55);
-  border: 1px solid rgba(0, 191, 255, 0.25);
-  border-radius: 10px;
-  padding: 8px 10px;
-}
-
-.top-bar details {
-  margin-top: 6px;
-}
-
-.top-bar summary {
-  cursor: pointer;
-  color: #88CCFF;
-  font-size: 12px;
-  user-select: none;
-}
-
-.hud-metrics {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 10px;
 }
 
 .chat-box {
-  margin: 12px auto 0;
+  margin: 20px auto 0;
   width: 100%;
   max-width: 900px;
   border: 2px solid #00BFFF;
@@ -556,22 +491,6 @@ button:disabled {
   background: rgba(8, 15, 30, 0.72);
   padding: 12px;
   text-align: left;
-}
-
-.wheel-column {
-  min-width: 360px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.chat-box summary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.chat-body {
-  margin-top: 8px;
 }
 
 .chat-header {
@@ -619,19 +538,6 @@ button:disabled {
   gap: 8px;
 }
 
-.emoji-row {
-  margin-top: 8px;
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.emoji-row button {
-  padding: 6px 8px;
-  min-width: 34px;
-  line-height: 1;
-}
-
 #chatInput {
   flex: 1;
   padding: 10px 12px;
@@ -649,14 +555,12 @@ button:disabled {
 }
 
 .character-counter {
-  background: rgba(0, 150, 200, 0.12);
-  padding: 5px 8px;
-  border-radius: 7px;
-  border: 1px solid rgba(0, 191, 255, 0.35);
+  background: rgba(0, 150, 200, 0.3);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 2px solid #00BFFF;
   color: #00BFFF;
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.2px;
+  font-weight: bold;
 }
 
 .winner-modal {
@@ -677,9 +581,9 @@ button:disabled {
   background: linear-gradient(135deg, #FFD700, #FFA500);
   border: 5px solid #FF0000;
   border-radius: 20px;
-  padding: 36px 28px;
+  padding: 60px 40px;
   text-align: center;
-  max-width: 420px;
+  max-width: 500px;
   box-shadow: 0 0 100px rgba(255, 215, 0, 0.8);
   animation: winnerAppear 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
@@ -691,15 +595,15 @@ button:disabled {
 
 .winner-content h1 {
   color: #FF0000;
-  font-size: 38px;
-  margin-bottom: 14px;
+  font-size: 48px;
+  margin-bottom: 20px;
 }
 
 .winner-name {
   color: #0a0a14;
-  font-size: 28px;
+  font-size: 36px;
   font-weight: bold;
-  margin: 14px 0;
+  margin: 20px 0;
 }
 
 .winner-score {
@@ -843,31 +747,6 @@ button:disabled {
   color: #FFD700;
 }
 
-.collapsible-block {
-  margin-bottom: 12px;
-  border: 1px solid rgba(255, 215, 0, 0.35);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.collapsible-block summary {
-  cursor: pointer;
-  list-style: none;
-  padding: 12px 14px;
-  color: #FFD700;
-  font-weight: bold;
-  background: rgba(255, 215, 0, 0.08);
-}
-
-.collapsible-block summary::-webkit-details-marker {
-  display: none;
-}
-
-.collapsible-content {
-  padding: 12px 14px;
-}
-
 .modal-close {
   position: absolute;
   top: 10px;
@@ -1002,66 +881,8 @@ button:disabled {
   animation: burst-fly 950ms ease-out forwards;
 }
 
-body.rare-cinematic {
-  animation: rare-flash 450ms ease;
-}
-
-@keyframes rare-flash {
-  0% { filter: brightness(1); }
-  35% { filter: brightness(1.6) saturate(1.4); }
-  100% { filter: brightness(1); }
-}
-
-.confetti-layer {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10002;
-}
-
-.confetti-piece {
-  position: absolute;
-  width: 10px;
-  height: 14px;
-  opacity: 0.95;
-  animation: confetti-fall 1.8s linear forwards;
-}
-
-@keyframes confetti-fall {
-  0% { transform: translateY(-20px) rotate(0deg); }
-  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
-}
-
-.mobile-tabs { display: none; }
-
-@media (max-width: 900px) {
-  .game-wrapper { flex-direction: column; align-items: stretch; }
-  .panel { width: 100%; max-height: none; }
-  canvas { width: 280px; height: 280px; margin: 10px auto; }
-  .mobile-tabs {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 10px 0;
-  }
-  .mobile-tabs button { font-size: 12px; padding: 8px 12px; }
-  .mobile-section { display: none !important; }
-  .mobile-section.active-mobile { display: block !important; }
-  h1 { font-size: 1.7em; }
-  .chat-messages { max-height: 120px; }
-  .wheel-column { min-width: 0; }
-}
-
 @keyframes burst-fly {
   0% {
-+  {name:"Oden",score:11,img:"images/oden.png",strength:10,speed:8,defense:9,stamina:10,ability:{name:"Togen Totsuka",description:"+5 if Captain",type:"roleBonus",role:"Captain",value:5}},
-+  {name:"Minato",score:11,img:"images/minato.png",strength:9,speed:10,defense:8,stamina:9,ability:{name:"Flying Raijin",description:"+5 if Duelist",type:"roleBonus",role:"Duelist",value:5}},
-+  {name:"Aizen",score:11,img:"images/aizen.png",strength:9,speed:9,defense:9,stamina:10,ability:{name:"Kyoka Suigetsu",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
-+  {name:"Kenpachi",score:11,img:"images/kenpachi.png",strength:10,speed:8,defense:9,stamina:10,ability:{name:"Nozarashi",description:"+6 if Duelist",type:"roleBonus",role:"Duelist",value:6}},
-+  {name:"Yhwach",score:12,img:"images/yhwach.png",strength:10,speed:9,defense:10,stamina:10,ability:{name:"The Almighty",description:"Late game: +9 when 5+ roles filled",type:"lateGame",minRoles:5,value:9}},
-+  {name:"Law (Awakened)",score:11,img:"images/law_awakened.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Kroom",description:"40% chance to steal enemy lowest role score",type:"steal",chance:0.4,factor:1}},
-+  {name:"Kid (Awakened)",score:11,img:"images/kid_awakened.png",strength:10,speed:8,defense:9,stamina:9,ability:{name:"Damned Punk",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
     opacity: 1;
     transform: translate(-50%, -50%) translate(0, 0) scale(0.45);
   }
@@ -1084,17 +905,13 @@ body.rare-cinematic {
   border-radius: 5px;
 }
 </style>
-</head>
-<body>
 
 <div class="volume-control">
-  <button onclick="toggleToolbar()" id="toolbarToggle">☰</button>
-  <button onclick="toggleMusic()" id="musicBtn" class="toolbar-item">🔊 ON</button>
-  <button onclick="nextBgmTrack()" id="bgmTrackBtn" class="toolbar-item">🎵 TRACK 1</button>
-  <button onclick="showRules()" class="rules-btn toolbar-item">📖 RULES</button>
-  <button onclick="showLeaderboard()" class="leaderboard-btn toolbar-item">🏆 LEADERBOARD</button>
-  <button onclick="showEncyclopedia()" class="leaderboard-btn toolbar-item">📚 ENCYCLOPEDIA</button>
-  <button onclick="quitGame()" class="quit-btn toolbar-item">❌ QUIT</button>
+  <button onclick="toggleControlBar()" id="collapseBtn" class="collapse-btn">▾</button>
+  <button onclick="toggleMusic()" id="musicBtn">🔊 ON</button>
+  <button onclick="showRules()" class="rules-btn">📖 RULES</button>
+  <button onclick="showLeaderboard()" class="leaderboard-btn">🏆 LEADERBOARD</button>
+  <button onclick="quitGame()" class="quit-btn">❌ QUIT</button>
 </div>
 
 <h1>🎯 Anime Roulette Ultimate</h1>
@@ -1102,10 +919,6 @@ body.rare-cinematic {
 <div id="joinSection">
   <input id="nameInput" placeholder="👤 Enter your name" type="text">
   <input id="roomInput" placeholder="🏠 Enter room code" type="text">
-  <select id="modeSelect">
-    <option value="enhanced">⚡ Enhanced Mode (events on)</option>
-    <option value="classic">🎮 Classic Mode (no random events)</option>
-  </select>
   <button onclick="joinGame()">🎮 START GAME</button>
   <div id="messages"></div>
 </div>
@@ -1113,77 +926,46 @@ body.rare-cinematic {
 <div id="gameSection">
   <div class="top-bar">
     <div id="status">Waiting...</div>
-    <details>
-      <summary>HUD details</summary>
-      <div class="hud-metrics">
-        <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
-        <div class="character-counter" id="oddsDisplay">🎲 Odds: ...</div>
-        <div class="character-counter" id="phaseDisplay">🧠 Early Game → build team</div>
-        <div class="character-counter" id="momentumDisplay">🔥 Momentum: 0/3</div>
-        <div class="character-counter" id="eventDisplay">🌪️ Event: None</div>
-        <div class="character-counter" id="mindGameDisplay">💬 Mind Game: Neutral</div>
-      </div>
-    </details>
-  </div>
-
-  <div class="mobile-tabs" id="mobileTabs">
-    <button onclick="setMobileTab('p1')">Player 1</button>
-    <button onclick="setMobileTab('wheel')">Wheel</button>
-    <button onclick="setMobileTab('p2')">Player 2</button>
-    <button onclick="setMobileTab('chat')">Chat</button>
+    <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
   </div>
 
   <div class="game-wrapper">
-    <div class="panel mobile-section" id="p1Panel" data-section="p1">
+    <div class="panel" id="p1Panel">
       <h3 id="p1Name">Player 1</h3>
       <div id="p1Chars"></div>
       <div class="score">Score: <span id="p1Score">0</span></div>
     </div>
 
-    <div class="mobile-section wheel-column" data-section="wheel">
+    <div style="display: flex; flex-direction: column; align-items: center;">
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
         <button id="spinBtn" onclick="spin()">🎡 SPIN</button>
         <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
         <button id="ultimateBtn" onclick="activateUltimate()">🔥 ULTIMATE</button>
       </div>
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center;">
-        <button id="stealBtn" onclick="useSteal()">🕶️ STEAL</button>
-        <button id="blockBtn" onclick="useBlock()">🧱 BLOCK ROLE</button>
-        <button id="debuffBtn" onclick="useDebuff()">☠️ DEBUFF</button>
-+  },
-+  blockedRoles: {}
       <canvas id="canvas" width="320" height="320"></canvas>
-    </div>
 
-    <div class="panel mobile-section" id="p2Panel" data-section="p2">
+    <div class="panel" id="p2Panel">
       <h3 id="p2Name">Player 2</h3>
       <div id="p2Chars"></div>
       <div class="score">Score: <span id="p2Score">0</span></div>
     </div>
   </div>
 
-  <div class="chat-box mobile-section" id="chatBox" data-section="chat">
+  <div class="chat-box" id="chatBox">
     <div class="chat-header">💬 Room Chat (short messages)</div>
-    <div class="chat-body">
     <div id="chatMessages" class="chat-messages">
       <div class="chat-empty">No messages yet. Say hi 👋</div>
-    </div>
-    <div class="emoji-row">
-      <button onclick="addEmojiToChat('🔥')">🔥</button>
-      <button onclick="addEmojiToChat('😂')">😂</button>
-      <button onclick="addEmojiToChat('😈')">😈</button>
-      <button onclick="addEmojiToChat('💀')">💀</button>
-      <button onclick="addEmojiToChat('👏')">👏</button>
     </div>
     <div class="chat-input-row">
       <input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" />
       <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
     </div>
-    </div>
   </div>
 </div>
 
-<audio id="bgm" loop preload="auto"></audio>
+<audio id="bgm" loop preload="auto">
+  <source src="bgm.mp3" type="audio/mpeg">
+</audio>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -1201,11 +983,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const BGM_TRACKS = [
-  { name: "Track 1", file: "bgm.mp3" },
-  { name: "Track 2", file: "bgm2.mp3" },
-  { name: "Track 3", file: "bgm3.mp3" }
-];
 
 let audioContext = null;
 
@@ -1248,46 +1025,46 @@ function playSoundEffect(type) {
 }
 
 const BASE_CHARACTERS = [
-  {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}],ability:{name:"Saiyan Surge",description:"If score ≥ 9, +20% total team",type:"teamMultiplier",threshold:9,multiplier:0.2}},
+  {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}]},
   {name:"Vegeta",score:10,img:"images/vegeta.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Prince's Pride",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
+  {name:"Gohan Beast",score:12,img:"images/gohan_beast.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"Beast Awakening",description:"+5 if Duelist, +3 if Captain",type:"roleBonus",role:"Duelist",value:5}},
+  {name:"Broly",score:12,img:"images/broly.png",strength:10,speed:8,defense:10,stamina:10,ability:{name:"Berserker Rage",description:"Late game: +8 when 5+ roles filled",type:"lateGame",minRoles:5,value:8}},
+  {name:"Frieza Black",score:12,img:"images/frieza_black.png",strength:10,speed:9,defense:9,stamina:9,ability:{name:"Emperor's Cruelty",description:"Enemy team -6 total",type:"enemyDebuff",value:6}},
+  {name:"Beerus",score:12,img:"images/beerus.png",strength:10,speed:10,defense:9,stamina:9,ability:{name:"Hakai",description:"+6 if Captain",type:"roleBonus",role:"Captain",value:6}},
+  {name:"Whis",score:11,img:"images/whis.png",strength:9,speed:10,defense:9,stamina:10,ability:{name:"Angel Guidance",description:"+6 if Support, +4 if Healer",type:"healingMastery",healerValue:4,supportValue:6}},
+  {name:"Oden",score:11,img:"images/oden.png",strength:10,speed:8,defense:9,stamina:10,ability:{name:"Togen Totsuka",description:"+5 if Captain",type:"roleBonus",role:"Captain",value:5}},
+  {name:"Minato",score:11,img:"images/minato.png",strength:9,speed:10,defense:8,stamina:9,ability:{name:"Flying Raijin",description:"+5 if Duelist",type:"roleBonus",role:"Duelist",value:5}},
+  {name:"Aizen",score:11,img:"images/aizen.png",strength:9,speed:9,defense:9,stamina:10,ability:{name:"Kyoka Suigetsu",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
+  {name:"Kenpachi",score:11,img:"images/kenpachi.png",strength:10,speed:8,defense:9,stamina:10,ability:{name:"Nozarashi",description:"+6 if Duelist",type:"roleBonus",role:"Duelist",value:6}},
+  {name:"Yhwach",score:12,img:"images/yhwach.png",strength:10,speed:9,defense:10,stamina:10,ability:{name:"The Almighty",description:"Late game: +9 when 5+ roles filled",type:"lateGame",minRoles:5,value:9}},
+  {name:"Law (Awakened)",score:11,img:"images/law_awakened.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Kroom",description:"40% chance to steal enemy lowest role score",type:"steal",chance:0.4,factor:1}},
+  {name:"Kid (Awakened)",score:11,img:"images/kid_awakened.png",strength:10,speed:8,defense:9,stamina:9,ability:{name:"Damned Punk",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
   {name:"Madara",score:10,img:"images/madara.png",strength:9,speed:8,defense:9,stamina:10,ability:{name:"Infinite Tsukuyomi",description:"Enemy team -5 total",type:"enemyDebuff",value:5}},
   {name:"Gojo",score:10,img:"images/gojo.png",strength:8,speed:9,defense:10,stamina:8,ability:{name:"Limitless",description:"+3 if Captain",type:"roleBonus",role:"Captain",value:3}},
   {name:"Saitama",score:10,img:"images/saitama.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"Serious Punch",description:"+2 if Duelist",type:"roleBonus",role:"Duelist",value:2}},
   {name:"Shanks",score:10,img:"images/shanks.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Conqueror's Haki",description:"+6 if Captain",type:"roleBonus",role:"Captain",value:6}},
-  {name:"Roger Prime",score:10,img:"images/roger_prime.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"King's Ambition",description:"+4 if Captain",type:"roleBonus",role:"Captain",value:4}},
-  {name:"Whitebeard Prime",score:10,img:"images/whitebeard_prime.png",strength:10,speed:7,defense:10,stamina:10,ability:{name:"Gura Overload",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
-  {name:"Big Mom (Young)",score:10,img:"images/big_mom_young.png",strength:10,speed:6,defense:10,stamina:10,ability:{name:"Soul Pocus",description:"+2 if Tank",type:"roleBonus",role:"Tank",value:2}},
-  {name:"Kaido (Young)",score:10,img:"images/kaido_young.png",strength:10,speed:7,defense:10,stamina:10,ability:{name:"Hybrid Rampage",description:"Late game: +5 when 5+ roles filled",type:"lateGame",minRoles:5,value:5}},
-  {name:"Katakuri",score:9,img:"images/katakuri.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Future Sight",description:"+3 if Duelist",type:"roleBonus",role:"Duelist",value:3}},
-  {name:"Smoothie",score:9,img:"images/smoothie.png",strength:8,speed:8,defense:8,stamina:9},
-  {name:"Marco",score:9,img:"images/marco.png",strength:8,speed:9,defense:8,stamina:9,ability:{name:"Blue Flame Heal",description:"+4 if Healer, +2 if Support",type:"healingMastery",healerValue:4,supportValue:2}},
-  {name:"Jozu",score:9,img:"images/jozu.png",strength:9,speed:6,defense:10,stamina:9,ability:{name:"Diamond Body",description:"+3 if Tank",type:"roleBonus",role:"Tank",value:3}},
-  {name:"Rayleigh (Young)",score:9,img:"images/rayleigh_young.png",strength:9,speed:8,defense:8,stamina:9,ability:{name:"Dark King's Guidance",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
-  {name:"Scopper Gaban (Young)",score:9,img:"images/scopper_gaban_young.png",strength:9,speed:8,defense:8,stamina:8},
-  {name:"King",score:9,img:"images/king.png",strength:9,speed:8,defense:9,stamina:9,ability:{name:"Lunarian Guard",description:"+3 if Tank",type:"roleBonus",role:"Tank",value:3}},
-  {name:"Queen",score:9,img:"images/queen.png",strength:9,speed:6,defense:9,stamina:9,ability:{name:"Plague Burst",description:"Enemy team -2 total",type:"enemyDebuff",value:2}},
   {name:"Giorno",score:10,img:"images/giorno.png",strength:8,speed:8,defense:8,stamina:9},
-  {name:"Unohana",score:10,img:"images/unohana.png",strength:9,speed:8,defense:9,stamina:10,ability:{name:"Healing Shield",description:"Negates 1 enemy debuff",type:"shield",value:1}},
+  {name:"Unohana",score:10,img:"images/unohana.png",strength:9,speed:8,defense:9,stamina:10},
   {name:"Yamamoto",score:10,img:"images/yamamoto.png",strength:10,speed:7,defense:9,stamina:10,ability:{name:"Zanka no Tachi",description:"Burn enemy team -3 total",type:"enemyDebuff",value:3}},
   {name:"Naruto",score:9,img:"images/naruto.png",strength:8,speed:8,defense:7,stamina:9,forms:[{name:"Sage Mode",score:10,strength:9,speed:8,defense:8,stamina:9},{name:"Kurama Link",score:11,strength:9,speed:9,defense:8,stamina:10}],ability:{name:"Shadow Clone",description:"+3 bonus if assigned as Duelist",type:"roleBonus",role:"Duelist",value:3}},
   {name:"Sasuke",score:9,img:"images/sasuke.png",strength:8,speed:9,defense:7,stamina:8,forms:[{name:"Mangekyo",score:10,strength:8,speed:9,defense:8,stamina:8},{name:"Rinnegan",score:11,strength:9,speed:9,defense:8,stamina:9}]},
   {name:"Luffy",score:9,img:"images/luffy.png",strength:9,speed:8,defense:7,stamina:10,forms:[{name:"Gear 4",score:10,strength:10,speed:8,defense:8,stamina:10},{name:"Gear 5",score:11,strength:10,speed:9,defense:8,stamina:10}],ability:{name:"Straw Hat Duo",description:"+4 if Zoro is on your team",type:"teamPair",partner:"Zoro",value:4}},
-  {name:"Zoro",score:9,img:"images/zoro.png",strength:9,speed:7,defense:8,stamina:8,ability:{name:"King of Hell",description:"Late game: +6 when 5+ roles filled",type:"lateGame",minRoles:5,value:6}},
+  {name:"Zoro",score:9,img:"images/zoro.png",strength:9,speed:7,defense:8,stamina:8},
   {name:"Ichigo",score:9,img:"images/ichigo.png",strength:9,speed:8,defense:7,stamina:8,forms:[{name:"Bankai",score:10,strength:9,speed:9,defense:7,stamina:8},{name:"Horn of Salvation",score:11,strength:10,speed:9,defense:8,stamina:9}]},
   {name:"Asta",score:9,img:"images/asta.png",strength:7,speed:8,defense:6,stamina:9,ability:{name:"Anti-Magic",description:"Ignores role multipliers",type:"ignoreRole"}},
-  {name:"Itachi",score:9,img:"images/itachi.png",strength:7,speed:8,defense:8,stamina:8,ability:{name:"Tsukuyomi Silence",description:"Silence enemy bonuses",type:"statusEffect",effect:"Silence"}},
+  {name:"Itachi",score:9,img:"images/itachi.png",strength:7,speed:8,defense:8,stamina:8},
   {name:"Obito",score:9,img:"images/obito.png",strength:7,speed:8,defense:9,stamina:7},
   {name:"Pain",score:9,img:"images/pain.png",strength:8,speed:7,defense:8,stamina:8},
   {name:"Hisoka",score:9,img:"images/hisoka.png",strength:8,speed:8,defense:6,stamina:8},
   {name:"Yami",score:9,img:"images/yami.png",strength:9,speed:7,defense:8,stamina:8},
-  {name:"Law",score:9,img:"images/law.png",strength:7,speed:8,defense:7,stamina:8,ability:{name:"Room Theft",description:"30% chance to steal enemy lowest role score",type:"steal",chance:0.3,factor:1}},
+  {name:"Law",score:9,img:"images/law.png",strength:7,speed:8,defense:7,stamina:8},
   {name:"Jotaro",score:9,img:"images/jotaro.png",strength:8,speed:9,defense:8,stamina:8},
   {name:"Tsunade",score:9,img:"images/tsunade.png",strength:8,speed:7,defense:8,stamina:9,ability:{name:"Creation Rebirth",description:"+4 if Healer, +2 if Support",type:"healingMastery",healerValue:4,supportValue:2}},
   {name:"Akaza",score:9,img:"images/akaza.png",strength:9,speed:9,defense:8,stamina:9},
   {name:"SoiFon",score:9,img:"images/soifon.png",strength:8,speed:10,defense:7,stamina:8},
   {name:"Gin",score:9,img:"images/gin.png",strength:8,speed:9,defense:7,stamina:8},
   {name:"Byakuya",score:9,img:"images/byakuya.png",strength:8,speed:9,defense:8,stamina:8,ability:{name:"Senbonzakura",description:"+4 if Captain",type:"roleBonus",role:"Captain",value:4}},
-  {name:"Toshiro",score:9,img:"images/toshiro.png",strength:8,speed:9,defense:7,stamina:8,ability:{name:"Ice Prison",description:"Freeze enemy bonus effects",type:"statusEffect",effect:"Freeze"}},
+  {name:"Toshiro",score:9,img:"images/toshiro.png",strength:8,speed:9,defense:7,stamina:8},
   {name:"Komamura",score:9,img:"images/komamura.png",strength:9,speed:6,defense:10,stamina:9},
   {name:"Ukitake",score:9,img:"images/ukitake.png",strength:8,speed:7,defense:8,stamina:9},
   {name:"Eren",score:8,img:"images/eren.png",strength:8,speed:7,defense:6,stamina:8},
@@ -1303,7 +1080,7 @@ const BASE_CHARACTERS = [
   {name:"Rengoku",score:8,img:"images/rengoku.png",strength:8,speed:8,defense:7,stamina:8},
   {name:"Orihime",score:8,img:"images/orihime.png",strength:5,speed:6,defense:8,stamina:8,ability:{name:"Soten Kisshun",description:"Strongest healer: +7 if Healer, +3 if Support",type:"healingMastery",healerValue:7,supportValue:3}},
   {name:"Elizabeth",score:8,img:"images/elizabeth.png",strength:6,speed:7,defense:7,stamina:8},
-  {name:"Ace",score:8,img:"images/ace.png",strength:7,speed:8,defense:7,stamina:7,ability:{name:"Flame Emperor",description:"Burn enemy team",type:"statusEffect",effect:"Burn",value:3}},
+  {name:"Ace",score:8,img:"images/ace.png",strength:7,speed:8,defense:7,stamina:7},
   {name:"Shinji",score:8,img:"images/shinji.png",strength:7,speed:8,defense:7,stamina:8},
   {name:"Mayuri",score:8,img:"images/mayuri.png",strength:6,speed:7,defense:8,stamina:8},
   {name:"Rose",score:8,img:"images/rose.png",strength:7,speed:7,defense:7,stamina:8},
@@ -1329,23 +1106,7 @@ const CHARACTERS = BASE_CHARACTERS.map(char => ({
 }));
 
 const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Traitor"];
-const LEGENDARY_SCORE_THRESHOLD = 10;
-const MOMENTUM_MAX = 3;
-const MOMENTUM_GOOD_SPIN_SCORE = 9;
-const MOMENTUM_BOOST_BONUS = 6;
-const EVENT_INTERVAL_TURNS = 3;
-
-const SERIES_MAP = {
-  Goku: "Dragon Ball", Vegeta: "Dragon Ball",
-  Naruto: "Naruto", Sasuke: "Naruto", Itachi: "Naruto", Madara: "Naruto", Obito: "Naruto", Pain: "Naruto", Kakashi: "Naruto", Boruto: "Naruto", Sarada: "Naruto", Sakura: "Naruto", Tsunade: "Naruto",
-  Luffy: "One Piece", Zoro: "One Piece", Shanks: "One Piece", Law: "One Piece", Ace: "One Piece", "Roger Prime": "One Piece", "Whitebeard Prime": "One Piece", "Big Mom (Young)": "One Piece", "Kaido (Young)": "One Piece", Katakuri: "One Piece", Smoothie: "One Piece", Marco: "One Piece", Jozu: "One Piece", "Rayleigh (Young)": "One Piece", "Scopper Gaban (Young)": "One Piece", King: "One Piece", Queen: "One Piece",
-  Ichigo: "Bleach", Byakuya: "Bleach", Toshiro: "Bleach", Yamamoto: "Bleach", Unohana: "Bleach", Ukitake: "Bleach", Komamura: "Bleach", Shinji: "Bleach", SoiFon: "Bleach", Gin: "Bleach", Mayuri: "Bleach", Rose: "Bleach",
-  Asta: "Black Clover", Yami: "Black Clover", Mimosa: "Black Clover",
-  Tanjiro: "Demon Slayer", Rengoku: "Demon Slayer", Muichiro: "Demon Slayer", Tengen: "Demon Slayer", Akaza: "Demon Slayer",
-  Deku: "MHA", Bakugo: "MHA",
-  Gon: "Hunter x Hunter", Killua: "Hunter x Hunter", Hisoka: "Hunter x Hunter",
-  Eren: "AOT", Levi: "AOT"
-};
+const DBZ_NAMES = new Set(["Goku","Vegeta","Gohan Beast","Broly","Frieza Black","Beerus","Whis"]);
 
 let state = {
 ultimateUsed: false,
@@ -1367,20 +1128,7 @@ ultimateUsed: false,
     Player1: 0,
     Player2: 0
   },
-  momentum: {
-    Player1: 0,
-    Player2: 0
-  },
-  interactionUsed: {
-    steal: false,
-    block: false,
-    debuff: false
-  },
-  bgmTrackIndex: 0,
-  gameMode: "enhanced",
-  lastEventTurnSeen: 0,
-  pityCounter: 0,
-  mobileTab: "wheel"
+  blockedRoles: {}
 };
 
 const canvas = document.getElementById("canvas");
@@ -1388,150 +1136,12 @@ const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spinBtn");
 const skipBtn = document.getElementById("skipBtn");
 const ultimateBtn = document.getElementById("ultimateBtn");
-const stealBtn = document.getElementById("stealBtn");
-const blockBtn = document.getElementById("blockBtn");
-const debuffBtn = document.getElementById("debuffBtn");
 const bgm = document.getElementById("bgm");
 const chatMessagesEl = document.getElementById("chatMessages");
 const chatInputEl = document.getElementById("chatInput");
 
-setBgmTrack(0, false);
-
 function hasAllRolesSelected() {
   return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
-}
-
-function getGamePhaseBySpins() {
-  const filled = Object.keys(state.myFilledRoles || {}).length;
-  if (filled <= 2) return "early";      // First 3 spins
-  if (filled <= 4) return "mid";        // Mid game adaptation
-  return "late";                        // Last 2 spins
-}
-
-function updatePhaseDisplay() {
-  const el = document.getElementById("phaseDisplay");
-  if (!el) return;
-  const phase = getGamePhaseBySpins();
-  if (phase === "early") {
-    el.innerText = "🧠 Early Game → build team";
-  } else if (phase === "mid") {
-    el.innerText = "🧩 Mid Game → adapt";
-  } else {
-    el.innerText = "🔥 Late Game → power spikes (legendary boost)";
-  }
-}
-
-function updateMomentumDisplay() {
-  const el = document.getElementById("momentumDisplay");
-  if (!el || !state.player) return;
-  const value = Math.min(MOMENTUM_MAX, state.momentum?.[state.player] || 0);
-  if (value >= MOMENTUM_MAX) {
-    el.innerText = `🔥 Momentum: ${value}/${MOMENTUM_MAX} — ULTIMATE BOOST MODE`;
-  } else {
-    el.innerText = `🔥 Momentum: ${value}/${MOMENTUM_MAX}`;
-  }
-}
-
-function addMomentumFromSpin(char) {
-  if (!state.room || !state.player || !char) return;
-  if ((char.score || 0) < MOMENTUM_GOOD_SPIN_SCORE) return;
-  const momentumRef = db.ref(`rooms/${state.room}/momentum/${state.player}`);
-  momentumRef.transaction(current => Math.min(MOMENTUM_MAX, (current || 0) + 1));
-}
-
-function updateEventDisplay(activeEvent) {
-  const el = document.getElementById("eventDisplay");
-  if (!el) return;
-  if (state.gameMode === "classic") {
-    el.innerText = "🎮 Classic Mode: Events OFF";
-    return;
-  }
-  if (!activeEvent?.type) {
-    el.innerText = "🌪️ Event: None";
-    return;
-  }
-  const labels = {
-    storm: "🌩️ Storm: All scores -2",
-    blessing: "✨ Blessing: 9+ chars gain +2",
-    chaos: "🌀 Chaos Swap: 1 role swapped"
-  };
-  el.innerText = labels[activeEvent.type] || "🌪️ Event: Unknown";
-}
-
-function updateMindGameDisplay(signalData = {}) {
-  const el = document.getElementById("mindGameDisplay");
-  if (!el || !state.player) return;
-  const enemy = state.player === "Player1" ? "Player2" : "Player1";
-  const enemySignal = signalData?.[enemy];
-  if (!enemySignal || !enemySignal.ts) {
-    el.innerText = "💬 Mind Game: Neutral";
-    return;
-  }
-  const ageMs = Date.now() - enemySignal.ts;
-  if (ageMs > 30000) {
-    el.innerText = "💬 Mind Game: Neutral";
-    return;
-  }
-  el.innerText = `🎭 Opponent Signal: ${enemySignal.text}`;
-}
-
-async function maybeTriggerTurnEvent(nextTurn) {
-  const roomRef = db.ref(`rooms/${state.room}`);
-  const snap = await roomRef.once("value");
-  const roomData = snap.val() || {};
-  const turnCount = (roomData.turnCount || 0) + 1;
-  const mode = roomData.settings?.gameMode || state.gameMode || "enhanced";
-  const updates = { turn: nextTurn, turnCount };
-  let chosenEvent = null;
-  if (mode !== "classic" && turnCount % EVENT_INTERVAL_TURNS === 0) {
-    const eventTypes = ["storm", "blessing", "chaos"];
-    const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-    chosenEvent = { type, turn: turnCount, by: state.player };
-    updates.activeEvent = chosenEvent;
-  }
-  await roomRef.update(updates);
-  if (chosenEvent?.type === "chaos") {
-    await applyChaosSwap();
-  }
-}
-
-async function applyChaosSwap() {
-  const roomRef = db.ref(`rooms/${state.room}`);
-  const snap = await roomRef.once("value");
-  const data = snap.val() || {};
-  const p1 = data.players?.Player1?.slots || {};
-  const p2 = data.players?.Player2?.slots || {};
-  const r1 = Object.keys(p1);
-  const r2 = Object.keys(p2);
-  if (!r1.length || !r2.length) return;
-  const role1 = r1[Math.floor(Math.random() * r1.length)];
-  const role2 = r2[Math.floor(Math.random() * r2.length)];
-  const c1 = p1[role1];
-  const c2 = p2[role2];
-  if (!c1 || !c2) return;
-  const updates = {};
-  updates[`players/Player1/slots/${role1}`] = c2;
-  updates[`players/Player2/slots/${role2}`] = c1;
-  await roomRef.update(updates);
-}
-
-function pickIndexForPhase(chars) {
-  if (!chars.length) return 0;
-  const phase = getGamePhaseBySpins();
-  const legendaryIndexes = [];
-  for (let i = 0; i < chars.length; i++) {
-    if ((chars[i].score || 0) >= LEGENDARY_SCORE_THRESHOLD) legendaryIndexes.push(i);
-  }
-
-  let legendaryChance = 0;
-  if (phase === "mid") legendaryChance = 0.2;
-  if (phase === "late") legendaryChance = 0.55; // Last 2 spins = higher chance of legendary
-
-  if (legendaryIndexes.length && Math.random() < legendaryChance) {
-    return legendaryIndexes[Math.floor(Math.random() * legendaryIndexes.length)];
-  }
-
-  return Math.floor(Math.random() * chars.length);
 }
 
 function activateUltimate() {
@@ -1568,13 +1178,11 @@ function activateUltimate() {
           state.ultimateUsed = true;
           ultimateBtn.disabled = true;
           alert("🔥 " + ultimateName + " Activated! +" + bonus + " Team Power");
-        });
     })
     .catch(err => {
       showMessage("❌ Ultimate failed: " + err.message, "error");
     });
 }
-
 function refreshCachedUltimateBonus() {
   // Apply ultimate bonus
   if (state.room) {
@@ -1583,7 +1191,6 @@ function refreshCachedUltimateBonus() {
       .then(snap => {
         if (snap.val()) {
           state.cachedUltimateBonus = snap.val();
-        }
       })
       .catch(() => {});
   }
@@ -1596,107 +1203,6 @@ function getGlowClass(score) {
   if (score >= 7) return "glow-7";
   return "glow-6";
 }
-
-function getTier(char) {
-  if (!char) return 'common';
-  if (char.score >= 10) return 'legendary';
-  if (char.score >= 9) return 'epic';
-  if (char.score >= 8) return 'rare';
-  return 'common';
-}
-
-function updateOddsDisplay() {
-  const el = document.getElementById('oddsDisplay');
-  if (!el) return;
-  const total = state.characters.length || 1;
-  const counts = { legendary: 0, epic: 0, rare: 0, common: 0 };
-  state.characters.forEach(c => counts[getTier(c)]++);
-  const pct = (n) => ((n / total) * 100).toFixed(1);
-  el.innerText = `🎲 L:${pct(counts.legendary)}% E:${pct(counts.epic)}% R:${pct(counts.rare)}% C:${pct(counts.common)}% | Pity:${state.pityCounter}`;
-}
-
-function setMobileTab(tab) {
-  state.mobileTab = tab;
-  document.querySelectorAll('.mobile-section').forEach(el => {
-    if (el.dataset.section === tab) el.classList.add('active-mobile');
-    else el.classList.remove('active-mobile');
-  });
-}
-
-function playRareCinematic(char) {
-  if (!char || char.score < 10) return;
-  document.body.classList.add('rare-cinematic');
-  playSound([900, 700, 1000], [0.12, 0.12, 0.2]);
-  setTimeout(() => document.body.classList.remove('rare-cinematic'), 500);
-}
-
-function triggerWinConfetti() {
-  const layer = document.createElement('div');
-  layer.className = 'confetti-layer';
-  const bodyClass = document.body.className;
-  let colors = ['#FFD700', '#FF4DA6', '#00E5FF', '#FFFFFF'];
-  if (bodyClass.includes('theme-strength')) colors = ['#ff5757', '#ffb347', '#ffd166'];
-  else if (bodyClass.includes('theme-speed')) colors = ['#5de0ff', '#7c93ff', '#c2f2ff'];
-  else if (bodyClass.includes('theme-defense')) colors = ['#5bff95', '#2ed573', '#caffbf'];
-  else if (bodyClass.includes('theme-stamina')) colors = ['#ffd93d', '#ff9f1a', '#fff3b0'];
-
-  for (let i = 0; i < 90; i++) {
-    const c = document.createElement('div');
-    c.className = 'confetti-piece';
-    c.style.left = `${Math.random() * 100}vw`;
-    c.style.top = `${-Math.random() * 20}vh`;
-    c.style.background = colors[Math.floor(Math.random() * colors.length)];
-    c.style.animationDelay = `${Math.random() * 0.5}s`;
-    layer.appendChild(c);
-  }
-  document.body.appendChild(layer);
-  setTimeout(() => layer.remove(), 2300);
-}
-
-function showEncyclopedia() {
-  const modal = document.createElement('div');
-  modal.className = 'leaderboard-modal';
-  const content = document.createElement('div');
-  content.className = 'leaderboard-content';
-
-  const rows = BASE_CHARACTERS.map(c => {
-    const forms = c.forms?.map(f => f.name).join(', ') || 'Base only';
-    const ability = c.ability ? `${c.ability.name} — ${c.ability.description}` : 'None';
-    return `<tr><td class="leaderboard-name">${escapeHtml(c.name)}</td><td>${c.score}</td><td>${escapeHtml(forms)}</td><td>${escapeHtml(ability)}</td></tr>`;
-  }).join('');
-
-  content.innerHTML = `
-    <button class="modal-close" onclick="this.closest('.leaderboard-modal').remove()">✕</button>
-    <h2>📚 Character Encyclopedia</h2>
-
-    <details class="collapsible-block" open>
-      <summary>🔎 Search & Odds Info</summary>
-      <div class="collapsible-content">
-        <input id="encyclopediaSearch" placeholder="Search character..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #FFB90F;background:#0b1326;color:#fff;margin-bottom:10px;" />
-        <div style="color:#88CCFF;font-size:12px;">Odds are dynamic from remaining pool (see top bar).</div>
-      </div>
-    </details>
-
-    <details class="collapsible-block" open>
-      <summary>📘 Character Database</summary>
-      <div class="collapsible-content">
-        <table class="leaderboard-table" id="encyclopediaTable"><thead><tr><th>Name</th><th>Score</th><th>Forms</th><th>Ability</th></tr></thead><tbody>${rows}</tbody></table>
-      </div>
-    </details>
-  `;
-  modal.appendChild(content);
-  document.body.appendChild(modal);
-  const search = content.querySelector('#encyclopediaSearch');
-  const tbody = content.querySelector('tbody');
-  search.addEventListener('input', () => {
-    const q = search.value.trim().toLowerCase();
-    [...tbody.querySelectorAll('tr')].forEach(tr => {
-      tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
-    });
-  });
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-}
-
 
 async function showLeaderboard() {
   playSoundEffect('select');
@@ -1728,46 +1234,9 @@ async function showLeaderboard() {
     }
 
     const players = Object.values(data).sort((a, b) => b.wins - a.wins);
-+    } else if (isRoleBlocked(role)) {
-+      btn.disabled = true;
-+      btn.classList.add("taken");
-+      btn.title = "Temporarily blocked this turn";
-+function getRoleBlockForPlayer(role, player = state.player) {
-  const roleBlock = state.blockedRoles?.[player]?.[role];
-  if (!roleBlock) return null;
-  if (typeof roleBlock === "boolean") return { remainingOwnTurns: 1 };
-  return roleBlock;
-}
+    const topPlayers = players.slice(0, 50);
 
-function isRoleBlocked(role, player = state.player) {
-  const block = getRoleBlockForPlayer(role, player);
-  return Boolean(block && (block.remainingOwnTurns ?? 1) > 0);
-}
-
-function decrementRoleBlocksForPlayer(player = state.player) {
-  const current = state.blockedRoles?.[player] || {};
-  const next = {};
-  Object.entries(current).forEach(([role, blockValue]) => {
-    const normalized = typeof blockValue === "boolean" ? { remainingOwnTurns: 1 } : blockValue;
-    const remaining = (normalized.remainingOwnTurns ?? 1) - 1;
-    if (remaining > 0) next[role] = { remainingOwnTurns: remaining };
-  });
-  state.blockedRoles[player] = next;
-  return db.ref(`rooms/${state.room}/blockedRoles/${player}`).set(next);
-}
-
-function selectRole(role, popup, char) {
-+  if (isRoleBlocked(role)) {
-+    showMessage("❌ That role is temporarily blocked this turn.", "error");
-+    return;
-+  }
-+
-+    decrementRoleBlocksForPlayer(state.player).finally(() => {
-+      db.ref(`rooms/${state.room}/turn`).set(next);
-+    });
-+  decrementRoleBlocksForPlayer(state.player).finally(() => {
-+    db.ref(`rooms/${state.room}/turn`).set(next);
-+  });
+    let html = `<table class="leaderboard-table"><thead><tr><th>RANK</th><th>PLAYER</th><th>WINS</th><th>LOSSES</th><th>WIN RATE</th></tr></thead><tbody>`;
 
     topPlayers.forEach((player, index) => {
       const totalGames = (player.wins || 0) + (player.losses || 0);
@@ -1776,8 +1245,7 @@ function selectRole(role, popup, char) {
       const medal = medals[index] || '';
       const rowClass = index < 3 ? `rank-${index + 1}` : '';
 
-      const tier = getRankTier(player.wins || 0);
-      html += `<tr class="${rowClass}"><td>${medal} ${index + 1}</td><td><span class="leaderboard-name">${player.name}</span></td><td>${tier}</td><td class="leaderboard-stat wins">${player.wins || 0}</td><td>${player.losses || 0}</td><td>${player.streak || 0}</td><td class="leaderboard-stat winrate">${winRate}%</td></tr>`;
+      html += `<tr class="${rowClass}"><td>${medal} ${index + 1}</td><td><span class="leaderboard-name">${player.name}</span></td><td class="leaderboard-stat wins">${player.wins || 0}</td><td>${player.losses || 0}</td><td class="leaderboard-stat winrate">${winRate}%</td></tr>`;
     });
 
     html += `</tbody></table>`;
@@ -1794,35 +1262,22 @@ async function updateLeaderboard(winnerName, loserName) {
     if (winnerSnapshot.exists()) {
       const winnerKey = Object.keys(winnerSnapshot.val())[0];
       const winnerData = winnerSnapshot.val()[winnerKey];
-      const nextStreak = (winnerData.streak || 0) + 1;
-      const streakBonus = nextStreak >= 3 ? 1 : 0;
-      await leaderboardRef.child(winnerKey).update({
-        wins: (winnerData.wins || 0) + 1 + streakBonus,
-        streak: nextStreak,
-        bestStreak: Math.max(nextStreak, winnerData.bestStreak || 0)
-      });
+      await leaderboardRef.child(winnerKey).update({wins: (winnerData.wins || 0) + 1});
     } else {
-      await leaderboardRef.push({name: winnerName, wins: 1, losses: 0, streak: 1, bestStreak: 1});
+      await leaderboardRef.push({name: winnerName, wins: 1, losses: 0});
     }
 
     const loserSnapshot = await leaderboardRef.orderByChild('name').equalTo(loserName).once('value');
     if (loserSnapshot.exists()) {
       const loserKey = Object.keys(loserSnapshot.val())[0];
       const loserData = loserSnapshot.val()[loserKey];
-      await leaderboardRef.child(loserKey).update({losses: (loserData.losses || 0) + 1, streak: 0});
+      await leaderboardRef.child(loserKey).update({losses: (loserData.losses || 0) + 1});
     } else {
-      await leaderboardRef.push({name: loserName, wins: 0, losses: 1, streak: 0, bestStreak: 0});
+      await leaderboardRef.push({name: loserName, wins: 0, losses: 1});
     }
   } catch(e) {
     console.error("Leaderboard error:", e);
   }
-}
-
-function getRankTier(wins) {
-  if (wins >= 60) return "👑 Yonko";
-  if (wins >= 35) return "🥇 Gold";
-  if (wins >= 15) return "🥈 Silver";
-  return "🥉 Bronze";
 }
 
 function escapeHtml(text) {
@@ -1852,10 +1307,7 @@ function renderChatMessages(chatData = {}) {
   }
 
   chatMessagesEl.innerHTML = msgs
-    .map(m => {
-      const label = m.type === "system" ? "SYSTEM" : (m.name || "Player");
-      return `<div class="chat-line"><span class="name">${escapeHtml(label)}</span><span class="time">${formatChatTime(m.ts)}</span><br>${escapeHtml(m.text)}</div>`;
-    })
+    .map(m => `<div class="chat-line"><span class="name">${escapeHtml(m.name || 'Player')}</span><span class="time">${formatChatTime(m.ts)}</span><br>${escapeHtml(m.text)}</div>`)
     .join('');
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
 }
@@ -1864,65 +1316,6 @@ function sendChatMessage() {
   if (!state.room || !state.player || !chatInputEl) return;
   const text = chatInputEl.value.trim().slice(0, 80);
   if (!text) return;
-
-  const lower = text.toLowerCase();
-  const roomRef = db.ref(`rooms/${state.room}`);
-  const enemy = state.player === "Player1" ? "Player2" : "Player1";
-
-  if (lower.startsWith("/bluff")) {
-    roomRef.child("chat").push({
-      type: "system",
-      name: "SYSTEM",
-      text: `🎭 ${state.playerName || state.player} sends a bluff signal...`,
-      ts: Date.now()
-    });
-    roomRef.child(`psychSignals/${state.player}`).set({ text: "BLUFF", ts: Date.now() });
-    chatInputEl.value = "";
-    return;
-  }
-
-  if (lower.startsWith("/fakeup")) {
-    roomRef.child("chat").push({
-      type: "system",
-      name: "SYSTEM",
-      text: `⚡ ${state.playerName || state.player} appears to power up! (or did they?)`,
-      ts: Date.now()
-    });
-    roomRef.child(`psychSignals/${state.player}`).set({ text: "FAKE POWER-UP", ts: Date.now() });
-    chatInputEl.value = "";
-    return;
-  }
-
-  if (lower.startsWith("/emote")) {
-    const token = (text.split(" ")[1] || "").toLowerCase();
-    let emote = "😶";
-    const updates = {};
-    if (token === "fire" || token === "🔥") {
-      emote = "🔥";
-      const me = state.momentum?.[state.player] || 0;
-      updates[`momentum/${state.player}`] = Math.min(MOMENTUM_MAX, me + 1);
-    } else if (token === "ice" || token === "🧊") {
-      emote = "🧊";
-      const enemyMomentum = state.momentum?.[enemy] || 0;
-      updates[`momentum/${enemy}`] = Math.max(0, enemyMomentum - 1);
-    } else if (token === "taunt" || token === "😈") {
-      emote = "😈";
-      roomRef.child(`teamDebuff/${enemy}`).once("value").then(s => {
-        const currentDebuff = s.val() || 0;
-        roomRef.child(`teamDebuff/${enemy}`).set(currentDebuff + 1);
-      });
-    }
-    updates[`psychSignals/${state.player}`] = { text: `EMOTE ${emote}`, ts: Date.now() };
-    roomRef.update(updates).catch(() => {});
-    roomRef.child("chat").push({
-      type: "system",
-      name: "SYSTEM",
-      text: `${emote} ${state.playerName || state.player} used an emote effect`,
-      ts: Date.now()
-    });
-    chatInputEl.value = "";
-    return;
-  }
 
   db.ref(`rooms/${state.room}/chat`).push({
     name: state.playerName || state.player,
@@ -1934,12 +1327,6 @@ function sendChatMessage() {
   }).catch(err => {
     showMessage("❌ Chat failed: " + err.message, "error");
   });
-}
-
-function addEmojiToChat(emoji) {
-  if (!chatInputEl) return;
-  chatInputEl.value = `${chatInputEl.value || ""}${emoji}`;
-  chatInputEl.focus();
 }
 
 if (chatInputEl) {
@@ -1958,60 +1345,24 @@ function showRules() {
   content.innerHTML = `
     <button class="modal-close" onclick="this.closest('.rules-modal').remove()">✕</button>
     <h2>📖 Game Rules</h2>
-
-    <details class="collapsible-block" open>
-      <summary>🎮 Objective</summary>
-      <div class="collapsible-content">
-        <p>Spin to select anime characters and assign them to 7 roles. Highest score wins!</p>
-      </div>
-    </details>
-
-    <details class="collapsible-block" open>
-      <summary>⭐ Role Multipliers</summary>
-      <div class="collapsible-content">
-        <ul>
-          <li><strong>Captain:</strong> Score × 1.5</li>
-          <li><strong>Vice:</strong> Score × 1.2</li>
-          <li><strong>Healer/Support:</strong> Score + 2</li>
-          <li><strong>Tank/Duelist:</strong> Score + 1</li>
-          <li><strong>Traitor:</strong> -Score</li>
-        </ul>
-      </div>
-    </details>
-
-    <details class="collapsible-block" open>
-      <summary>✨ Special Abilities & Effects</summary>
-      <div class="collapsible-content">
-        <p>Abilities can trigger role bonuses, debuffs, shield effects, steal effects, multipliers, and late-game boosts.</p>
-      </div>
-    </details>
-
-    <details class="collapsible-block" open>
-      <summary>🔥 New Power-Ups & Systems</summary>
-      <div class="collapsible-content">
-        <ul>
-          <li><strong>Momentum:</strong> Good spins (9+) build momentum. At 3 stacks you enter <em>Ultimate Boost Mode</em>.</li>
-          <li><strong>Game Phases:</strong> Early = build, Mid = adapt, Late = power spike with better legendary odds.</li>
-          <li><strong>Timed Events (every 3 turns):</strong> Storm (-2), Blessing (9+ gain +2), Chaos Swap (random role swap).</li>
-          <li><strong>Classic Mode:</strong> disables random timed events (including Chaos Swap) for a cleaner draft battle.</li>
-          <li><strong>Synergy Bonuses:</strong> Same anime +3, One Piece crew +5, Naruto + Sasuke rival combo bonus.</li>
-          <li><strong>Hidden Info:</strong> Drafted picks can hide true ability/multiplier and show decoy data.</li>
-        </ul>
-      </div>
-    </details>
-  state.blockedRoles = data.blockedRoles || {};
-
-    <details class="collapsible-block" open>
-      <summary>⚔️ PvP Interactions & Mind Games</summary>
-      <div class="collapsible-content">
-        <ul>
-          <li><strong>Steal / Block / Debuff:</strong> One-time action buttons to disrupt opponent plans.</li>
-          <li><strong>No duplicate drafting:</strong> Once a character is claimed in the room, nobody can draft that character again.</li>
-          <li><strong>Chat Commands:</strong> <code>/bluff</code>, <code>/fakeup</code>, <code>/emote fire|ice|taunt</code> for psychological pressure and tactical effects.</li>
-          <li><strong>Ranked Progression:</strong> Bronze → Silver → Gold → Yonko with streak tracking and streak bonuses.</li>
-        </ul>
-      </div>
-    </details>
+    <div class="rule-section">
+      <h3>🎮 Objective</h3>
+      <p>Spin to select anime characters and assign them to 7 roles. Highest score wins!</p>
+    </div>
+    <div class="rule-section">
+      <h3>⭐ Role Multipliers</h3>
+      <ul>
+        <li><strong>Captain:</strong> Score × 1.5</li>
+        <li><strong>Vice:</strong> Score × 1.2</li>
+        <li><strong>Healer/Support:</strong> Score + 2</li>
+        <li><strong>Tank/Duelist:</strong> Score + 1</li>
+        <li><strong>Traitor:</strong> -Score</li>
+      </ul>
+    </div>
+    <div class="rule-section">
+      <h3>✨ Special Abilities</h3>
+      <p>Some characters have unique abilities that trigger based on their role or effect opponents!</p>
+    </div>
   `;
   
   modal.appendChild(content);
@@ -2020,7 +1371,6 @@ function showRules() {
     if (e.target === modal) modal.remove();
   };
 }
-
 
 function quitGame() {
   if (state.room && state.player) {
@@ -2038,52 +1388,26 @@ function showMessage(text, type) {
   messagesDiv.appendChild(msgEl);
 }
 
-function characterKey(name) {
-  return String(name || "").replace(/[.#$/\[\]]/g, "_");
-}
-
-function toggleToolbar() {
-  const bar = document.querySelector(".volume-control");
-  if (!bar) return;
-  bar.classList.toggle("collapsed");
-}
-
-function updateBgmTrackButton() {
-  const btn = document.getElementById("bgmTrackBtn");
-  if (!btn) return;
-  const track = BGM_TRACKS[state.bgmTrackIndex] || BGM_TRACKS[0];
-  btn.innerText = `🎵 ${track.name}`;
-}
-
-function setBgmTrack(index, shouldAutoPlay = false) {
-  if (!BGM_TRACKS.length) return;
-  state.bgmTrackIndex = ((index % BGM_TRACKS.length) + BGM_TRACKS.length) % BGM_TRACKS.length;
-  const track = BGM_TRACKS[state.bgmTrackIndex];
-  bgm.src = track.file;
-  bgm.load();
-  updateBgmTrackButton();
-  if (state.musicEnabled && shouldAutoPlay) {
-    bgm.volume = 0.2;
-    bgm.play().catch(() => {});
-  }
-}
-
-function nextBgmTrack() {
-  setBgmTrack(state.bgmTrackIndex + 1, true);
-}
-
 function toggleMusic() {
   state.musicEnabled = !state.musicEnabled;
   const btn = document.getElementById("musicBtn");
   if (state.musicEnabled) {
     bgm.volume = 0.2;
-    if (!bgm.src) setBgmTrack(state.bgmTrackIndex, false);
     bgm.play().catch(e => {});
     btn.innerText = "🔊 ON";
   } else {
     bgm.pause();
     btn.innerText = "🔇 OFF";
   }
+}
+
+function toggleControlBar() {
+  const bar = document.querySelector(".volume-control");
+  const btn = document.getElementById("collapseBtn");
+  if (!bar || !btn) return;
+  const collapsed = bar.classList.toggle("collapsed");
+  btn.textContent = collapsed ? "▸" : "▾";
+  btn.title = collapsed ? "Expand controls" : "Collapse controls";
 }
 
 function shuffle(arr) {
@@ -2219,6 +1543,626 @@ function spin() {
   }
   if (state.characters.length === 0) {
     playSoundEffect('error');
+    showMessage("❌ No characters left!", "error");
+    return;
+  }
+  if (hasAllRolesSelected()) {
+    playSoundEffect('error');
+    showMessage("✅ All 7 roles are filled. No more spins for you!", "success");
+    spinBtn.disabled = true;
+    return;
+  }
+
+  playSoundEffect('spin');
+  state.spinning = true;
+  spinBtn.disabled = true;
+
+  let speed = 0.2;
+  let count = 0;
+  const maxSpins = 200;
+
+  let spinInterval = setInterval(() => {
+    state.angle += speed;
+    speed *= 0.98;
+
+    count++;
+    draw();
+
+    if (speed < 0.02 || count >= maxSpins) {
+      clearInterval(spinInterval);
+
+      const slice = (Math.PI * 2) / state.characters.length;
+      const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const index = Math.floor(normalized / slice) % state.characters.length;
+      let selected = state.characters[index];
+      // Make DBZ characters harder to pull.
+      if (DBZ_NAMES.has(selected.name) && Math.random() < 0.65) {
+        const nonDbzPool = state.characters.filter(c => !DBZ_NAMES.has(c.name));
+        if (nonDbzPool.length) {
+          selected = nonDbzPool[Math.floor(Math.random() * nonDbzPool.length)];
+        }
+      }
+      const selectedWithForm = applyFormVariation(selected);
+      state.hasSpunThisTurn = true;
+
+      playSoundEffect('select');
+      showPopup(selectedWithForm);
+      state.spinning = false;
+      spinBtn.disabled = false;
+    }
+  }, 16);
+}
+
+
+function triggerSpecialParticleBurst(char) {
+  const isSpecial = (char.score >= 10) || Boolean(char.ability) || Boolean(char.formLabel);
+  if (!isSpecial) return;
+
+  const burstLayer = document.createElement("div");
+  burstLayer.className = "particle-burst";
+  document.body.appendChild(burstLayer);
+
+  const colors = ["#FFD700", "#FF4DA6", "#00E5FF", "#FFFFFF", "#FFA500"];
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  const particleCount = char.score >= 10 ? 38 : 24;
+
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+    particle.style.left = `${centerX}px`;
+    particle.style.top = `${centerY}px`;
+    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+    const angle = (Math.PI * 2 * i) / particleCount + (Math.random() * 0.4 - 0.2);
+    const distance = 70 + Math.random() * 180;
+    particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+    particle.style.animationDelay = `${Math.random() * 90}ms`;
+    burstLayer.appendChild(particle);
+  }
+
+  setTimeout(() => burstLayer.remove(), 1200);
+}
+
+function showPopup(char) {
+  const popup = document.createElement("div");
+  popup.className = "popup";
+  const content = document.createElement("div");
+  content.className = "popup-content";
+
+  content.innerHTML = `
+    <img class="popup-img" src="${char.img}">
+    <h2>${char.name}</h2>
+    <p>${char.formLabel ? "🧬 Form: " + char.formLabel : "🧬 Form: Base"}</p>
+    <p>⚡ Power: ${char.score}</p>
+    
+    <div class="attributes-grid">
+      <div class="attribute">
+        <span class="attribute-name">💪 STR</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.strength * 10}%"></div></div>
+        <span class="attribute-value">${char.strength}</span>
+      </div>
+      <div class="attribute">
+        <span class="attribute-name">⚡ SPD</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.speed * 10}%"></div></div>
+        <span class="attribute-value">${char.speed}</span>
+      </div>
+      <div class="attribute">
+        <span class="attribute-name">🛡️ DEF</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.defense * 10}%"></div></div>
+        <span class="attribute-value">${char.defense}</span>
+      </div>
+      <div class="attribute">
+        <span class="attribute-name">❤️ STA</span>
+        <div class="attribute-bar"><div class="attribute-fill" style="width: ${char.stamina * 10}%"></div></div>
+        <span class="attribute-value">${char.stamina}</span>
+      </div>
+    </div>
+  `;
+
+  popup.appendChild(content);
+  document.body.appendChild(popup);
+  triggerSpecialParticleBurst(char);
+
+  if (char.ability) {
+    const abilityDiv = document.createElement("div");
+    abilityDiv.style.marginTop = "15px";
+    abilityDiv.style.padding = "10px";
+    abilityDiv.style.background = "rgba(255,215,0,0.1)";
+    abilityDiv.style.border = "1px solid gold";
+    abilityDiv.style.borderRadius = "8px";
+    abilityDiv.innerHTML = `
+      <strong>🔥 ${char.ability.name}</strong><br>
+      <span style="color:#88CCFF;font-size:12px;">
+        ${char.ability.description}
+      </span>
+    `;
+    content.appendChild(abilityDiv);
+  }
+
+  if (char.passiveAbility) {
+    const passiveDiv = document.createElement("div");
+    passiveDiv.style.marginTop = "8px";
+    passiveDiv.style.padding = "8px";
+    passiveDiv.style.background = "rgba(0,191,255,0.12)";
+    passiveDiv.style.border = "1px solid #00BFFF";
+    passiveDiv.style.borderRadius = "8px";
+    passiveDiv.innerHTML = `
+      <strong>🌀 ${char.passiveAbility.name}</strong><br>
+      <span style="color:#88CCFF;font-size:12px;">
+        ${char.passiveAbility.description}
+      </span>
+    `;
+    content.appendChild(passiveDiv);
+  }
+
+  const rolesContainer = document.createElement("div");
+  rolesContainer.className = "roles";
+  
+  ROLES.forEach(role => {
+    const btn = document.createElement("button");
+    btn.innerText = role;
+    
+    if (state.myFilledRoles[role]) {
+      btn.disabled = true;
+      btn.classList.add("taken");
+    } else if (isRoleBlocked(role)) {
+      btn.disabled = true;
+      btn.classList.add("taken");
+      btn.title = "Temporarily blocked this turn";
+    } else {
+      btn.onclick = () => selectRole(role, popup, char);
+    }
+    
+    rolesContainer.appendChild(btn);
+  });
+
+  content.appendChild(rolesContainer);
+
+  const skipTurnBtn = document.createElement("button");
+  skipTurnBtn.innerText = "⏭️ SKIP THIS TURN";
+  skipTurnBtn.style.marginTop = "12px";
+  const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
+  if (skipLimitReached) {
+    skipTurnBtn.disabled = true;
+    skipTurnBtn.title = "Skip limit reached (2 per game)";
+  }
+  skipTurnBtn.onclick = () => {
+    popup.remove();
+    skipTurn();
+  };
+  content.appendChild(skipTurnBtn);
+
+  loadImage(char.img);
+}
+function getRoleBlockForPlayer(role, player = state.player) {
+  if (isRoleBlocked(role)) {
+    showMessage("❌ That role is temporarily blocked this turn.", "error");
+    return;
+  }
+
+  db.ref(`rooms/${state.room}/players/${state.player}/slots/${role}`).set(char).then(() => {
+    state.characters = state.characters.filter(c => c.name !== char.name);
+    state.myFilledRoles[role] = true;
+    popup.remove();
+    document.getElementById("charCounter").innerText = state.characters.length;
+    draw();
+
+    state.hasSpunThisTurn = false;
+    state.skippedThisTurn = false;
+    const next = state.player === "Player1" ? "Player2" : "Player1";
+    decrementRoleBlocksForPlayer(state.player).finally(() => {
+      db.ref(`rooms/${state.room}/turn`).set(next);
+    });
+  }).catch(err => {
+    showMessage("Error: " + err.message, "error");
+    console.error(err);
+  });
+}
+
+function skipTurn() {
+  if (!state.myTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Not your turn!", "error");
+    return;
+  }
+  if (!state.hasSpunThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ Spin the wheel before skipping!", "error");
+    return;
+  }
+  if (state.skippedThisTurn) {
+    playSoundEffect('error');
+    showMessage("❌ You can only skip once per turn!", "error");
+    return;
+  }
+
+  const currentPenalty = state.skipPenalties[state.player] || 0;
+  if (currentPenalty >= 2) {
+    playSoundEffect('error');
+    showMessage("❌ Skip limit reached (2 per game)", "error");
+    return;
+  }
+
+  playSoundEffect('skip');
+  state.skippedThisTurn = true;
+
+  const updatedPenalty = currentPenalty + 1;
+  state.skipPenalties[state.player] = updatedPenalty;
+  db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
+
+  const next = state.player === "Player1" ? "Player2" : "Player1";
+  decrementRoleBlocksForPlayer(state.player).finally(() => {
+    db.ref(`rooms/${state.room}/turn`).set(next);
+  });
+}
+
+function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
+  let score = 0;
+
+  Object.entries(slots).forEach(([role, char]) => {
+    let base = char.score;
+
+    if (char.ability?.type === "ignoreRole") {
+      // Ignore multipliers
+    } else {
+      if (role === "Captain") base = Math.floor(base * 1.5);
+      else if (role === "Vice") base = Math.floor(base * 1.2);
+      else if (role === "Healer" || role === "Support") base += 2;
+      else if (role === "Tank" || role === "Duelist") base += 1;
+      else if (role === "Traitor") base = -char.score;
+    }
+
+    const attributeBonus = (char.strength + char.speed + char.defense + char.stamina) * 0.1;
+    base += Math.floor(attributeBonus);
+
+    if (char.ability?.type === "roleBonus" && role === char.ability.role) {
+      base += char.ability.value;
+    }
+
+    if (char.ability?.type === "healingMastery") {
+      if (role === "Healer") base += (char.ability.healerValue || 0);
+      else if (role === "Support") base += (char.ability.supportValue || 0);
+    }
+
+    if (char.passiveAbility?.type === "flatBonus") {
+      base += char.passiveAbility.value;
+    }
+
+    if (DBZ_NAMES.has(char.name)) {
+      base += 10; // DBZ baseline dominance
+      if (role === "Captain" || role === "Duelist") base += 6;
+    }
+
+    score += base;
+  });
+
+  Object.values(enemySlots).forEach(char => {
+    if (char.ability?.type === "enemyDebuff") {
+      score -= char.ability.value;
+    }
+  });
+
+  const teamNames = Object.values(slots).map(c => c.name);
+  Object.values(slots).forEach(char => {
+    if (char.ability?.type === "teamPair" && teamNames.includes(char.ability.partner)) {
+      score += char.ability.value;
+    }
+  });
+
+  // Apply ultimate bonus
+  score += ultimateBonus;
+
+  return score;
+}
+
+function getTeamThemeFromSlots(slots) {
+  const counters = { strength: 0, speed: 0, defense: 0, stamina: 0 };
+
+  Object.values(slots || {}).forEach(char => {
+    const stats = {
+      strength: char.strength || 0,
+      speed: char.speed || 0,
+      defense: char.defense || 0,
+      stamina: char.stamina || 0
+    };
+
+    const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+    if (!entries.length) return;
+
+    const top = entries[0][1];
+    const tied = entries.filter(([, value]) => value === top).map(([name]) => name);
+    tied.forEach(name => { counters[name] += 1 / tied.length; });
+  });
+
+  const sorted = Object.entries(counters).sort((a, b) => b[1] - a[1]);
+  if (!sorted.length || sorted[0][1] <= 0) return "balanced";
+
+  if (sorted.length > 1 && Math.abs(sorted[0][1] - sorted[1][1]) < 0.35) {
+    return "balanced";
+  }
+
+  return sorted[0][0];
+}
+
+function applyTeamTheme(slots) {
+  const theme = getTeamThemeFromSlots(slots);
+  document.body.classList.remove("theme-strength", "theme-speed", "theme-defense", "theme-stamina", "theme-balanced");
+  document.body.classList.add(`theme-${theme}`);
+}
+
+function showWinnerModal(winnerName, winnerScore, loserName, loserScore, winnerSlots = {}) {
+  const modal = document.createElement("div");
+  modal.className = "winner-modal";
+  const content = document.createElement("div");
+  content.className = "winner-content";
+
+  const draftedRows = Object.entries(winnerSlots)
+    .map(([role, char]) => {
+      const formSuffix = char.formLabel ? ` (${char.formLabel})` : "";
+      return `<div class="winning-draft-item"><span class="winning-draft-role">${role}</span><span>${char.name}${formSuffix}</span></div>`;
+    })
+    .join("");
+
+  const draftedHtml = draftedRows
+    ? `<div class="winning-draft"><h3>🎯 Winning Draft</h3><div class="winning-draft-list">${draftedRows}</div></div>`
+    : `<div class="winning-draft"><h3>🎯 Winning Draft</h3><div class="winning-draft-empty">No drafted characters available.</div></div>`;
+  
+  content.innerHTML = `
+    <div style="font-size: 80px;">🏆</div>
+    <h1>VICTORY!</h1>
+    <div class="winner-name">${winnerName}</div>
+    <div class="winner-score">Score: ${winnerScore} pts</div>
+    ${draftedHtml}
+    <div class="loser-info">
+      <p><strong>${loserName}</strong></p>
+      <p>Score: ${loserScore} pts</p>
+    </div>
+    
+    <div class="winner-buttons">
+      <button onclick="location.reload()">🔄 PLAY AGAIN</button>
+      <button onclick="quitGame()">🏠 QUIT</button>
+    </div>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  updateLeaderboard(winnerName, loserName);
+}
+
+function updateGameDisplay(data) {
+  if (!data || !data.players) return;
+  refreshCachedUltimateBonus();
+  renderChatMessages(data.chat || {});
+
+  const p1 = data.players.Player1?.slots || {};
+  const p2 = data.players.Player2?.slots || {};
+  const p1UltimateBonus = data.ultimateBonus?.Player1 || 0;
+  const p2UltimateBonus = data.ultimateBonus?.Player2 || 0;
+  const p1SkipPenalty = data.skipPenalties?.Player1 || 0;
+  const p2SkipPenalty = data.skipPenalties?.Player2 || 0;
+  state.skipPenalties.Player1 = p1SkipPenalty;
+  state.skipPenalties.Player2 = p2SkipPenalty;
+
+  const effectiveP1UltimateBonus = state.player === "Player1" ? Math.max(p1UltimateBonus, state.cachedUltimateBonus || 0) : p1UltimateBonus;
+  const effectiveP2UltimateBonus = state.player === "Player2" ? Math.max(p2UltimateBonus, state.cachedUltimateBonus || 0) : p2UltimateBonus;
+
+  if (state.player === "Player1") {
+    state.myFilledRoles = p1;
+    applyTeamTheme(p1);
+  }
+  else if (state.player === "Player2") {
+    state.myFilledRoles = p2;
+    applyTeamTheme(p2);
+  }
+
+  const p1HasPicks = Object.keys(p1).length > 0;
+  const p2HasPicks = Object.keys(p2).length > 0;
+
+  const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus) : 0;
+  const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus) : 0;
+  const s1 = s1Base - p1SkipPenalty;
+  const s2 = s2Base - p2SkipPenalty;
+
+  state.ultimateUsed = Boolean(data.ultimateBonus?.[state.player]);
+  ultimateBtn.disabled = state.ultimateUsed;
+
+  if (Object.keys(p1).length === 7 && Object.keys(p2).length === 7) {
+    if (!state.gameEnded) {
+      state.gameEnded = true;
+      const p1Name = data.players.Player1?.name || "Player 1";
+      const p2Name = data.players.Player2?.name || "Player 2";
+      
+      if (s1 > s2) showWinnerModal(p1Name, Math.floor(s1), p2Name, Math.floor(s2), p1);
+      else if (s2 > s1) showWinnerModal(p2Name, Math.floor(s2), p1Name, Math.floor(s1), p2);
+      else showWinnerModal("🤝 TIE!", Math.floor(s1), `${p1Name} vs ${p2Name}`, Math.floor(s2), {});
+    }
+    return;
+  }
+
+  const isNowMyTurn = data.turn === state.player;
+  if (state.myTurn !== isNowMyTurn && isNowMyTurn) {
+    playSoundEffect('turn');
+    state.hasSpunThisTurn = false;
+    state.skippedThisTurn = false;
+  }
+
+  let h1 = "";
+  Object.entries(p1).forEach(([r, c]) => {
+    let roleScore = c.score;
+    let isTraitor = false;
+    
+    if (c.ability?.type === "ignoreRole") {
+      roleScore = c.score;
+    } else {
+      if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
+      else if (r === "Vice") roleScore = Math.floor(roleScore * 1.2);
+      else if (r === "Healer" || r === "Support") roleScore += 2;
+      else if (r === "Tank" || r === "Duelist") roleScore += 1;
+      else if (r === "Traitor") { roleScore = -c.score; isTraitor = true; }
+    }
+    
+    const traitClass = isTraitor ? " traitor" : "";
+    const glowClass = getGlowClass(c.score);
+    const badges = [];
+    if (c.ability) badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
+    const abilityBadge = badges.join('');
+    h1 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
+  });
+
+  let h2 = "";
+  Object.entries(p2).forEach(([r, c]) => {
+    let roleScore = c.score;
+    let isTraitor = false;
+    
+    if (c.ability?.type === "ignoreRole") {
+      roleScore = c.score;
+    } else {
+      if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
+      else if (r === "Vice") roleScore = Math.floor(roleScore * 1.2);
+      else if (r === "Healer" || r === "Support") roleScore += 2;
+      else if (r === "Tank" || r === "Duelist") roleScore += 1;
+      else if (r === "Traitor") { roleScore = -c.score; isTraitor = true; }
+    }
+    
+    const traitClass = isTraitor ? " traitor" : "";
+    const glowClass = getGlowClass(c.score);
+    const badges = [];
+    if (c.ability) badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
+    if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
+    const abilityBadge = badges.join('');
+    h2 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
+  });
+
+  document.getElementById("p1Chars").innerHTML = h1 || "<span style='color:#888;'>No characters yet</span>";
+  document.getElementById("p2Chars").innerHTML = h2 || "<span style='color:#888;'>No characters yet</span>";
+  document.getElementById("p1Score").innerText = Math.floor(s1);
+  document.getElementById("p2Score").innerText = Math.floor(s2);
+
+  state.myTurn = data.turn === state.player;
+  const allRolesFilled = hasAllRolesSelected();
+  const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
+  spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
+  skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled || skipLimitReached;
+  document.getElementById("status").innerText = allRolesFilled
+    ? "✅ All 7 roles filled"
+    : (state.myTurn ? "🔥 YOUR TURN 🔥" : "⏳ Opponent's Turn");
+
+  document.getElementById("p1Panel").classList.remove("active");
+  document.getElementById("p2Panel").classList.remove("active");
+  if (state.myTurn && state.player === "Player1") document.getElementById("p1Panel").classList.add("active");
+  else if (state.myTurn && state.player === "Player2") document.getElementById("p2Panel").classList.add("active");
+
+  if (data.players) {
+    document.getElementById("p1Name").innerText = data.players.Player1?.name || "Player 1";
+    document.getElementById("p2Name").innerText = data.players.Player2?.name || "Player 2";
+  }
+}
+
+// ✅ FIXED joinGame FUNCTION - NOW COMPLETE!
+function joinGame() {
+  const name = document.getElementById("nameInput").value.trim();
+  const room = document.getElementById("roomInput").value.trim().toUpperCase();
+
+  if (!name || !room) {
+    showMessage("❌ Please fill in all fields!", "error");
+    return;
+  }
+
+  const joinBtn = document.querySelector("#joinSection button");
+  joinBtn.disabled = true;
+  showMessage("⏳ Joining...", "success");
+
+  state.room = room;
+  state.playerName = name;
+  state.characters = shuffle(CHARACTERS);
+  state.gameEnded = false;
+  state.ultimateUsed = false;
+  state.cachedUltimateBonus = 0;
+  state.hasSpunThisTurn = false;
+  state.skippedThisTurn = false;
+  state.skipPenalties = { Player1: 0, Player2: 0 };
+
+  const roomRef = db.ref(`rooms/${room}`);
+
+  roomRef.once("value").then((snap) => {
+    const roomData = snap.val() || {};
+    const players = roomData.players || {};
+
+    let playerSlot = null;
+
+    if (!players.Player1) playerSlot = "Player1";
+    else if (!players.Player2) playerSlot = "Player2";
+    else {
+      showMessage("❌ Room is full!", "error");
+      joinBtn.disabled = false;
+      return;
+    }
+
+    state.player = playerSlot;
+
+    db.ref(`rooms/${room}/players/${playerSlot}`).set({
+      name: name,
+      slots: {}
+    }).then(async () => {
+
+      // Auto remove on disconnect
+      db.ref(`rooms/${room}/players/${playerSlot}`)
+        .onDisconnect()
+        .remove();
+
+      // Set first turn if none exists
+      db.ref(`rooms/${room}/turn`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/turn`).set("Player1");
+      });
+      // Ensure skip penalties start at 0 for both players
+      db.ref(`rooms/${room}/skipPenalties`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/skipPenalties`).set({ Player1: 0, Player2: 0 });
+      });
+
+      await preloadImages();
+
+      setTimeout(() => {
+        document.getElementById("joinSection").style.display = "none";
+        document.getElementById("gameSection").style.display = "block";
+
+        document.getElementById("charCounter").innerText = state.characters.length;
+        document.getElementById("p1Score").innerText = "0";
+        document.getElementById("p2Score").innerText = "0";
+
+        draw();
+        spinBtn.disabled = true;
+        skipBtn.disabled = true;
+
+        if (state.musicEnabled) {
+          bgm.volume = 0.2;
+          bgm.play().catch(()=>{});
+        }
+
+        // Start listening to room updates
+        roomRef.on("value", (snap) => {
+          updateGameDisplay(snap.val());
+        });
+
+      }, 1000);
+
+    }).catch(err => {
+      showMessage("❌ " + err.message, "error");
+      joinBtn.disabled = false;
+    });
+
+  }).catch(err => {
+    showMessage("❌ Firebase error: " + err.message, "error");
+    joinBtn.disabled = false;
+  });
+}
+</script>
+
+</html>
     showMessage("❌ No characters left!", "error");
     return;
   }
