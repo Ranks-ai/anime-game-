@@ -1005,8 +1005,19 @@ const firebaseConfig = {
   appId: "1:690457557879:web:42752bdd2aa3fe3b163f72"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+let db = null;
+if (window.firebase && typeof firebase.initializeApp === "function") {
+  try {
+    if (!firebase.apps || !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.database();
+  } catch (err) {
+    console.error("Firebase init failed:", err);
+  }
+} else {
+  console.error("Firebase SDK failed to load.");
+}
 
 let audioContext = null;
 
@@ -2109,6 +2120,11 @@ function joinGame() {
 
   const joinBtn = document.querySelector("#joinSection button");
   joinBtn.disabled = true;
+  if (!db) {
+    showMessage("❌ Cannot connect to Firebase. Refresh and check network/ad blocker.", "error");
+    return;
+  }
+
   showMessage("⏳ Joining...", "success");
 
   state.room = room;
