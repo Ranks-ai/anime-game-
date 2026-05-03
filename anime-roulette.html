@@ -941,6 +941,7 @@ button:disabled {
   <div class="mode-switch">
     <button type="button" class="mode-btn active" onclick="setGameMode('classic')" id="modeClassic">Classic</button>
     <button type="button" class="mode-btn" onclick="setGameMode('draft')" id="modeDraft">Draft</button>
+    <button type="button" class="mode-btn" onclick="setGameMode('enhanced')" id="modeEnhanced">Enhanced</button>
   </div>
   <button id="startGameBtn" onclick="joinGame()">🎮 START GAME</button>
   <div id="messages"></div>
@@ -1426,9 +1427,11 @@ function toggleMusic() {
 }
 
 function setGameMode(mode) {
-  state.gameMode = mode === "draft" ? "draft" : "classic";
+  const allowedModes = new Set(["classic", "draft", "enhanced"]);
+  state.gameMode = allowedModes.has(mode) ? mode : "classic";
   document.getElementById("modeClassic")?.classList.toggle("active", state.gameMode === "classic");
   document.getElementById("modeDraft")?.classList.toggle("active", state.gameMode === "draft");
+  document.getElementById("modeEnhanced")?.classList.toggle("active", state.gameMode === "enhanced");
 }
 
 function toggleControlBar() {
