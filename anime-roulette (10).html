@@ -1081,10 +1081,16 @@ body.rare-cinematic {
 /* visual graphics layers */
 body.in-game::before {
   background:
-    linear-gradient(120deg, rgba(255,170,0,0.08) 0%, transparent 28%),
-    linear-gradient(300deg, rgba(174,0,255,0.08) 0%, transparent 32%),
+    linear-gradient(120deg, rgba(255,170,0,0.16) 0%, transparent 28%),
+    linear-gradient(300deg, rgba(174,0,255,0.15) 0%, transparent 32%),
+    radial-gradient(circle at 50% 45%, rgba(255,185,45,0.22), transparent 34%),
+    url("https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=2000&q=80"),
+    url("https://images.unsplash.com/photo-1542751110-97427bbecf20?auto=format&fit=crop&w=2000&q=80"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1000'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%23243477' stop-opacity='.45'/%3E%3Cstop offset='100%25' stop-color='%23040a16' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='1600' height='1000' fill='%23030913'/%3E%3Cpath d='M0 820L330 580L610 760L920 470L1180 690L1600 420' stroke='%23ffb300' stroke-opacity='.22' stroke-width='3' fill='none'/%3E%3Cpath d='M0 700L230 540L510 650L890 400L1210 590L1600 330' stroke='%2368dbff' stroke-opacity='.18' stroke-width='2' fill='none'/%3E%3Ccircle cx='780' cy='500' r='360' fill='url(%23g)'/%3E%3C/svg%3E");
-  background-size: cover;
+  background-size: auto, auto, auto, cover, cover, cover;
+  background-position: center, center, center, center, center, center;
+  background-blend-mode: screen, screen, normal, overlay, soft-light, normal;
+  filter: saturate(1.12) contrast(1.08) brightness(0.62);
   animation: none;
   opacity: 1;
 }
