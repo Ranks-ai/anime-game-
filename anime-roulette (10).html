@@ -1276,6 +1276,98 @@ body.in-game #chatInput {
   }
 }
 
+
+/* --- Reference-match refinement pass --- */
+body.in-game {
+  padding: 14px 14px 18px;
+}
+
+body.in-game h1 {
+  max-width: 340px;
+  margin: 4px 0 10px 6px;
+  padding: 8px 14px;
+  font-size: 1.05em;
+  line-height: 1.08;
+  text-align: left;
+  border-radius: 10px;
+  background: linear-gradient(120deg, rgba(9,14,30,.92), rgba(24,11,41,.75));
+  border: 1px solid rgba(82, 191, 255, 0.42);
+  box-shadow: 0 0 14px rgba(45,140,255,.25), inset 0 0 10px rgba(255,182,41,.12);
+}
+
+body.in-game h1::after {
+  font-size: 0.72em;
+  margin-top: 2px;
+  letter-spacing: 2px;
+}
+
+body.in-game .game-wrapper {
+  grid-template-columns: minmax(260px, 320px) minmax(700px, 1fr) minmax(260px, 320px);
+  display: grid;
+  align-items: start;
+  gap: 12px;
+}
+
+body.in-game .panel,
+body.in-game .chat-box,
+body.in-game .wheel-column {
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0.92), rgba(7, 12, 25, 0.86));
+  border-color: rgba(78, 209, 255, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255,175,45,.16), 0 0 18px rgba(0,108,255,.18);
+}
+
+body.in-game .top-bar {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: start;
+}
+
+body.in-game #status {
+  color: #9be9ff;
+  font-size: 15px;
+}
+
+body.in-game .action-buttons,
+body.in-game .interaction-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+body.in-game .action-buttons button,
+body.in-game .interaction-buttons button {
+  margin: 0;
+  min-height: 44px;
+  font-size: 20px;
+}
+
+body.in-game #spinBtn {
+  font-size: 30px;
+  letter-spacing: 1.5px;
+  min-height: 56px;
+  border-width: 2px;
+  box-shadow: 0 0 28px rgba(255, 190, 35, 0.72), inset 0 -8px 20px rgba(98, 54, 0, 0.55);
+}
+
+body.in-game canvas {
+  margin: 12px auto;
+  width: min(100%, 560px);
+  height: auto;
+}
+
+body.in-game .chat-box {
+  margin-top: 10px;
+}
+
+@media (max-width: 1280px) {
+  body.in-game .game-wrapper {
+    grid-template-columns: 1fr;
+  }
+  body.in-game h1 {
+    margin: 6px auto 10px;
+  }
+}
+
 </style>
 </head>
 <body>
