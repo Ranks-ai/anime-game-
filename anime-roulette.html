@@ -1034,6 +1034,8 @@
 +
 +let audioContext = null;
 +
++let audioContext = null;
++
 +function getAudioContext() {
 +  if (!audioContext) {
 +    const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1042,35 +1044,131 @@
 +  return audioContext;
 +}
 +
-+function playSound(frequencies, durations) {
++function createWhoosh(ctx, now, duration, intensity = 1) {
++  const noiseBuffer = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * duration)), ctx.sampleRate);
++  const data = noiseBuffer.getChannelData(0);
++  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.6;
++
++  const noise = ctx.createBufferSource();
++  noise.buffer = noiseBuffer;
++  const filter = ctx.createBiquadFilter();
++  filter.type = 'bandpass';
++  filter.frequency.setValueAtTime(700, now);
++  filter.frequency.exponentialRampToValueAtTime(1800, now + duration);
++  filter.Q.setValueAtTime(1.2, now);
++
++  const gain = ctx.createGain();
++  gain.gain.setValueAtTime(0.0001, now);
++  gain.gain.exponentialRampToValueAtTime(0.04 * intensity, now + 0.04);
++  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++  noise.connect(filter);
++  filter.connect(gain);
++  gain.connect(ctx.destination);
++  noise.start(now);
++  noise.stop(now + duration);
++}
++
++function playSynthTone(ctx, now, frequency, duration, opts = {}) {
++  const wave = opts.wave || 'triangle';
++  const intensity = opts.intensity || 0.22;
++  const detune = opts.detune || 7;
++  const glide = opts.glide || 0;
++
++  const osc = ctx.createOscillator();
++  const shimmer = ctx.createOscillator();
++  const filter = ctx.createBiquadFilter();
++  const gain = ctx.createGain();
++
++  osc.type = wave;
++  shimmer.type = 'sine';
++
++  osc.frequency.setValueAtTime(frequency, now);
++  shimmer.frequency.setValueAtTime(frequency * 2.01, now);
++
++  if (glide !== 0) {
++    osc.frequency.exponentialRampToValueAtTime(Math.max(60, frequency + glide), now + duration);
++    shimmer.frequency.exponentialRampToValueAtTime(Math.max(120, (frequency + glide) * 2), now + duration);
++  }
++
++  shimmer.detune.setValueAtTime(detune, now);
++
++  filter.type = opts.filterType || 'lowpass';
++  filter.frequency.setValueAtTime(opts.filterStart || 1200, now);
++  filter.frequency.exponentialRampToValueAtTime(opts.filterEnd || 3200, now + duration);
++  filter.Q.value = opts.q || 1.1;
++
++  gain.gain.setValueAtTime(0.0001, now);
++  gain.gain.exponentialRampToValueAtTime(intensity, now + 0.02);
++  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++  osc.connect(filter);
++  shimmer.connect(filter);
++  filter.connect(gain);
++  gain.connect(ctx.destination);
++
++  osc.start(now);
++  shimmer.start(now);
++  osc.stop(now + duration);
++  shimmer.stop(now + duration);
++}
++
++function playSound(notes, opts = {}) {
 +  try {
 +    const ctx = getAudioContext();
-+    frequencies.forEach((freq, idx) => {
-+      setTimeout(() => {
-+        try {
-+          const osc = ctx.createOscillator();
-+          const gain = ctx.createGain();
-+          osc.connect(gain);
-+          gain.connect(ctx.destination);
-+          osc.type = 'sine';
-+          osc.frequency.value = freq;
-+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + durations[idx]);
-+          osc.start(ctx.currentTime);
-+          osc.stop(ctx.currentTime + durations[idx]);
-+        } catch(e) {}
-+      }, idx * 80);
++    const now = ctx.currentTime + 0.01;
++
++    notes.forEach((note, idx) => {
++      const start = now + idx * (opts.step || 0.07);
++      const jitter = (Math.random() - 0.5) * (opts.jitter || 0);
++      playSynthTone(ctx, start, note.freq + jitter, note.duration, {
++        wave: note.wave || opts.wave,
++        intensity: note.intensity || opts.intensity,
++        detune: note.detune || opts.detune,
++        glide: note.glide || opts.glide,
++        filterType: note.filterType || opts.filterType,
++        filterStart: note.filterStart || opts.filterStart,
++        filterEnd: note.filterEnd || opts.filterEnd,
++        q: note.q || opts.q
++      });
 +    });
-+  } catch(e) {}
++
++    if (opts.whoosh) createWhoosh(ctx, now, opts.whooshDuration || 0.22, opts.whooshIntensity || 1);
++  } catch (e) {}
 +}
 +
 +function playSoundEffect(type) {
-+  if (type === 'spin') playSound([200, 250, 300], [0.1, 0.1, 0.15]);
-+  else if (type === 'select') playSound([400, 600, 800], [0.1, 0.15, 0.2]);
-+  else if (type === 'skip') playSound([600, 400], [0.1, 0.15]);
-+  else if (type === 'turn') playSound([440, 440], [0.1, 0.15]);
-+  else if (type === 'error') playSound([150, 100], [0.1, 0.1]);
++  if (type === 'spin') {
++    playSound([
++      {freq: 160, duration: 0.14, glide: 90, wave: 'sawtooth'},
++      {freq: 220, duration: 0.12, glide: 120, wave: 'triangle'},
++      {freq: 320, duration: 0.16, glide: 180, wave: 'triangle'}
++    ], { step: 0.06, intensity: 0.2, detune: 11, jitter: 6, filterStart: 900, filterEnd: 3800, whoosh: true, whooshDuration: 0.26, whooshIntensity: 1.1 });
++  } else if (type === 'select') {
++    playSound([
++      {freq: 440, duration: 0.08},
++      {freq: 660, duration: 0.1},
++      {freq: 990, duration: 0.14, wave: 'sine'}
++    ], { step: 0.05, intensity: 0.24, detune: 5, filterStart: 1500, filterEnd: 4200, jitter: 2 });
++  } else if (type === 'skip') {
++    playSound([
++      {freq: 620, duration: 0.08, glide: -80, wave: 'square'},
++      {freq: 420, duration: 0.12, glide: -120, wave: 'triangle'}
++    ], { step: 0.04, intensity: 0.18, detune: 4, filterStart: 1100, filterEnd: 1300 });
++  } else if (type === 'turn') {
++    playSound([
++      {freq: 392, duration: 0.07, wave: 'triangle'},
++      {freq: 523, duration: 0.11, wave: 'triangle'}
++    ], { step: 0.06, intensity: 0.19, detune: 6, filterStart: 1300, filterEnd: 3000 });
++  } else if (type === 'error') {
++    playSound([
++      {freq: 210, duration: 0.11, glide: -70, wave: 'square'},
++      {freq: 140, duration: 0.16, glide: -40, wave: 'sawtooth'}
++    ], { step: 0.06, intensity: 0.16, detune: 2, filterStart: 700, filterEnd: 500 });
++  }
 +}
++
++
 +
 +const BASE_CHARACTERS = [
 +  {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}]},
