@@ -94,7 +94,6 @@ h1 {
   color: #FFD700;
   text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
   font-size: 2.5em;
-  margin-top: 90px;
   margin-bottom: 20px;
   position: relative;
   z-index: 1;
@@ -139,24 +138,6 @@ h1 {
 #joinSection button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-.mode-switch {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 8px 0 2px;
-}
-.mode-btn {
-  background: #222 !important;
-  color: #fff !important;
-  border: 1px solid #00BFFF !important;
-  padding: 7px 10px !important;
-  font-size: 12px !important;
-}
-.mode-btn.active {
-  background: #00BFFF !important;
-  color: #001022 !important;
-  border-color: #7fdfff !important;
 }
 
 .error-msg {
@@ -457,12 +438,6 @@ button:disabled {
   display: flex;
   gap: 10px;
 }
-.volume-control.collapsed {
-  padding: 8px;
-}
-.volume-control.collapsed button:not(.collapse-btn) {
-  display: none;
-}
 
 .volume-control button {
   background: #FFD700;
@@ -470,11 +445,6 @@ button:disabled {
   padding: 8px 15px;
   font-size: 12px;
   margin: 0;
-}
-.collapse-btn {
-  background: #333 !important;
-  color: #FFD700 !important;
-  font-weight: bold;
 }
 
 .quit-btn {
@@ -925,8 +895,7 @@ button:disabled {
 }
 </style>
 
-<div class="volume-control collapsed">
-  <button onclick="toggleControlBar()" id="collapseBtn" class="collapse-btn">▾</button>
+<div class="volume-control">
   <button onclick="toggleMusic()" id="musicBtn">🔊 ON</button>
   <button onclick="showRules()" class="rules-btn">📖 RULES</button>
   <button onclick="showLeaderboard()" class="leaderboard-btn">🏆 LEADERBOARD</button>
@@ -938,12 +907,7 @@ button:disabled {
 <div id="joinSection">
   <input id="nameInput" placeholder="👤 Enter your name" type="text">
   <input id="roomInput" placeholder="🏠 Enter room code" type="text">
-  <div class="mode-switch">
-    <button type="button" class="mode-btn active" onclick="setGameMode('classic')" id="modeClassic">Classic</button>
-    <button type="button" class="mode-btn" onclick="setGameMode('draft')" id="modeDraft">Draft</button>
-    <button type="button" class="mode-btn" onclick="setGameMode('enhanced')" id="modeEnhanced">Enhanced</button>
-  </div>
-  <button id="startGameBtn" onclick="joinGame()">🎮 START GAME</button>
+  <button onclick="joinGame()">🎮 START GAME</button>
   <div id="messages"></div>
 </div>
 
@@ -1005,19 +969,8 @@ const firebaseConfig = {
   appId: "1:690457557879:web:42752bdd2aa3fe3b163f72"
 };
 
-let db = null;
-if (window.firebase && typeof firebase.initializeApp === "function") {
-  try {
-    if (!firebase.apps || !firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    db = firebase.database();
-  } catch (err) {
-    console.error("Firebase init failed:", err);
-  }
-} else {
-  console.error("Firebase SDK failed to load.");
-}
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 let audioContext = null;
 
@@ -1050,13 +1003,6 @@ function playSound(frequencies, durations) {
     });
   } catch(e) {}
 }
-+  {name:"Oden",score:11,img:"images/oden.png",strength:10,speed:8,defense:9,stamina:10,ability:{name:"Togen Totsuka",description:"+5 if Captain",type:"roleBonus",role:"Captain",value:5}},
-+  {name:"Minato",score:11,img:"images/minato.png",strength:9,speed:10,defense:8,stamina:9,ability:{name:"Flying Raijin",description:"+5 if Duelist",type:"roleBonus",role:"Duelist",value:5}},
-+  {name:"Aizen",score:11,img:"images/aizen.png",strength:9,speed:9,defense:9,stamina:10,ability:{name:"Kyoka Suigetsu",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
-+  {name:"Kenpachi",score:11,img:"images/kenpachi.png",strength:10,speed:8,defense:9,stamina:10,ability:{name:"Nozarashi",description:"+6 if Duelist",type:"roleBonus",role:"Duelist",value:6}},
-+  {name:"Yhwach",score:12,img:"images/yhwach.png",strength:10,speed:9,defense:10,stamina:10,ability:{name:"The Almighty",description:"Late game: +9 when 5+ roles filled",type:"lateGame",minRoles:5,value:9}},
-+  {name:"Law (Awakened)",score:11,img:"images/law_awakened.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Kroom",description:"40% chance to steal enemy lowest role score",type:"steal",chance:0.4,factor:1}},
-+  {name:"Kid (Awakened)",score:11,img:"images/kid_awakened.png",strength:10,speed:8,defense:9,stamina:9,ability:{name:"Damned Punk",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
 
 function playSoundEffect(type) {
   if (type === 'spin') playSound([200, 250, 300], [0.1, 0.1, 0.15]);
@@ -1069,11 +1015,6 @@ function playSoundEffect(type) {
 const BASE_CHARACTERS = [
   {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}]},
   {name:"Vegeta",score:10,img:"images/vegeta.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Prince's Pride",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
-  {name:"Gohan Beast",score:12,img:"images/gohan_beast.png",strength:10,speed:9,defense:9,stamina:10,ability:{name:"Beast Awakening",description:"+5 if Duelist, +3 if Captain",type:"roleBonus",role:"Duelist",value:5}},
-  {name:"Broly",score:12,img:"images/broly.png",strength:10,speed:8,defense:10,stamina:10,ability:{name:"Berserker Rage",description:"Late game: +8 when 5+ roles filled",type:"lateGame",minRoles:5,value:8}},
-  {name:"Frieza Black",score:12,img:"images/frieza_black.png",strength:10,speed:9,defense:9,stamina:9,ability:{name:"Emperor's Cruelty",description:"Enemy team -6 total",type:"enemyDebuff",value:6}},
-  {name:"Beerus",score:12,img:"images/beerus.png",strength:10,speed:10,defense:9,stamina:9,ability:{name:"Hakai",description:"+6 if Captain",type:"roleBonus",role:"Captain",value:6}},
-  {name:"Whis",score:11,img:"images/whis.png",strength:9,speed:10,defense:9,stamina:10,ability:{name:"Angel Guidance",description:"+6 if Support, +4 if Healer",type:"healingMastery",healerValue:4,supportValue:6}},
   {name:"Oden",score:11,img:"images/oden.png",strength:10,speed:8,defense:9,stamina:10,ability:{name:"Togen Totsuka",description:"+5 if Captain",type:"roleBonus",role:"Captain",value:5}},
   {name:"Minato",score:11,img:"images/minato.png",strength:9,speed:10,defense:8,stamina:9,ability:{name:"Flying Raijin",description:"+5 if Duelist",type:"roleBonus",role:"Duelist",value:5}},
   {name:"Aizen",score:11,img:"images/aizen.png",strength:9,speed:9,defense:9,stamina:10,ability:{name:"Kyoka Suigetsu",description:"Enemy team -4 total",type:"enemyDebuff",value:4}},
@@ -1148,7 +1089,6 @@ const CHARACTERS = BASE_CHARACTERS.map(char => ({
 }));
 
 const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Traitor"];
-const DBZ_NAMES = new Set(["Goku","Vegeta","Gohan Beast","Broly","Frieza Black","Beerus","Whis"]);
 
 let state = {
 ultimateUsed: false,
@@ -1169,9 +1109,7 @@ ultimateUsed: false,
   skipPenalties: {
     Player1: 0,
     Player2: 0
-  },
-  blockedRoles: {},
-  gameMode: "classic"
+  }
 };
 
 const canvas = document.getElementById("canvas");
@@ -1444,26 +1382,6 @@ function toggleMusic() {
   }
 }
 
-function setGameMode(mode) {
-  const allowedModes = new Set(["classic", "draft", "enhanced"]);
-  state.gameMode = allowedModes.has(mode) ? mode : "classic";
-  var modeClassicBtn = document.getElementById("modeClassic");
-  if (modeClassicBtn) modeClassicBtn.classList.toggle("active", state.gameMode === "classic");
-  var modeDraftBtn = document.getElementById("modeDraft");
-  if (modeDraftBtn) modeDraftBtn.classList.toggle("active", state.gameMode === "draft");
-  var modeEnhancedBtn = document.getElementById("modeEnhanced");
-  if (modeEnhancedBtn) modeEnhancedBtn.classList.toggle("active", state.gameMode === "enhanced");
-}
-
-function toggleControlBar() {
-  const bar = document.querySelector(".volume-control");
-  const btn = document.getElementById("collapseBtn");
-  if (!bar || !btn) return;
-  const collapsed = bar.classList.toggle("collapsed");
-  btn.textContent = collapsed ? "▸" : "▾";
-  btn.title = collapsed ? "Expand controls" : "Collapse controls";
-}
-
 function shuffle(arr) {
   let a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -1628,14 +1546,7 @@ function spin() {
       const slice = (Math.PI * 2) / state.characters.length;
       const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const index = Math.floor(normalized / slice) % state.characters.length;
-      let selected = state.characters[index];
-      // Make DBZ characters harder to pull.
-      if (DBZ_NAMES.has(selected.name) && Math.random() < 0.65) {
-        const nonDbzPool = state.characters.filter(c => !DBZ_NAMES.has(c.name));
-        if (nonDbzPool.length) {
-          selected = nonDbzPool[Math.floor(Math.random() * nonDbzPool.length)];
-        }
-      }
+      const selected = state.characters[index];
       const selectedWithForm = applyFormVariation(selected);
       state.hasSpunThisTurn = true;
 
@@ -1760,10 +1671,6 @@ function showPopup(char) {
     if (state.myFilledRoles[role]) {
       btn.disabled = true;
       btn.classList.add("taken");
-    } else if (isRoleBlocked(role)) {
-      btn.disabled = true;
-      btn.classList.add("taken");
-      btn.title = "Temporarily blocked this turn";
     } else {
       btn.onclick = () => selectRole(role, popup, char);
     }
@@ -1789,12 +1696,7 @@ function showPopup(char) {
 
   loadImage(char.img);
 }
-function getRoleBlockForPlayer(role, player = state.player) {
-  const roleBlock = ((state.blockedRoles && state.blockedRoles[player]) ? state.blockedRoles[player][role] : undefined);
-  return Boolean(block && ((block.remainingOwnTurns !== undefined && block.remainingOwnTurns !== null) ? block.remainingOwnTurns : 1) > 0);
-  const current = (state.blockedRoles && state.blockedRoles[player]) || {};
-    const remaining = ((normalized.remainingOwnTurns !== undefined && normalized.remainingOwnTurns !== null) ? normalized.remainingOwnTurns : 1) - 1;
-
+function selectRole(role, popup, char) {
   db.ref(`rooms/${state.room}/players/${state.player}/slots/${role}`).set(char).then(() => {
     state.characters = state.characters.filter(c => c.name !== char.name);
     state.myFilledRoles[role] = true;
@@ -1805,9 +1707,7 @@ function getRoleBlockForPlayer(role, player = state.player) {
     state.hasSpunThisTurn = false;
     state.skippedThisTurn = false;
     const next = state.player === "Player1" ? "Player2" : "Player1";
-    decrementRoleBlocksForPlayer(state.player).finally(() => {
-      db.ref(`rooms/${state.room}/turn`).set(next);
-    });
+    db.ref(`rooms/${state.room}/turn`).set(next);
   }).catch(err => {
     showMessage("Error: " + err.message, "error");
     console.error(err);
@@ -1846,9 +1746,7 @@ function skipTurn() {
   db.ref(`rooms/${state.room}/skipPenalties/${state.player}`).set(updatedPenalty);
 
   const next = state.player === "Player1" ? "Player2" : "Player1";
-  decrementRoleBlocksForPlayer(state.player).finally(() => {
-    db.ref(`rooms/${state.room}/turn`).set(next);
-  });
+  db.ref(`rooms/${state.room}/turn`).set(next);
 }
 
 function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
@@ -1867,39 +1765,34 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
       else if (role === "Traitor") base = -char.score;
     }
 
-    if ((char.ability && char.ability.type) === "ignoreRole") {
+    const attributeBonus = (char.strength + char.speed + char.defense + char.stamina) * 0.1;
     base += Math.floor(attributeBonus);
 
-    if ((char.ability && char.ability.type) === "roleBonus" && role === char.ability.role) {
+    if (char.ability?.type === "roleBonus" && role === char.ability.role) {
       base += char.ability.value;
     }
 
-    if ((char.ability && char.ability.type) === "healingMastery") {
+    if (char.ability?.type === "healingMastery") {
       if (role === "Healer") base += (char.ability.healerValue || 0);
       else if (role === "Support") base += (char.ability.supportValue || 0);
     }
 
-    if ((char.passiveAbility && char.passiveAbility.type) === "flatBonus") {
+    if (char.passiveAbility?.type === "flatBonus") {
       base += char.passiveAbility.value;
-    }
-
-    if (DBZ_NAMES.has(char.name)) {
-      base += 10; // DBZ baseline dominance
-      if (role === "Captain" || role === "Duelist") base += 6;
     }
 
     score += base;
   });
 
   Object.values(enemySlots).forEach(char => {
-    if ((char.ability && char.ability.type) === "enemyDebuff") {
+    if (char.ability?.type === "enemyDebuff") {
       score -= char.ability.value;
     }
   });
 
   const teamNames = Object.values(slots).map(c => c.name);
   Object.values(slots).forEach(char => {
-    if ((char.ability && char.ability.type) === "teamPair" && teamNames.includes(char.ability.partner)) {
+    if (char.ability?.type === "teamPair" && teamNames.includes(char.ability.partner)) {
       score += char.ability.value;
     }
   });
@@ -1999,12 +1892,12 @@ function updateGameDisplay(data) {
   state.skipPenalties.Player1 = p1SkipPenalty;
   state.skipPenalties.Player2 = p2SkipPenalty;
 
-  const p1 = (data.players.Player1 && data.players.Player1.slots) || {};
-  const p2 = (data.players.Player2 && data.players.Player2.slots) || {};
-  const p1UltimateBonus = (data.ultimateBonus && data.ultimateBonus.Player1) || 0;
-  const p2UltimateBonus = (data.ultimateBonus && data.ultimateBonus.Player2) || 0;
-  const p1SkipPenalty = (data.skipPenalties && data.skipPenalties.Player1) || 0;
-  const p2SkipPenalty = (data.skipPenalties && data.skipPenalties.Player2) || 0;
+  const effectiveP1UltimateBonus = state.player === "Player1" ? Math.max(p1UltimateBonus, state.cachedUltimateBonus || 0) : p1UltimateBonus;
+  const effectiveP2UltimateBonus = state.player === "Player2" ? Math.max(p2UltimateBonus, state.cachedUltimateBonus || 0) : p2UltimateBonus;
+
+  if (state.player === "Player1") {
+    state.myFilledRoles = p1;
+    applyTeamTheme(p1);
   }
   else if (state.player === "Player2") {
     state.myFilledRoles = p2;
@@ -2019,14 +1912,14 @@ function updateGameDisplay(data) {
   const s1 = s1Base - p1SkipPenalty;
   const s2 = s2Base - p2SkipPenalty;
 
-  state.ultimateUsed = Boolean((data.ultimateBonus && data.ultimateBonus[state.player]));
+  state.ultimateUsed = Boolean(data.ultimateBonus?.[state.player]);
   ultimateBtn.disabled = state.ultimateUsed;
 
   if (Object.keys(p1).length === 7 && Object.keys(p2).length === 7) {
     if (!state.gameEnded) {
       state.gameEnded = true;
-      const p1Name = (data.players.Player1 && data.players.Player1.name) || "Player 1";
-      const p2Name = (data.players.Player2 && data.players.Player2.name) || "Player 2";
+      const p1Name = data.players.Player1?.name || "Player 1";
+      const p2Name = data.players.Player2?.name || "Player 2";
       
       if (s1 > s2) showWinnerModal(p1Name, Math.floor(s1), p2Name, Math.floor(s2), p1);
       else if (s2 > s1) showWinnerModal(p2Name, Math.floor(s2), p1Name, Math.floor(s1), p2);
@@ -2047,7 +1940,7 @@ function updateGameDisplay(data) {
     let roleScore = c.score;
     let isTraitor = false;
     
-    if ((c.ability && c.ability.type) === "ignoreRole") {
+    if (c.ability?.type === "ignoreRole") {
       roleScore = c.score;
     } else {
       if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
@@ -2071,7 +1964,7 @@ function updateGameDisplay(data) {
     let roleScore = c.score;
     let isTraitor = false;
     
-    if ((c.ability && c.ability.type) === "ignoreRole") {
+    if (c.ability?.type === "ignoreRole") {
       roleScore = c.score;
     } else {
       if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
@@ -2110,8 +2003,8 @@ function updateGameDisplay(data) {
   else if (state.myTurn && state.player === "Player2") document.getElementById("p2Panel").classList.add("active");
 
   if (data.players) {
-    document.getElementById("p1Name").innerText = (data.players.Player1 && data.players.Player1.name) || "Player 1";
-    document.getElementById("p2Name").innerText = (data.players.Player2 && data.players.Player2.name) || "Player 2";
+    document.getElementById("p1Name").innerText = data.players.Player1?.name || "Player 1";
+    document.getElementById("p2Name").innerText = data.players.Player2?.name || "Player 2";
   }
 }
 
@@ -2127,11 +2020,6 @@ function joinGame() {
 
   const joinBtn = document.querySelector("#joinSection button");
   joinBtn.disabled = true;
-  if (!db) {
-    showMessage("❌ Cannot connect to Firebase. Refresh and check network/ad blocker.", "error");
-    return;
-  }
-
   showMessage("⏳ Joining...", "success");
 
   state.room = room;
@@ -2140,7 +2028,7 @@ function joinGame() {
   state.gameEnded = false;
   state.ultimateUsed = false;
   state.cachedUltimateBonus = 0;
-  const joinBtn = document.getElementById("startGameBtn");
+  state.hasSpunThisTurn = false;
   state.skippedThisTurn = false;
   state.skipPenalties = { Player1: 0, Player2: 0 };
 
@@ -2164,7 +2052,6 @@ function joinGame() {
 
     db.ref(`rooms/${room}/players/${playerSlot}`).set({
       name: name,
-      mode: state.gameMode,
       slots: {}
     }).then(async () => {
 
@@ -2188,6 +2075,41 @@ function joinGame() {
 
       setTimeout(() => {
         document.getElementById("joinSection").style.display = "none";
+        document.getElementById("gameSection").style.display = "block";
+
+        document.getElementById("charCounter").innerText = state.characters.length;
+        document.getElementById("p1Score").innerText = "0";
+        document.getElementById("p2Score").innerText = "0";
+
+        draw();
+        spinBtn.disabled = true;
+        skipBtn.disabled = true;
+
+        if (state.musicEnabled) {
+          bgm.volume = 0.2;
+          bgm.play().catch(()=>{});
+        }
+
+        // Start listening to room updates
+        roomRef.on("value", (snap) => {
+          updateGameDisplay(snap.val());
+        });
+
+      }, 1000);
+
+    }).catch(err => {
+      showMessage("❌ " + err.message, "error");
+      joinBtn.disabled = false;
+    });
+
+  }).catch(err => {
+    showMessage("❌ Firebase error: " + err.message, "error");
+    joinBtn.disabled = false;
+  });
+}
+</script>
+
+</html>
         document.getElementById("gameSection").style.display = "block";
 
         document.getElementById("charCounter").innerText = state.characters.length;
