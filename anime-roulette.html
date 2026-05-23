@@ -927,8 +927,7 @@ button:disabled {
   <input id="roomInput" placeholder="🏠 Enter room code" type="text">
   <div class="mode-switch">
     <button type="button" class="mode-btn active" onclick="setGameMode('classic')" id="modeClassic">Classic</button>
-    <button type="button" class="mode-btn" onclick="setGameMode('draft')" id="modeDraft">Draft</button>
-    <button type="button" class="mode-btn" onclick="setGameMode('enhanced')" id="modeEnhanced">Enhanced</button>
+        <button type="button" class="mode-btn" onclick="setGameMode('enhanced')" id="modeEnhanced">Enhanced</button>
   </div>
   <button id="startGameBtn" onclick="joinGame()">🎮 START GAME</button>
   <div id="messages"></div>
@@ -1412,13 +1411,11 @@ function toggleMusic() {
 }
 
 function setGameMode(mode) {
-  const allowedModes = { classic: true, draft: true, enhanced: true };
+  const allowedModes = { classic: true, enhanced: true };
   state.gameMode = allowedModes[mode] ? mode : "classic";
   const modeClassicBtn = document.getElementById("modeClassic");
-  const modeDraftBtn = document.getElementById("modeDraft");
   const modeEnhancedBtn = document.getElementById("modeEnhanced");
   if (modeClassicBtn) modeClassicBtn.classList.toggle("active", state.gameMode === "classic");
-  if (modeDraftBtn) modeDraftBtn.classList.toggle("active", state.gameMode === "draft");
   if (modeEnhancedBtn) modeEnhancedBtn.classList.toggle("active", state.gameMode === "enhanced");
 }
 
@@ -1795,7 +1792,7 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
   Object.entries(slots).forEach(([role, char]) => {
     let base = char.score;
 
-    if (char.ability?.type === "ignoreRole") {
+    if ((char.ability && char.ability.type) === "ignoreRole") {
       // Ignore multipliers
     } else {
       if (role === "Captain") base = Math.floor(base * 1.5);
@@ -1808,16 +1805,16 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
     const attributeBonus = (char.strength + char.speed + char.defense + char.stamina) * 0.1;
     base += Math.floor(attributeBonus);
 
-    if (char.ability?.type === "roleBonus" && role === char.ability.role) {
+    if ((char.ability && char.ability.type) === "roleBonus" && role === char.ability.role) {
       base += char.ability.value;
     }
 
-    if (char.ability?.type === "healingMastery") {
+    if ((char.ability && char.ability.type) === "healingMastery") {
       if (role === "Healer") base += (char.ability.healerValue || 0);
       else if (role === "Support") base += (char.ability.supportValue || 0);
     }
 
-    if (char.passiveAbility?.type === "flatBonus") {
+    if ((char.passiveAbility && char.passiveAbility.type) === "flatBonus") {
       base += char.passiveAbility.value;
     }
 
@@ -1825,14 +1822,14 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
   });
 
   Object.values(enemySlots).forEach(char => {
-    if (char.ability?.type === "enemyDebuff") {
+    if ((char.ability && char.ability.type) === "enemyDebuff") {
       score -= char.ability.value;
     }
   });
 
   const teamNames = Object.values(slots).map(c => c.name);
   Object.values(slots).forEach(char => {
-    if (char.ability?.type === "teamPair" && teamNames.includes(char.ability.partner)) {
+    if ((char.ability && char.ability.type) === "teamPair" && teamNames.includes(char.ability.partner)) {
       score += char.ability.value;
     }
   });
@@ -1923,12 +1920,12 @@ function updateGameDisplay(data) {
   refreshCachedUltimateBonus();
   renderChatMessages(data.chat || {});
 
-  const p1 = data.players.Player1?.slots || {};
-  const p2 = data.players.Player2?.slots || {};
-  const p1UltimateBonus = data.ultimateBonus?.Player1 || 0;
-  const p2UltimateBonus = data.ultimateBonus?.Player2 || 0;
-  const p1SkipPenalty = data.skipPenalties?.Player1 || 0;
-  const p2SkipPenalty = data.skipPenalties?.Player2 || 0;
+  const p1 = (data.players.Player1 && data.players.Player1.slots) || {};
+  const p2 = (data.players.Player2 && data.players.Player2.slots) || {};
+  const p1UltimateBonus = (data.ultimateBonus && data.ultimateBonus.Player1) || 0;
+  const p2UltimateBonus = (data.ultimateBonus && data.ultimateBonus.Player2) || 0;
+  const p1SkipPenalty = (data.skipPenalties && data.skipPenalties.Player1) || 0;
+  const p2SkipPenalty = (data.skipPenalties && data.skipPenalties.Player2) || 0;
   state.skipPenalties.Player1 = p1SkipPenalty;
   state.skipPenalties.Player2 = p2SkipPenalty;
 
@@ -1952,14 +1949,14 @@ function updateGameDisplay(data) {
   const s1 = s1Base - p1SkipPenalty;
   const s2 = s2Base - p2SkipPenalty;
 
-  state.ultimateUsed = Boolean(data.ultimateBonus?.[state.player]);
+  state.ultimateUsed = Boolean((data.ultimateBonus && data.ultimateBonus[state.player]));
   ultimateBtn.disabled = state.ultimateUsed;
 
   if (Object.keys(p1).length === 7 && Object.keys(p2).length === 7) {
     if (!state.gameEnded) {
       state.gameEnded = true;
-      const p1Name = data.players.Player1?.name || "Player 1";
-      const p2Name = data.players.Player2?.name || "Player 2";
+      const p1Name = (data.players.Player1 && data.players.Player1.name) || "Player 1";
+      const p2Name = (data.players.Player2 && data.players.Player2.name) || "Player 2";
       
       if (s1 > s2) showWinnerModal(p1Name, Math.floor(s1), p2Name, Math.floor(s2), p1);
       else if (s2 > s1) showWinnerModal(p2Name, Math.floor(s2), p1Name, Math.floor(s1), p2);
@@ -1980,7 +1977,7 @@ function updateGameDisplay(data) {
     let roleScore = c.score;
     let isTraitor = false;
     
-    if (c.ability?.type === "ignoreRole") {
+    if ((c.ability && c.ability.type) === "ignoreRole") {
       roleScore = c.score;
     } else {
       if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
@@ -2004,7 +2001,7 @@ function updateGameDisplay(data) {
     let roleScore = c.score;
     let isTraitor = false;
     
-    if (c.ability?.type === "ignoreRole") {
+    if ((c.ability && c.ability.type) === "ignoreRole") {
       roleScore = c.score;
     } else {
       if (r === "Captain") roleScore = Math.floor(roleScore * 1.5);
@@ -2043,8 +2040,8 @@ function updateGameDisplay(data) {
   else if (state.myTurn && state.player === "Player2") document.getElementById("p2Panel").classList.add("active");
 
   if (data.players) {
-    document.getElementById("p1Name").innerText = data.players.Player1?.name || "Player 1";
-    document.getElementById("p2Name").innerText = data.players.Player2?.name || "Player 2";
+    document.getElementById("p1Name").innerText = (data.players.Player1 && data.players.Player1.name) || "Player 1";
+    document.getElementById("p2Name").innerText = (data.players.Player2 && data.players.Player2.name) || "Player 2";
   }
 }
 
