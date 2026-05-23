@@ -139,6 +139,24 @@ h1 {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.mode-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 2px;
+}
+.mode-btn {
+  background: #222 !important;
+  color: #fff !important;
+  border: 1px solid #00BFFF !important;
+  padding: 7px 10px !important;
+  font-size: 12px !important;
+}
+.mode-btn.active {
+  background: #00BFFF !important;
+  color: #001022 !important;
+  border-color: #7fdfff !important;
+}
 
 .error-msg {
   color: #FF6B6B;
@@ -907,7 +925,12 @@ button:disabled {
 <div id="joinSection">
   <input id="nameInput" placeholder="👤 Enter your name" type="text">
   <input id="roomInput" placeholder="🏠 Enter room code" type="text">
-  <button onclick="joinGame()">🎮 START GAME</button>
+  <div class="mode-switch">
+    <button type="button" class="mode-btn active" onclick="setGameMode('classic')" id="modeClassic">Classic</button>
+    <button type="button" class="mode-btn" onclick="setGameMode('draft')" id="modeDraft">Draft</button>
+    <button type="button" class="mode-btn" onclick="setGameMode('enhanced')" id="modeEnhanced">Enhanced</button>
+  </div>
+  <button id="startGameBtn" onclick="joinGame()">🎮 START GAME</button>
   <div id="messages"></div>
 </div>
 
@@ -969,8 +992,13 @@ const firebaseConfig = {
   appId: "1:690457557879:web:42752bdd2aa3fe3b163f72"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+let db = null;
+if (window.firebase && typeof firebase.initializeApp === "function") {
+  if (!firebase.apps || !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  db = firebase.database();
+}
 
 let audioContext = null;
 
@@ -1109,7 +1137,8 @@ ultimateUsed: false,
   skipPenalties: {
     Player1: 0,
     Player2: 0
-  }
+  },
+  gameMode: "classic"
 };
 
 const canvas = document.getElementById("canvas");
@@ -1380,6 +1409,17 @@ function toggleMusic() {
     bgm.pause();
     btn.innerText = "🔇 OFF";
   }
+}
+
+function setGameMode(mode) {
+  const allowedModes = { classic: true, draft: true, enhanced: true };
+  state.gameMode = allowedModes[mode] ? mode : "classic";
+  const modeClassicBtn = document.getElementById("modeClassic");
+  const modeDraftBtn = document.getElementById("modeDraft");
+  const modeEnhancedBtn = document.getElementById("modeEnhanced");
+  if (modeClassicBtn) modeClassicBtn.classList.toggle("active", state.gameMode === "classic");
+  if (modeDraftBtn) modeDraftBtn.classList.toggle("active", state.gameMode === "draft");
+  if (modeEnhancedBtn) modeEnhancedBtn.classList.toggle("active", state.gameMode === "enhanced");
 }
 
 function shuffle(arr) {
@@ -2010,6 +2050,11 @@ function updateGameDisplay(data) {
 
 // ✅ FIXED joinGame FUNCTION - NOW COMPLETE!
 function joinGame() {
+  if (!db) {
+    showMessage("❌ Cannot connect to Firebase right now. Disable ad blocker or refresh.", "error");
+    return;
+  }
+
   const name = document.getElementById("nameInput").value.trim();
   const room = document.getElementById("roomInput").value.trim().toUpperCase();
 
@@ -2018,7 +2063,7 @@ function joinGame() {
     return;
   }
 
-  const joinBtn = document.querySelector("#joinSection button");
+  const joinBtn = document.getElementById("startGameBtn");
   joinBtn.disabled = true;
   showMessage("⏳ Joining...", "success");
 
@@ -2052,6 +2097,7 @@ function joinGame() {
 
     db.ref(`rooms/${room}/players/${playerSlot}`).set({
       name: name,
+      mode: state.gameMode,
       slots: {}
     }).then(async () => {
 
