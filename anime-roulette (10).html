@@ -1340,17 +1340,17 @@ body.in-game .panel.mobile-collapsible{height:100%;max-height:none;width:100%;ma
 body.in-game .panel h3{margin:0 0 6px;font-size:clamp(12px,.95vw,16px);line-height:1.05;text-align:left}
 body.in-game .collapse-toggle{display:none!important}
 body.in-game .collapsible-content{display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden}
-body.in-game #p1Chars,body.in-game #p2Chars{min-height:0;flex:1;overflow:hidden}
-body.in-game .team-grid{height:100%;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:4px;overflow:hidden;align-items:stretch}
-body.in-game .char-item{min-height:0;max-height:none;height:100%;margin-left:12px;padding:3px 6px 3px 0;border-radius:10px;gap:6px;display:grid;grid-template-columns:minmax(48px,30%) minmax(0,70%);align-items:center;overflow:visible}
-body.in-game .char-item img{width:clamp(50px,5.7vh,64px);height:clamp(50px,5.7vh,64px);max-width:72px;max-height:72px;justify-self:start;align-self:center;object-fit:contain;object-position:center center;border-radius:12px;padding:3px;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.14),rgba(8,12,28,.94) 70%);transform:translateX(-12px);position:relative;z-index:2;outline:1px solid rgba(255,255,255,.2)}
-body.in-game .char-info{min-width:0;text-align:left;line-height:1.05;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:visible;align-self:stretch;padding-block:2px}
-body.in-game .char-info strong{font-size:clamp(12px,.85vw,14px);line-height:1.08;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
-body.in-game .team-card-meta{display:flex;align-items:center;gap:4px;min-width:0;max-width:100%;overflow:visible}
-body.in-game .role-tag{min-width:0;display:inline-flex;align-items:center;gap:2px;font-size:clamp(10px,.72vw,12px);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c9d8ff}
-body.in-game .role-score{flex:0 0 auto;display:inline-flex;align-items:center;height:clamp(15px,1.9vh,19px);padding:1px 6px;margin:0;border-radius:999px;font-size:clamp(11px,.75vw,13px);line-height:1;font-weight:900;background:rgba(255,215,106,.14);border:1px solid rgba(255,215,106,.34);color:#ffe58c;box-shadow:0 0 10px rgba(255,215,106,.18)}
-body.in-game .ability-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin-top:0;max-height:20px;min-width:0;max-width:100%;overflow:visible}
-body.in-game .ability-badge,body.in-game .status-indicator{display:inline-flex;align-items:center;max-width:100%;height:clamp(15px,1.9vh,20px);padding:1px 5px;margin:0;border-radius:999px;background:rgba(12,18,38,.72);border:1px solid rgba(255,215,106,.32);color:#f6d77a;font-size:clamp(10px,.68vw,11px);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.in-game #p1Chars,body.in-game #p2Chars{min-height:0;flex:1;overflow-y:auto;overflow-x:visible;padding-right:2px;scrollbar-width:thin}
+body.in-game .team-grid{min-height:100%;display:flex;flex-direction:column;gap:3px;overflow:visible;align-items:stretch}
+body.in-game .char-item{min-height:clamp(110px,13vh,140px);height:auto;margin-left:12px;padding:8px 8px 8px 0;border-radius:12px;gap:8px;display:grid;grid-template-columns:minmax(58px,32%) minmax(0,68%);align-items:start;overflow:visible}
+body.in-game .char-item img{width:clamp(58px,7vh,78px);height:clamp(58px,7vh,78px);max-width:82px;max-height:82px;justify-self:start;align-self:start;object-fit:contain;object-position:center center;border-radius:14px;padding:3px;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.14),rgba(8,12,28,.94) 70%);transform:translateX(-12px);position:relative;z-index:2;outline:1px solid rgba(255,255,255,.2)}
+body.in-game .char-info{min-width:0;text-align:left;line-height:1.05;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;overflow:visible;align-self:stretch;padding-block:1px}
+body.in-game .char-info strong{font-size:clamp(12px,.9vw,15px);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%}
+body.in-game .team-card-meta{display:flex;align-items:center;gap:5px;min-width:0;max-width:100%;overflow:visible}
+body.in-game .role-tag{min-width:0;display:inline-flex;align-items:center;gap:2px;font-size:clamp(10px,.76vw,12px);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c9d8ff;text-transform:uppercase;font-weight:800;letter-spacing:.35px}
+body.in-game .role-score{flex:0 0 auto;display:inline-flex;align-items:center;min-height:clamp(16px,2vh,20px);padding:1px 7px;margin:0;border-radius:999px;font-size:clamp(11px,.78vw,13px);line-height:1;font-weight:900;background:rgba(255,215,106,.14);border:1px solid rgba(255,215,106,.34);color:#ffe58c;box-shadow:0 0 10px rgba(255,215,106,.18)}
+body.in-game .ability-wrap{display:flex;flex-direction:column;align-items:stretch;gap:3px;margin-top:2px;min-width:0;max-width:100%;overflow:visible}
+body.in-game .ability-badge,body.in-game .status-indicator{display:flex;align-items:center;width:100%;max-width:100%;min-height:clamp(17px,2.15vh,22px);padding:2px 6px;margin:0;border-radius:8px;background:linear-gradient(90deg,rgba(12,18,38,.82),rgba(18,28,58,.72));border:1px solid rgba(255,215,106,.32);color:#f6d77a;font-size:clamp(10px,.7vw,11px);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 0 10px rgba(255,255,255,.03)}
 body.in-game .ability-badge-muted{color:#aeb7c9;border-color:rgba(174,183,201,.26)}
 body.in-game .status-indicator{border-color:rgba(120,170,255,.32);color:#a8d8ff}body.in-game .char-item img.glow-10{border-color:#ffe88f;box-shadow:0 0 0 2px rgba(255,215,106,.55),0 0 18px rgba(255,215,106,.9),0 0 34px rgba(255,166,35,.45);background:radial-gradient(circle at 50% 35%,rgba(255,236,166,.24),rgba(44,23,0,.94) 72%)}body.in-game .char-item img.glow-9{border-color:#c69cff;box-shadow:0 0 0 2px rgba(176,91,255,.42),0 0 16px rgba(176,91,255,.78);background:radial-gradient(circle at 50% 35%,rgba(210,176,255,.2),rgba(22,10,49,.94) 72%)}body.in-game .char-item img.glow-8{border-color:#62dcff;box-shadow:0 0 0 2px rgba(47,191,255,.38),0 0 14px rgba(47,191,255,.7);background:radial-gradient(circle at 50% 35%,rgba(168,241,255,.18),rgba(5,29,55,.94) 72%)}body.in-game .char-item img.glow-7{border-color:#65ffad;box-shadow:0 0 0 2px rgba(71,245,157,.35),0 0 13px rgba(71,245,157,.62);background:radial-gradient(circle at 50% 35%,rgba(158,255,207,.17),rgba(5,42,25,.94) 72%)}body.in-game .char-item img.glow-6{border-color:#a5afc1;box-shadow:0 0 0 2px rgba(160,170,190,.24),0 0 8px rgba(160,170,190,.28)}
 body.in-game .score{font-size:clamp(12px,.9vw,16px);line-height:1;margin-top:5px;text-align:left}
@@ -1998,17 +1998,23 @@ function teamAbilityIcon(ability){
   if (ability.type === 'enemyDebuff') return '💀';
   if (ability.type === 'steal') return '🌀';
   if (ability.type === 'roleBonus') return '⚔️';
+  if (ability.type === 'healingMastery') return '💚';
+  if (ability.type === 'teamMultiplier') return '✦';
+  if (ability.type === 'lateGame') return '🌙';
+  if (ability.type === 'ignoreRole') return '🚫';
+  if (ability.type === 'teamPair') return '🤝';
   return '⚡';
 }
 function buildTeamAbilityBadges(character, isTraitor){
   const badges = [];
+  if (character.hiddenAbility) badges.push(`<span class="status-indicator">❓ Hidden Ability</span>`);
+  if (character.hiddenMultiplier) badges.push(`<span class="status-indicator">🎭 Decoy x${character.decoyMultiplier || '?'}</span>`);
   if (character.ability?.name) badges.push(`<span class="ability-badge">${teamAbilityIcon(character.ability)} ${character.ability.name}</span>`);
   if (character.passiveAbility?.name) badges.push(`<span class="ability-badge">🌀 ${character.passiveAbility.name}</span>`);
   if (character.formLabel) badges.push(`<span class="status-indicator">✨ ${character.formLabel}</span>`);
-  if (character.hiddenAbility) badges.push(`<span class="status-indicator">❓ Hidden</span>`);
   if (isTraitor) badges.push(`<span class="status-indicator">☠️ Traitor</span>`);
   if (!badges.length) badges.push(`<span class="ability-badge ability-badge-muted">— No Ability</span>`);
-  return `<div class="ability-wrap">${badges.slice(0, 3).join('')}</div>`;
+  return `<div class="ability-wrap">${badges.join('')}</div>`;
 }
 function renderShowcase(){
   const row=document.getElementById('showcaseRow'); if(!row) return;
