@@ -1351,6 +1351,7 @@ body.in-game .role-tag{min-width:0;display:inline-flex;align-items:center;gap:2p
 body.in-game .role-score{flex:0 0 auto;display:inline-flex;align-items:center;height:clamp(15px,1.9vh,19px);padding:1px 6px;margin:0;border-radius:999px;font-size:clamp(11px,.75vw,13px);line-height:1;font-weight:900;background:rgba(255,215,106,.14);border:1px solid rgba(255,215,106,.34);color:#ffe58c;box-shadow:0 0 10px rgba(255,215,106,.18)}
 body.in-game .ability-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin-top:0;max-height:20px;min-width:0;max-width:100%;overflow:visible}
 body.in-game .ability-badge,body.in-game .status-indicator{display:inline-flex;align-items:center;max-width:100%;height:clamp(15px,1.9vh,20px);padding:1px 5px;margin:0;border-radius:999px;background:rgba(12,18,38,.72);border:1px solid rgba(255,215,106,.32);color:#f6d77a;font-size:clamp(10px,.68vw,11px);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.in-game .ability-badge-muted{color:#aeb7c9;border-color:rgba(174,183,201,.26)}
 body.in-game .status-indicator{border-color:rgba(120,170,255,.32);color:#a8d8ff}body.in-game .char-item img.glow-10{border-color:#ffe88f;box-shadow:0 0 0 2px rgba(255,215,106,.55),0 0 18px rgba(255,215,106,.9),0 0 34px rgba(255,166,35,.45);background:radial-gradient(circle at 50% 35%,rgba(255,236,166,.24),rgba(44,23,0,.94) 72%)}body.in-game .char-item img.glow-9{border-color:#c69cff;box-shadow:0 0 0 2px rgba(176,91,255,.42),0 0 16px rgba(176,91,255,.78);background:radial-gradient(circle at 50% 35%,rgba(210,176,255,.2),rgba(22,10,49,.94) 72%)}body.in-game .char-item img.glow-8{border-color:#62dcff;box-shadow:0 0 0 2px rgba(47,191,255,.38),0 0 14px rgba(47,191,255,.7);background:radial-gradient(circle at 50% 35%,rgba(168,241,255,.18),rgba(5,29,55,.94) 72%)}body.in-game .char-item img.glow-7{border-color:#65ffad;box-shadow:0 0 0 2px rgba(71,245,157,.35),0 0 13px rgba(71,245,157,.62);background:radial-gradient(circle at 50% 35%,rgba(158,255,207,.17),rgba(5,42,25,.94) 72%)}body.in-game .char-item img.glow-6{border-color:#a5afc1;box-shadow:0 0 0 2px rgba(160,170,190,.24),0 0 8px rgba(160,170,190,.28)}
 body.in-game .score{font-size:clamp(12px,.9vw,16px);line-height:1;margin-top:5px;text-align:left}
 body.in-game .center-column,body.in-game .wheel-column{height:100%;min-width:0;min-height:0;padding:6px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:visible}
@@ -1988,6 +1989,27 @@ function setupMobileGestures(){
 state.showcaseLimit = 20;
 function tierOfChar(c){ return (c.score>=10)?'legendary':(c.score>=9)?'epic':(c.score>=8)?'rare':(c.score>=7)?'uncommon':'common'; }
 function abilityIcon(c){ if(c.hiddenAbility) return '❓'; if(c.ability?.type==='statusEffect') return '✨'; if(c.ability) return '⚡'; return '•'; }
+function teamAbilityIcon(ability){
+  if (!ability) return '•';
+  if (ability.effect === 'Burn') return '🔥';
+  if (ability.effect === 'Freeze') return '❄️';
+  if (ability.effect === 'Silence') return '🔇';
+  if (ability.type === 'shield') return '🛡️';
+  if (ability.type === 'enemyDebuff') return '💀';
+  if (ability.type === 'steal') return '🌀';
+  if (ability.type === 'roleBonus') return '⚔️';
+  return '⚡';
+}
+function buildTeamAbilityBadges(character, isTraitor){
+  const badges = [];
+  if (character.ability?.name) badges.push(`<span class="ability-badge">${teamAbilityIcon(character.ability)} ${character.ability.name}</span>`);
+  if (character.passiveAbility?.name) badges.push(`<span class="ability-badge">🌀 ${character.passiveAbility.name}</span>`);
+  if (character.formLabel) badges.push(`<span class="status-indicator">✨ ${character.formLabel}</span>`);
+  if (character.hiddenAbility) badges.push(`<span class="status-indicator">❓ Hidden</span>`);
+  if (isTraitor) badges.push(`<span class="status-indicator">☠️ Traitor</span>`);
+  if (!badges.length) badges.push(`<span class="ability-badge ability-badge-muted">— No Ability</span>`);
+  return `<div class="ability-wrap">${badges.slice(0, 3).join('')}</div>`;
+}
 function renderShowcase(){
   const row=document.getElementById('showcaseRow'); if(!row) return;
   const q=(document.getElementById('showcaseSearch')?.value||'').toLowerCase().trim();
@@ -3454,18 +3476,7 @@ function updateGameDisplay(data) {
     const glowClass = getGlowClass(c.score);
     const roleClass = `role-${String(r).toLowerCase()}`;
     const roleIcons = {Captain:"👑",Vice:"🛡️",Healer:"💚",Tank:"🧱",Duelist:"⚔️",Support:"🧡",Traitor:"🕳️"};
-    const badges = [];
-    if (c.hiddenAbility) {
-      badges.push(`<span class="ability-badge">❓ Hidden Ability</span>`);
-      badges.push(`<span class="ability-badge">🎭 Decoy x${c.decoyMultiplier || "?"}</span>`);
-    } else if (c.ability) {
-      badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
-    }
-    if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
-    const statusTags = [];
-    if (c.formLabel) statusTags.push(`<span class="status-indicator">✨ ${c.formLabel}</span>`);
-    if (isTraitor) statusTags.push(`<span class="status-indicator">☠️ Traitor</span>`);
-    const abilityBadge = `<div class="ability-wrap">${badges.join('')}${statusTags.join('')}</div>`;
+    const abilityBadge = buildTeamAbilityBadges(c, isTraitor);
     const scoreText = `${roleScore > 0 ? '+' : ''}${roleScore}`;
     h1 += `<div class="char-item ${roleClass}${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}</strong><div class="team-card-meta"><span class="role-tag"><span class="role-icon">${roleIcons[r] || '🎴'}</span>${r}</span><span class="role-score">${scoreText}</span></div>${abilityBadge}</div></div>`;
   });
@@ -3489,18 +3500,7 @@ function updateGameDisplay(data) {
     const glowClass = getGlowClass(c.score);
     const roleClass = `role-${String(r).toLowerCase()}`;
     const roleIcons = {Captain:"👑",Vice:"🛡️",Healer:"💚",Tank:"🧱",Duelist:"⚔️",Support:"🧡",Traitor:"🕳️"};
-    const badges = [];
-    if (c.hiddenAbility) {
-      badges.push(`<span class="ability-badge">❓ Hidden Ability</span>`);
-      badges.push(`<span class="ability-badge">🎭 Decoy x${c.decoyMultiplier || "?"}</span>`);
-    } else if (c.ability) {
-      badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
-    }
-    if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
-    const statusTags = [];
-    if (c.formLabel) statusTags.push(`<span class="status-indicator">✨ ${c.formLabel}</span>`);
-    if (isTraitor) statusTags.push(`<span class="status-indicator">☠️ Traitor</span>`);
-    const abilityBadge = `<div class="ability-wrap">${badges.join('')}${statusTags.join('')}</div>`;
+    const abilityBadge = buildTeamAbilityBadges(c, isTraitor);
     const scoreText = `${roleScore > 0 ? '+' : ''}${roleScore}`;
     h2 += `<div class="char-item ${roleClass}${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}</strong><div class="team-card-meta"><span class="role-tag"><span class="role-icon">${roleIcons[r] || '🎴'}</span>${r}</span><span class="role-score">${scoreText}</span></div>${abilityBadge}</div></div>`;
   });
