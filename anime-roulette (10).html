@@ -1317,6 +1317,53 @@ button:focus-visible{outline:2px solid rgba(54,209,255,.7);outline-offset:2px}
   #canvas{width:clamp(220px, 29vw, 360px)!important;height:clamp(220px, 29vw, 360px)!important}
   .showcase-wrap{height:clamp(86px, 11vh, 120px)}
 }
+
+/* ===============================
+   WHEEL-FIRST FULLSCREEN LAYOUT
+   =============================== */
+body.in-game{padding:0;overflow:hidden}
+body.in-game .hud-shell{width:100%;max-width:none;height:100vh;max-height:100vh;padding:6px;display:block;overflow:hidden}
+body.in-game #gameSection{height:100%;max-height:100%;display:grid!important;grid-template-rows:minmax(0,60px) minmax(0,1fr) clamp(42px,5.8vh,58px) clamp(86px,12vh,128px);gap:6px;overflow:hidden}
+body.in-game .aaa-hud{height:60px;max-height:60px;min-height:0;margin:0;padding:4px 6px;display:grid;grid-template-columns:minmax(130px,auto) minmax(0,1fr);align-items:center;overflow:hidden}
+body.in-game .hud-chip{height:100%;display:grid;place-items:center;padding:4px 10px;font-size:clamp(11px,.8vw,14px);white-space:nowrap}
+body.in-game .esports-hud-grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;height:100%;align-items:stretch}
+body.in-game .hud-tile{min-height:0;padding:3px 5px;font-size:clamp(9px,.68vw,12px);display:flex;flex-direction:column;justify-content:center}
+body.in-game .hud-k{font-size:clamp(7px,.52vw,9px);line-height:1}.hud-v{line-height:1.05}
+body.in-game .top-bar{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;border:0!important;box-shadow:none!important}
+body.in-game .mobile-tabs{display:none!important}
+body.in-game .esports-grid{display:grid;grid-template-columns:260px minmax(0,1fr) 260px;gap:6px;min-height:0;height:100%;overflow:hidden;align-items:stretch}
+body.in-game .side-stack{display:grid;grid-template-rows:auto minmax(0,1fr);gap:5px;min-width:0;min-height:0;height:100%;overflow:hidden}
+body.in-game .team-panel-label{height:18px;display:flex;align-items:center;justify-content:flex-start;padding:0 4px;color:var(--neon-gold);font-size:clamp(10px,.72vw,12px);font-weight:900;text-transform:uppercase;letter-spacing:1.1px;text-shadow:0 0 10px rgba(255,215,106,.55)}
+body.in-game .side-stack>.chat-box,body.in-game .side-stack>.panel:not(.mobile-collapsible){display:none!important}
+body.in-game .panel.mobile-collapsible{height:100%;max-height:none;width:100%;margin:0;padding:8px 9px;overflow:hidden;display:flex;flex-direction:column}
+body.in-game .panel h3{margin:0 0 6px;font-size:clamp(12px,.95vw,16px);line-height:1.05;text-align:left}
+body.in-game .collapse-toggle{display:none!important}
+body.in-game .collapsible-content{display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden}
+body.in-game #p1Chars,body.in-game #p2Chars{min-height:0;flex:1;overflow:hidden}
+body.in-game .team-grid{height:100%;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:4px;overflow:hidden}
+body.in-game .char-item{min-height:0;padding:4px 6px;border-radius:9px;gap:6px;align-items:center;overflow:hidden}
+body.in-game .char-item img{width:clamp(28px,3.2vh,42px);height:clamp(28px,3.2vh,42px);flex:0 0 auto}
+body.in-game .char-info{min-width:0;text-align:left;line-height:1.05}
+body.in-game .char-info strong{font-size:clamp(10px,.78vw,13px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+body.in-game .role-tag,.role-score,.ability-badge,.status-indicator{font-size:clamp(8px,.58vw,10px)}
+body.in-game .ability-wrap{gap:2px;margin-top:2px;max-height:18px;overflow:hidden}
+body.in-game .score{font-size:clamp(12px,.9vw,16px);line-height:1;margin-top:5px;text-align:left}
+body.in-game .wheel-column{height:100%;min-width:0;padding:6px;border-radius:16px;display:grid;place-items:center;overflow:hidden}
+body.in-game .wheel-stage{width:min(100%,calc(100vh - 260px));height:min(100%,calc(100vh - 260px));max-width:clamp(420px,54vw,760px);max-height:clamp(420px,68vh,760px)}
+body.in-game #canvas{width:min(100%,clamp(420px,54vw,760px))!important;height:min(100%,clamp(420px,68vh,760px))!important;max-width:100%;max-height:100%;margin:0!important}
+body.in-game .bottom-action-bar{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-items:center;min-height:0;margin:0;padding:6px 8px;border:1px solid var(--stroke);border-radius:14px;background:linear-gradient(135deg,rgba(10,15,35,.82),rgba(21,18,46,.72));backdrop-filter:blur(12px);box-shadow:0 0 20px rgba(54,209,255,.12)}
+body.in-game .bottom-action-bar button{width:100%;height:clamp(30px,4.4vh,44px);min-width:0;margin:0;padding:3px 6px;font-size:clamp(10px,.78vw,14px);white-space:nowrap}
+body.in-game .showcase-wrap.bottom-drawer{height:100%;min-height:0;margin:0;padding:6px 8px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:5px;overflow:hidden;border-radius:14px;background:linear-gradient(135deg,rgba(8,12,28,.82),rgba(12,18,42,.72))}
+body.in-game .showcase-controls{display:grid;grid-template-columns:minmax(160px,1fr) 150px 96px;gap:6px;align-items:center}
+body.in-game .showcase-controls input,body.in-game .showcase-controls select,body.in-game .showcase-controls button{height:28px;margin:0;padding:3px 8px;font-size:clamp(10px,.72vw,12px)}
+body.in-game .showcase-row{height:100%;min-height:0;overflow-x:auto;overflow-y:hidden;padding:0 2px 3px;align-items:stretch}
+body.in-game .showcase-card{min-width:clamp(64px,4.8vw,94px);max-width:clamp(64px,4.8vw,94px);padding:4px;border-radius:9px;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:2px}
+body.in-game .showcase-card img{height:100%;min-height:36px;max-height:58px;border-radius:7px}
+body.in-game .showcase-name{font-size:clamp(8px,.62vw,11px);margin:0}.showcase-meta{font-size:clamp(8px,.58vw,10px);margin:0}
+@media (max-width:1600px) and (max-height:900px){body.in-game #gameSection{grid-template-rows:minmax(0,56px) minmax(0,1fr) 44px 104px;gap:5px}body.in-game .aaa-hud{height:56px;max-height:56px}body.in-game .esports-grid{grid-template-columns:250px minmax(0,1fr) 250px}body.in-game .wheel-stage{max-width:clamp(360px,50vw,620px);max-height:clamp(360px,62vh,620px)}body.in-game #canvas{width:min(100%,clamp(360px,50vw,620px))!important;height:min(100%,clamp(360px,62vh,620px))!important}}
+@media (max-width:1366px) and (max-height:768px){body.in-game #gameSection{grid-template-rows:minmax(0,52px) minmax(0,1fr) 40px 92px;gap:4px}body.in-game .aaa-hud{height:52px;max-height:52px}body.in-game .esports-grid{grid-template-columns:220px minmax(0,1fr) 220px;gap:5px}body.in-game .panel.mobile-collapsible{padding:6px}body.in-game .team-grid{gap:3px}body.in-game .char-item{padding:3px 5px}body.in-game .wheel-stage{max-width:clamp(320px,48vw,520px);max-height:clamp(320px,58vh,520px)}body.in-game #canvas{width:min(100%,clamp(320px,48vw,520px))!important;height:min(100%,clamp(320px,58vh,520px))!important}body.in-game .showcase-controls{grid-template-columns:minmax(120px,1fr) 120px 82px}body.in-game .showcase-card img{max-height:46px}}
+@media (max-width:900px){body.in-game #gameSection{grid-template-rows:auto auto minmax(0,1fr) auto clamp(100px,16vh,138px)}body.in-game .aaa-hud{height:auto;max-height:96px;grid-template-columns:1fr}body.in-game .esports-hud-grid{grid-template-columns:repeat(4,minmax(0,1fr))}body.in-game .mobile-tabs{display:flex!important}body.in-game .esports-grid{grid-template-columns:1fr}body.in-game .side-stack>.chat-box,body.in-game .side-stack>.panel:not(.mobile-collapsible){display:block!important}body.in-game .bottom-action-bar{grid-template-columns:repeat(3,minmax(0,1fr))}body.in-game .showcase-controls{grid-template-columns:1fr 1fr}body.in-game .showcase-controls input{grid-column:1/-1}}
+
 </style>
 </head>
 <body>
@@ -1349,26 +1396,28 @@ button:focus-visible{outline:2px solid rgba(54,209,255,.7);outline-offset:2px}
 <div class="hud-tile"><span class="hud-k">Mode</span><span class="hud-v hud-rank" id="hudRanked">Ranked: ON</span></div>
 </div></div>
   <div class="top-bar"><details><summary>HUD details</summary><div class="hud-metrics"><div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div><div class="character-counter" id="phaseDisplay">🧠 Early Game → build team</div><div class="character-counter" id="momentumDisplay">🔥 Momentum: 0/3<div class="momentum-wrap"><div class="momentum-bar"></div></div></div><div class="character-counter event-card" id="eventDisplay">🌪️ Event: None</div><div class="character-counter" id="mindGameDisplay">💬 Mind Game: Neutral</div></div></details></div>
-  
-  <div class="showcase-wrap" id="showcaseWrap">
+  <div class="mobile-tabs" id="mobileTabs"><button onclick="setMobileTab('p1')">Player 1</button><button onclick="setMobileTab('wheel')">Wheel</button><button onclick="setMobileTab('p2')">Player 2</button><button onclick="setMobileTab('chat')">Chat</button></div>
+  <div class="esports-grid game-wrapper">
+    <div class="side-stack team-side your-team">
+      <div class="team-panel-label">Your Team</div>
+      <div class="panel mobile-section mobile-collapsible" id="p1Panel" data-section="p1"><h3 id="p1Name">Your Team</h3><button class="collapse-toggle" onclick="togglePanel('p1Panel')">Team Panel</button><div class="collapsible-content"><div id="p1Chars"></div><div class="score">Score: <span id="p1Score">0</span></div></div></div>
+      <div class="chat-box mobile-section" id="chatBox" data-section="chat"><div class="chat-header">💬 Room Chat</div><div class="chat-body"><div id="chatMessages" class="chat-messages"><div class="chat-empty">No messages yet. Say hi 👋</div></div><div class="emoji-row"><button onclick="addEmojiToChat('🔥')">🔥</button><button onclick="addEmojiToChat('😂')">😂</button><button onclick="addEmojiToChat('😈')">😈</button><button onclick="addEmojiToChat('💀')">💀</button><button onclick="addEmojiToChat('👏')">👏</button></div><div class="chat-input-row"><input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" /><button id="chatSendBtn" onclick="sendChatMessage()">Send</button></div></div></div>
+    </div>
+    <div class="mobile-section wheel-column" data-section="wheel"><div class="wheel-stage"><div class="wheel-pointer" aria-hidden="true"></div><canvas id="canvas" width="320" height="320"></canvas><button id="centerSpinBtn" class="wheel-center-btn" onclick="spin()" aria-label="Spin, 3 out of 3 spins left"><span><span class="spin-title">SPIN</span><span class="spin-count" id="centerSpinCount">3 / 3</span><span class="spin-subtitle">SPINS LEFT</span></span></button></div></div>
+    <div class="side-stack team-side opponent-team">
+      <div class="team-panel-label">Opponent Team</div>
+      <div class="panel mobile-section mobile-collapsible" id="p2Panel" data-section="p2"><h3 id="p2Name">Opponent Team</h3><button class="collapse-toggle" onclick="togglePanel('p2Panel')">Team Panel</button><div class="collapsible-content"><div id="p2Chars"></div><div class="score">Score: <span id="p2Score">0</span></div></div></div>
+      <div class="panel"><h3>Opponent Intel</h3><div class="character-counter">⚔️ Team Power: Live</div><div class="character-counter">🔥 Momentum Meter Active</div><div class="character-counter">🎯 Dynamic Odds Enabled</div><div class="character-counter">🌀 Event Feed Synced</div></div>
+    </div>
+  </div>
+  <div class="bottom-action-bar wheel-actions"><button id="spinBtn" onclick="spin()">🎡 SPIN</button><button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button><button id="ultimateBtn" class="legendary-glow" onclick="activateUltimate()">🔥 ULTIMATE</button><button id="stealBtn" onclick="useSteal()">🕶️ STEAL</button><button id="blockBtn" onclick="useBlock()">🧱 BLOCK</button><button id="debuffBtn" onclick="useDebuff()">☠️ DEBUFF</button></div>
+  <div class="showcase-wrap bottom-drawer" id="showcaseWrap">
     <div class="showcase-controls">
       <input id="showcaseSearch" placeholder="Search character">
       <select id="showcaseTier"><option value="all">All tiers</option><option value="legendary">Legendary</option><option value="epic">Epic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select>
       <button onclick="loadMoreShowcase()">Load More</button>
     </div>
     <div class="showcase-row" id="showcaseRow"></div>
-  </div>
-  <div class="mobile-tabs" id="mobileTabs"><button onclick="setMobileTab('p1')">Player 1</button><button onclick="setMobileTab('wheel')">Wheel</button><button onclick="setMobileTab('p2')">Player 2</button><button onclick="setMobileTab('chat')">Chat</button></div>
-  <div class="esports-grid game-wrapper">
-    <div class="side-stack">
-      <div class="panel mobile-section mobile-collapsible" id="p1Panel" data-section="p1"><h3 id="p1Name">Player 1</h3><button class="collapse-toggle" onclick="togglePanel('p1Panel')">Team Panel</button><div class="collapsible-content"><div id="p1Chars"></div><div class="score">Score: <span id="p1Score">0</span></div></div></div>
-      <div class="chat-box mobile-section" id="chatBox" data-section="chat"><div class="chat-header">💬 Room Chat</div><div class="chat-body"><div id="chatMessages" class="chat-messages"><div class="chat-empty">No messages yet. Say hi 👋</div></div><div class="emoji-row"><button onclick="addEmojiToChat('🔥')">🔥</button><button onclick="addEmojiToChat('😂')">😂</button><button onclick="addEmojiToChat('😈')">😈</button><button onclick="addEmojiToChat('💀')">💀</button><button onclick="addEmojiToChat('👏')">👏</button></div><div class="chat-input-row"><input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" /><button id="chatSendBtn" onclick="sendChatMessage()">Send</button></div></div></div>
-    </div>
-    <div class="mobile-section wheel-column" data-section="wheel"><div class="wheel-actions" style="display:flex;gap:10px;margin-bottom:20px;justify-content:center;flex-wrap:wrap"><button id="spinBtn" onclick="spin()">🎡 SPIN</button><button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button><button id="ultimateBtn" class="legendary-glow" onclick="activateUltimate()">🔥 ULTIMATE</button><button id="stealBtn" onclick="useSteal()">🕶️ STEAL</button><button id="blockBtn" onclick="useBlock()">🧱 BLOCK</button><button id="debuffBtn" onclick="useDebuff()">☠️ DEBUFF</button></div><div class="wheel-stage"><div class="wheel-pointer" aria-hidden="true"></div><canvas id="canvas" width="320" height="320"></canvas><button id="centerSpinBtn" class="wheel-center-btn" onclick="spin()" aria-label="Spin, 3 out of 3 spins left"><span><span class="spin-title">SPIN</span><span class="spin-count" id="centerSpinCount">3 / 3</span><span class="spin-subtitle">SPINS LEFT</span></span></button></div></div>
-    <div class="side-stack">
-      <div class="panel mobile-section mobile-collapsible" id="p2Panel" data-section="p2"><h3 id="p2Name">Player 2</h3><button class="collapse-toggle" onclick="togglePanel('p2Panel')">Team Panel</button><div class="collapsible-content"><div id="p2Chars"></div><div class="score">Score: <span id="p2Score">0</span></div></div></div>
-      <div class="panel"><h3>Opponent Intel</h3><div class="character-counter">⚔️ Team Power: Live</div><div class="character-counter">🔥 Momentum Meter Active</div><div class="character-counter">🎯 Dynamic Odds Enabled</div><div class="character-counter">🌀 Event Feed Synced</div></div>
-    </div>
   </div>
 </div>
 </div>
