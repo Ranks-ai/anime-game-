@@ -2,12 +2,25 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anime Roulette Ultimate</title>
 <style>
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html, body {
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+
+#app, .game-container, .main-layout {
+  height:100vh;
+  max-height:100vh;
+  overflow:hidden;
 }
 
 body {
@@ -202,6 +215,9 @@ h1 {
   display: none;
   position: relative;
   z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 body.in-game {
@@ -522,7 +538,7 @@ button:disabled {
 }
 
 .top-bar {
-  margin-bottom: 14px;
+  margin: 0 0 4px 0;
   background: rgba(7, 14, 28, 0.55);
   border: 1px solid rgba(0, 191, 255, 0.25);
   border-radius: 10px;
@@ -1076,10 +1092,300 @@ body.rare-cinematic {
   background: #FFD700;
   border-radius: 5px;
 }
+
+
+/* ===============================
+   UI ARCHITECTURE: THEME + TOKENS
+   =============================== */
+/* === AAA COMPETITIVE UI OVERRIDES === */
+:root{--neon-blue:#36d1ff;--neon-purple:#8b5dff;--neon-gold:#ffd76a;--glass:rgba(14,18,40,.55);--stroke:rgba(120,170,255,.35)}
+body{padding:12px;background:radial-gradient(circle at 50% 15%,#1d2250 0%,#0b0f25 45%,#070a17 100%)}
+body::before{opacity:.9}
+.hud-shell{max-width:1600px;margin:0 auto;position:relative;z-index:2;height:100vh;max-height:100vh;overflow:hidden;display:flex;flex-direction:column;padding:6px 8px 8px}
+.aaa-hud{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:2px 0 4px;padding:6px 8px;border:1px solid var(--stroke);border-radius:12px;background:linear-gradient(135deg,rgba(30,40,80,.55),rgba(20,18,45,.45));backdrop-filter:blur(10px);box-shadow:0 0 14px rgba(54,209,255,.14);overflow:hidden;max-height:70px}
+.hud-chip{padding:8px 12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.05);font-weight:700}
+.esports-grid{display:grid;grid-template-columns:minmax(220px, 15vw) 1fr minmax(220px, 15vw);gap:8px;align-items:stretch;min-height:0;flex:1;overflow:hidden}
+.panel,.chat-box,.wheel-column,.top-bar{background:var(--glass)!important;border:1px solid var(--stroke)!important;backdrop-filter:blur(12px);box-shadow:0 4px 14px rgba(10,20,40,.36),inset 0 0 20px rgba(255,255,255,.02);padding:8px 10px}
+.side-stack{display:flex;flex-direction:column;gap:8px;min-height:0}
+.panel h3{background:linear-gradient(90deg,var(--neon-blue),var(--neon-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.wheel-column{padding:8px;border-radius:14px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.wheel-column::before{content:"";position:absolute;inset:-20%;background:conic-gradient(from 180deg,rgba(54,209,255,.12),rgba(139,93,255,.16),rgba(255,215,106,.14),rgba(54,209,255,.12));animation:spinEnergy 10s linear infinite;filter:blur(14px)}
+.wheel-column>*{position:relative;z-index:1}
+#canvas{width:clamp(260px, 34vw, 500px)!important;height:clamp(260px, 34vw, 500px)!important;max-width:clamp(260px, 34vw, 500px);max-height:clamp(260px, 34vw, 500px);border-radius:50%;border:3px solid var(--neon-gold);box-shadow:0 0 18px rgba(255,215,106,.38),0 0 38px rgba(54,209,255,.18)}
+button{transition:transform .2s ease, box-shadow .2s ease, filter .2s ease}
+button:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 0 20px rgba(54,209,255,.45)}
+#ultimateBtn{box-shadow:0 0 15px rgba(255,215,106,.45);border-color:rgba(255,215,106,.7)}
+.score{font-size:1.2rem;color:var(--neon-gold);text-shadow:0 0 10px rgba(255,215,106,.45)}
+.event-card{border-left:4px solid var(--neon-purple);padding:8px 10px;border-radius:10px;background:rgba(139,93,255,.12)}
+.momentum-wrap{height:10px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+.momentum-bar{height:100%;width:0;background:linear-gradient(90deg,var(--neon-blue),var(--neon-purple),var(--neon-gold));animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4)}}
+.legendary-glow{box-shadow:0 0 25px rgba(255,215,106,.55)!important;border-color:rgba(255,215,106,.8)!important}
+@media (max-width:1200px){.esports-grid{grid-template-columns:260px 1fr 260px}}
+@media (max-width:960px){.esports-grid{grid-template-columns:1fr}.side-stack{order:2}.wheel-column{order:1}#canvas{width:clamp(240px,min(74vw,50vh),400px)!important;height:clamp(240px,min(74vw,50vh),400px)!important}}
+
+
+.wheel-column{display:flex;flex-direction:column;align-items:center}
+.wheel-stage{position:relative;display:grid;place-items:center;isolation:isolate}
+.wheel-stage::before{content:"";position:absolute;inset:-8%;border-radius:50%;background:radial-gradient(circle,rgba(54,209,255,.18),transparent 58%),conic-gradient(from 0deg,rgba(255,215,106,.24),rgba(139,93,255,.22),rgba(54,209,255,.2),rgba(255,215,106,.24));filter:blur(10px);opacity:.8;animation:gachaAura 5s linear infinite;pointer-events:none;z-index:-1}.wheel-stage::after{content:"";position:absolute;inset:3%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 68deg,rgba(255,255,255,.45) 78deg,transparent 96deg 360deg);mix-blend-mode:screen;animation:wheelShine 3.8s linear infinite;pointer-events:none}
+@keyframes wheelShine{to{transform:rotate(360deg)}}
+@keyframes gachaAura{to{transform:rotate(-360deg)}}
+#canvas{animation:wheelPulse 2.4s ease-in-out infinite;background:radial-gradient(circle,#121936 0%,#070b1c 70%)}
+@keyframes wheelPulse{0%,100%{filter:drop-shadow(0 0 18px rgba(54,209,255,.4))}50%{filter:drop-shadow(0 0 28px rgba(255,215,106,.55))}}
+.wheel-center-btn{position:absolute;z-index:7;width:clamp(104px,10.5vw,154px);height:clamp(104px,10.5vw,154px);border-radius:50%;border:2px solid rgba(255,238,164,.95);display:grid;place-items:center;gap:0;padding:0;overflow:hidden;background:radial-gradient(circle at 32% 24%,#fff6bc 0 8%,#ffd86d 20%,#b56b13 48%,#4a2506 76%,#140900 100%);color:#fff4b0;font-weight:900;letter-spacing:.7px;text-transform:uppercase;text-shadow:0 1px 0 rgba(82,38,0,.95),0 0 10px rgba(255,238,164,.9),0 0 18px rgba(255,188,54,.72);box-shadow:inset 0 2px 10px rgba(255,255,255,.42),inset 0 -8px 18px rgba(67,25,0,.72),inset 0 0 0 8px rgba(255,217,106,.16),0 0 18px rgba(255,215,106,.85),0 0 46px rgba(255,166,35,.58),0 0 76px rgba(54,209,255,.2);cursor:pointer;transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;animation:centerSpinPulse 1.8s ease-in-out infinite;isolation:isolate}
+.wheel-center-btn::before{content:"";position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(255,250,201,.75);background:conic-gradient(from 20deg,rgba(255,255,255,.32),transparent 13%,rgba(84,37,0,.35) 24%,transparent 38%,rgba(255,242,174,.28) 52%,transparent 69%,rgba(78,31,0,.38) 82%,rgba(255,255,255,.22));box-shadow:inset 0 0 0 2px rgba(96,43,0,.42),inset 0 0 20px rgba(255,239,174,.2);pointer-events:none;z-index:-1}.wheel-center-btn::after{content:"";position:absolute;inset:-35%;border-radius:50%;background:linear-gradient(120deg,transparent 34%,rgba(255,255,255,.72) 47%,rgba(255,245,183,.36) 52%,transparent 66%);transform:translateX(-45%) rotate(18deg);animation:centerButtonShine 2.4s linear infinite;mix-blend-mode:screen;pointer-events:none}.wheel-center-btn .spin-title{display:block;font-size:clamp(22px,2vw,32px);line-height:.9;letter-spacing:1.5px}.wheel-center-btn .spin-count{display:block;margin-top:4px;font-size:clamp(13px,1.15vw,18px);line-height:1;color:#fffbe0;text-shadow:0 0 9px rgba(255,255,255,.7),0 0 16px rgba(255,215,106,.8)}.wheel-center-btn .spin-subtitle{display:block;margin-top:2px;font-size:clamp(8px,.72vw,11px);line-height:1;letter-spacing:1.3px;color:#3b1b00;background:rgba(255,239,166,.78);border:1px solid rgba(255,255,255,.38);border-radius:999px;padding:3px 8px;text-shadow:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 10px rgba(255,215,106,.45)}.wheel-center-btn:hover:not(:disabled){transform:scale(1.07);filter:saturate(1.18) brightness(1.08);box-shadow:inset 0 3px 12px rgba(255,255,255,.5),inset 0 -9px 20px rgba(67,25,0,.76),inset 0 0 0 8px rgba(255,217,106,.2),0 0 26px rgba(255,239,164,1),0 0 58px rgba(255,166,35,.72),0 0 90px rgba(54,209,255,.28)}.wheel-center-btn:active:not(:disabled){transform:scale(.98);filter:brightness(.98)}.wheel-center-btn:disabled{cursor:not-allowed;filter:saturate(.75) brightness(.82);opacity:.78;animation:none}.wheel-center-btn:disabled::after{animation:none;opacity:.25}@keyframes centerSpinPulse{0%,100%{box-shadow:inset 0 2px 10px rgba(255,255,255,.42),inset 0 -8px 18px rgba(67,25,0,.72),inset 0 0 0 8px rgba(255,217,106,.16),0 0 18px rgba(255,215,106,.85),0 0 46px rgba(255,166,35,.58),0 0 76px rgba(54,209,255,.2)}50%{box-shadow:inset 0 2px 12px rgba(255,255,255,.5),inset 0 -8px 20px rgba(67,25,0,.78),inset 0 0 0 8px rgba(255,217,106,.22),0 0 28px rgba(255,239,164,1),0 0 68px rgba(255,166,35,.72),0 0 96px rgba(54,209,255,.28)}}@keyframes centerButtonShine{0%{transform:translateX(-60%) rotate(18deg)}100%{transform:translateX(60%) rotate(18deg)}}
+.wheel-pointer{position:absolute;top:clamp(-10px,-1vw,-4px);left:50%;transform:translateX(-50%);z-index:6;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:0;border-bottom:28px solid #ffd76a;filter:drop-shadow(0 0 10px rgba(255,215,106,.75)) drop-shadow(0 0 16px rgba(54,209,255,.35));pointer-events:none}
+.wheel-pointer::after{content:"";position:absolute;left:-6px;top:8px;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:12px solid #fff4b8}
+.winner-flash{animation:winnerFlash .75s ease-out}
+.legendary-flash{animation:legendaryFlash 1.1s ease-out}
+@keyframes winnerFlash{0%{filter:brightness(1)}35%{filter:brightness(1.9)}100%{filter:brightness(1)}}
+@keyframes legendaryFlash{0%{box-shadow:0 0 20px rgba(255,215,106,.4)}30%{box-shadow:0 0 150px rgba(255,215,106,1),0 0 240px rgba(139,93,255,.8)}100%{box-shadow:0 0 20px rgba(255,215,106,.4)}}
+
+
+/* ===============================
+   UI COMPONENTS: TEAM BUILDER
+   =============================== */
+/* Premium team builder cards */
+.team-grid{display:grid;gap:10px}
+.char-item{position:relative;display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid rgba(255,255,255,.12);border-left:4px solid var(--role-color,#888);border-radius:12px;background:linear-gradient(135deg,rgba(21,27,54,.72),rgba(12,16,36,.65));transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;animation:cardAssign .35s ease}
+.char-item:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 10px 24px rgba(0,0,0,.35),0 0 18px color-mix(in srgb,var(--role-color,#888),transparent 55%)}
+@keyframes cardAssign{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.role-icon{font-size:14px;margin-right:6px}
+.role-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:var(--role-color,#ddd);text-transform:uppercase;letter-spacing:.4px}
+.role-score{font-size:12px;color:#e8f4ff;background:rgba(255,255,255,.08);padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.15)}
+.ability-wrap{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.status-indicator{font-size:10px;padding:2px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08)}
+.role-captain{--role-color:#ffd76a}.role-vice{--role-color:#b07dff}.role-healer{--role-color:#53e08f}.role-tank{--role-color:#53b8ff}.role-duelist{--role-color:#ff5d5d}.role-support{--role-color:#ffad54}.role-traitor{--role-color:#9ca3af}
+.ultimate-mode .char-item{box-shadow:0 0 16px rgba(255,215,106,.3),0 0 32px rgba(139,93,255,.22)}
+
+
+/* ===============================
+   UI EFFECTS: CINEMATICS + FX
+   =============================== */
+/* Advanced visual FX (GPU-friendly) */
+body.fx-energy::before{animation-duration:10s;filter:saturate(1.25)}
+body.shake-legendary{animation:screenShake .42s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes screenShake{10%,90%{transform:translate3d(-1px,0,0)}20%,80%{transform:translate3d(2px,0,0)}30%,50%,70%{transform:translate3d(-4px,0,0)}40%,60%{transform:translate3d(4px,0,0)}}
+.flash-overlay{position:fixed;inset:0;pointer-events:none;z-index:12000;background:radial-gradient(circle at center,rgba(255,255,255,.6),rgba(255,255,255,0) 60%);opacity:0;will-change:opacity,transform;transform:translateZ(0)}
+.flash-overlay.active{animation:flashFx .45s ease-out}
+@keyframes flashFx{0%{opacity:0}15%{opacity:.95}100%{opacity:0}}
+.momentum-aura{box-shadow:0 0 0 rgba(83,184,255,.0)}
+.momentum-aura.active{animation:auraPulse 1.2s ease-in-out infinite}
+@keyframes auraPulse{0%,100%{box-shadow:0 0 18px rgba(83,184,255,.25)}50%{box-shadow:0 0 28px rgba(139,93,255,.35)}}
+.event-card.event-storm{animation:eventStorm .9s ease-in-out 2}
+.event-card.event-blessing{animation:eventBless .9s ease-in-out 2}
+.event-card.event-chaos{animation:eventChaos .9s ease-in-out 2}
+@keyframes eventStorm{50%{filter:hue-rotate(80deg) brightness(1.15)}}
+@keyframes eventBless{50%{filter:brightness(1.35)}}
+@keyframes eventChaos{50%{transform:rotate(-1deg) scale(1.02)}}
+.floating-particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.float-p{position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(54,209,255,.45);animation:floatUp linear forwards;will-change:transform,opacity;transform:translateZ(0)}
+@keyframes floatUp{from{transform:translate3d(0,0,0);opacity:.8}to{transform:translate3d(0,-110vh,0);opacity:0}}
+.status-burn{border-color:#ff6a3d!important;box-shadow:0 0 16px rgba(255,106,61,.35)!important}
+.status-freeze{border-color:#53d8ff!important;box-shadow:0 0 16px rgba(83,216,255,.35)!important}
+.status-silence{border-color:#b793ff!important;box-shadow:0 0 16px rgba(183,147,255,.35)!important}
+
+
+/* ===============================
+   RESPONSIVE LAYOUT: MOBILE/TABLET
+   =============================== */
+/* Mobile-first responsive upgrades */
+.mobile-collapsible .collapse-toggle{display:none}
+@media (max-width:900px){
+  body{padding:8px;overflow-y:auto}
+  h1{font-size:clamp(1.2rem,5vw,1.7rem)}
+  .aaa-hud{padding:8px 10px;gap:6px;flex-wrap:wrap}
+  .hud-chip{font-size:11px;padding:6px 8px}
+  .top-bar summary{font-size:13px}
+  .character-counter{font-size:11px}
+  .mobile-tabs{position:sticky;top:6px;z-index:30;background:rgba(8,10,24,.75);backdrop-filter:blur(8px);padding:6px;border-radius:10px}
+  .mobile-tabs button{flex:1;min-height:40px;padding:10px 8px;border-radius:10px}
+  .mobile-section.wheel-column{order:1}
+  .wheel-column{padding:12px 8px}
+  #canvas{width:clamp(220px,min(68vw,44vh),340px)!important;height:clamp(220px,min(68vw,44vh),340px)!important}
+  .wheel-center-btn{width:92px;height:92px}.wheel-center-btn .spin-title{font-size:20px}.wheel-center-btn .spin-count{font-size:12px}.wheel-center-btn .spin-subtitle{font-size:7px;padding:2px 6px}
+  .game-wrapper{gap:10px}
+  .mobile-collapsible .collapse-toggle{display:block;width:100%;margin-top:8px;min-height:38px}
+  .mobile-collapsible.collapsed .collapsible-content{display:none}
+  #chatBox{display:none !important}
+  #chatBox.active-mobile{display:block !important}
+  .chat-body{max-height:40vh;overflow:auto}
+  .wheel-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important;width:100%}
+  .wheel-actions button{min-height:42px;font-size:12px}
+}
+@media (max-width:900px) and (orientation:landscape){
+  #canvas{width:clamp(200px,min(42vw,56vh),300px)!important;height:clamp(200px,min(42vw,56vh),300px)!important}
+  .chat-body{max-height:28vh}
+}
+
+
+/* ===============================
+   UI COMPONENTS: CHARACTER SHOWCASE
+   =============================== */
+/* Character showcase */
+.showcase-wrap{margin:4px 0 6px;padding:6px 8px;border:1px solid rgba(120,170,255,.3);border-radius:12px;background:rgba(8,12,28,.55);height:clamp(90px, 12vh, 140px);overflow:hidden}
+.showcase-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.showcase-controls input,.showcase-controls select{background:#111735;color:#dbe9ff;border:1px solid rgba(120,170,255,.35);border-radius:8px;padding:8px 10px}
+.showcase-row{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 4px;scroll-snap-type:x mandatory;height:100%}
+.showcase-card{min-width:clamp(60px, 5vw, 100px);max-width:clamp(60px, 5vw, 100px);scroll-snap-align:start;position:relative;border-radius:10px;padding:4px;background:linear-gradient(160deg,#10162f,#0a0f23);border:1px solid #46557a;transition:transform .18s ease, box-shadow .18s ease}
+.showcase-card:hover{transform:translateY(-3px) scale(1.03)}
+.showcase-card img{width:100%;height:clamp(42px,6vh,72px);object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.15)}
+.showcase-name{font-size:12px;font-weight:700;color:#f6f8ff;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.showcase-meta{display:flex;justify-content:space-between;font-size:11px;color:#9ec4ff;margin-top:4px}
+.ability-icon{font-size:12px;opacity:.95}
+.tier-legendary{border-color:#ffd76a;box-shadow:0 0 12px rgba(255,215,106,.45);animation:legendPulse 1.3s ease-in-out infinite}
+.tier-legendary::after{content:"";position:absolute;inset:0;border-radius:12px;background:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.45),transparent 65%);transform:translateX(-120%);animation:shine 2.3s linear infinite;pointer-events:none}
+.tier-epic{border-color:#a983ff;box-shadow:0 0 10px rgba(169,131,255,.45)}
+.tier-rare{border-color:#59c7ff;box-shadow:0 0 10px rgba(89,199,255,.38)}
+.tier-uncommon{border-color:#47f59d;box-shadow:0 0 9px rgba(71,245,157,.34)}
+.tier-common{border-color:#8f98aa;box-shadow:0 0 5px rgba(160,170,190,.18)}
+@keyframes legendPulse{50%{box-shadow:0 0 20px rgba(255,215,106,.75)}}
+@keyframes shine{to{transform:translateX(120%)}}
+@media (max-width:900px){.showcase-card{min-width:115px;max-width:115px}.showcase-controls{display:grid;grid-template-columns:1fr 1fr}.showcase-controls input{grid-column:1/-1}}
+
+
+/* ===============================
+   UI COMPONENTS: ESPORTS HUD
+   =============================== */
+.esports-hud-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;width:100%;min-width:0;align-items:center}
+.hud-tile{position:relative;padding:4px 6px;border-radius:10px;border:1px solid rgba(130,180,255,.35);background:linear-gradient(135deg,rgba(20,28,60,.55),rgba(15,18,40,.45));box-shadow:inset 0 0 14px rgba(255,255,255,.03),0 0 8px rgba(54,209,255,.12);font-size:clamp(10px, 0.75vw, 15px)}
+.hud-tile::before{content:"";position:absolute;inset:0;border-radius:10px;padding:1px;background:linear-gradient(120deg,rgba(54,209,255,.5),rgba(139,93,255,.45),rgba(255,215,106,.45));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:hudBorder 3.2s linear infinite}
+.hud-k{display:block;color:#8fb8ff;font-size:clamp(9px,.62vw,11px);text-transform:uppercase;letter-spacing:.35px}.hud-v{display:block;color:#fff;font-weight:700;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud-rank{color:#ffd76a}.hud-ping.good{color:#6dff9d}.hud-ping.mid{color:#ffd76a}.hud-ping.bad{color:#ff7b7b}
+@keyframes hudBorder{to{filter:hue-rotate(360deg)}}
+@media (max-width:1100px){/* ===============================
+   UI COMPONENTS: ESPORTS HUD
+   =============================== */
+.esports-hud-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:900px){/* ===============================
+   UI COMPONENTS: ESPORTS HUD
+   =============================== */
+.esports-hud-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hud-tile{font-size:10px;padding:7px 8px}}
+
+
+/* ===============================
+   UI POLISH: TYPOGRAPHY + INTERACTION
+   =============================== */
+/* AAA polish pass: consistency, hierarchy, spacing */
+:root{--ui-text:#eaf2ff;--ui-muted:#9fb2d9;--ui-accent:#36d1ff;--ui-radius:12px;--ui-gap:12px}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ui-text);letter-spacing:.1px}
+h1{font-weight:800;letter-spacing:.4px;margin-bottom:10px;font-size:clamp(18px,1.2vw,30px)}
+.aaa-hud,.top-bar,.panel,.chat-box,.showcase-wrap,.wheel-column{border-radius:var(--ui-radius)!important}
+.esports-grid{gap:var(--ui-gap)}
+.side-stack{gap:var(--ui-gap)}
+.hud-chip,.hud-v,.character-counter,.chat-header,.score,.role-score{font-variant-numeric:tabular-nums}
+.hud-k,.chat-empty,.char-item span,.character-counter{color:var(--ui-muted)}
+button{border-radius:10px;font-weight:700;letter-spacing:.2px;transform:translateZ(0);will-change:transform,box-shadow;transition:transform .15s ease, box-shadow .18s ease, filter .18s ease, background .18s ease;height:clamp(30px, 4vh, 42px);font-size:clamp(10px, 0.75vw, 15px);padding:4px 10px}
+button:active{transform:translateY(0) scale(.98)}
+button:focus-visible{outline:2px solid rgba(54,209,255,.7);outline-offset:2px}
+.panel,.chat-box,.top-bar{box-shadow:0 10px 28px rgba(8,14,28,.48),inset 0 0 28px rgba(255,255,255,.03)!important}
+.panel h3{font-size:clamp(12px,1vw,18px);margin-bottom:6px}
+.char-item{padding:11px 10px}
+.ability-badge,.status-indicator{border-radius:999px}
+.showcase-card{padding:9px}
+.showcase-name{font-weight:800}
+.wheel-actions button{min-width:120px}
+#status{font-size:13px;letter-spacing:.4px}
+@media (max-width:900px){
+  :root{--ui-gap:10px}
+  .aaa-hud{margin:8px 0 10px}
+  .panel h3{font-size:.94rem}
+  .wheel-actions button{min-width:0}
+}
+
+
+
+/* Render/perf utilities */
+.panel,.chat-box,.top-bar,.wheel-column,.showcase-card,.char-item{contain:layout paint}
+.wheel-column::before,.flash-overlay,.float-p,.showcase-card,.char-item,button{backface-visibility:hidden}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+@media (max-width:1920px) and (max-height:1080px){
+  .hud-shell{max-width:1520px;padding:6px}
+  #canvas{width:clamp(260px, 33vw, 480px)!important;height:clamp(260px, 33vw, 480px)!important}
+}
+@media (max-width:1600px) and (max-height:900px){
+  .hud-shell{padding:4px 6px}
+  .aaa-hud{padding:5px 6px;max-height:62px}
+  #canvas{width:clamp(240px, 31vw, 420px)!important;height:clamp(240px, 31vw, 420px)!important}
+}
+@media (max-width:1366px) and (max-height:768px){
+  .aaa-hud{max-height:56px}
+  .esports-grid{grid-template-columns:minmax(220px, 14vw) 1fr minmax(220px, 14vw)}
+  #canvas{width:clamp(220px, 29vw, 360px)!important;height:clamp(220px, 29vw, 360px)!important}
+  .showcase-wrap{height:clamp(86px, 11vh, 120px)}
+}
+
+/* ===============================
+   WHEEL-FIRST FULLSCREEN LAYOUT
+   =============================== */
+body.in-game{padding:0;overflow:hidden}
+body.in-game .hud-shell{width:100%;max-width:none;height:100vh;max-height:100vh;padding:6px;display:block;overflow:hidden}
+body.in-game #gameSection{height:100%;max-height:100%;display:grid!important;grid-template-rows:minmax(0,60px) minmax(0,1fr) clamp(42px,5.8vh,58px) clamp(86px,12vh,128px);gap:6px;overflow:hidden}
+body.in-game .aaa-hud{height:60px;max-height:60px;min-height:0;margin:0;padding:4px 6px;display:grid;grid-template-columns:minmax(120px,auto) auto minmax(0,1fr);align-items:center;overflow:hidden}
+body.in-game .hud-chip{height:100%;display:grid;place-items:center;padding:4px 10px;font-size:clamp(11px,.8vw,14px);white-space:nowrap}
+body.in-game .esports-hud-grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;height:100%;align-items:stretch}
+body.in-game .hud-tile{min-height:0;padding:3px 5px;font-size:clamp(9px,.68vw,12px);display:flex;flex-direction:column;justify-content:center}
+body.in-game .hud-k{font-size:clamp(7px,.52vw,9px);line-height:1}.hud-v{line-height:1.05}
+body.in-game .top-bar{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;border:0!important;box-shadow:none!important}
+body.in-game .mobile-tabs{display:none!important}
+body.in-game .esports-grid{display:grid;grid-template-columns:260px minmax(0,1fr) 260px;gap:6px;min-height:0;height:100%;overflow:hidden;align-items:stretch}
+body.in-game .side-stack{display:grid;grid-template-rows:auto minmax(0,1fr);gap:5px;min-width:0;min-height:0;height:100%;overflow:hidden}
+body.in-game .team-panel-label{height:18px;display:flex;align-items:center;justify-content:flex-start;padding:0 4px;color:var(--neon-gold);font-size:clamp(10px,.72vw,12px);font-weight:900;text-transform:uppercase;letter-spacing:1.1px;text-shadow:0 0 10px rgba(255,215,106,.55)}
+body.in-game .side-stack>.chat-box,body.in-game .side-stack>.panel:not(.mobile-collapsible){display:none!important}
+body.in-game .panel.mobile-collapsible{height:100%;max-height:none;width:100%;margin:0;padding:8px 9px;overflow:hidden;display:flex;flex-direction:column}
+body.in-game .panel h3{margin:0 0 6px;font-size:clamp(12px,.95vw,16px);line-height:1.05;text-align:left}
+body.in-game .collapse-toggle{display:none!important}
+body.in-game .collapsible-content{display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden}
+body.in-game #p1Chars,body.in-game #p2Chars{min-height:0;flex:1;overflow:hidden}
+body.in-game .team-grid{height:100%;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:4px;overflow:hidden}
+body.in-game .char-item{min-height:0;padding:4px 6px;border-radius:9px;gap:6px;align-items:center;overflow:hidden}
+body.in-game .char-item img{width:clamp(28px,3.2vh,42px);height:clamp(28px,3.2vh,42px);flex:0 0 auto}
+body.in-game .char-info{min-width:0;text-align:left;line-height:1.05}
+body.in-game .char-info strong{font-size:clamp(10px,.78vw,13px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+body.in-game .role-tag,.role-score,.ability-badge,.status-indicator{font-size:clamp(8px,.58vw,10px)}
+body.in-game .ability-wrap{gap:2px;margin-top:2px;max-height:18px;overflow:hidden}
+body.in-game .score{font-size:clamp(12px,.9vw,16px);line-height:1;margin-top:5px;text-align:left}
+body.in-game .wheel-column{height:100%;min-width:0;padding:6px;border-radius:16px;display:grid;place-items:center;overflow:hidden}
+body.in-game .wheel-stage{width:min(55vw,calc(100vh - 250px));height:min(55vw,calc(100vh - 250px));max-width:clamp(500px,55vw,900px);max-height:clamp(500px,72vh,900px)}
+body.in-game .wheel-stage::before{inset:-11%;filter:blur(14px);opacity:.95;background:radial-gradient(circle,rgba(255,215,106,.24),rgba(54,209,255,.18) 34%,transparent 62%),conic-gradient(from 0deg,rgba(255,215,106,.42),rgba(139,93,255,.3),rgba(54,209,255,.32),rgba(71,245,157,.22),rgba(255,215,106,.42))}
+body.in-game .wheel-stage::after{inset:-2%;background:conic-gradient(from 0deg,transparent 0 52deg,rgba(255,255,255,.52) 64deg,transparent 78deg 180deg,rgba(255,215,106,.24) 192deg,transparent 214deg 360deg)}
+body.in-game #canvas{width:100%!important;height:100%!important;max-width:100%;max-height:100%;margin:0!important;border-width:4px;box-shadow:0 0 26px rgba(255,215,106,.55),0 0 60px rgba(54,209,255,.24),0 0 96px rgba(139,93,255,.14)}
+body.in-game .bottom-action-bar{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-items:center;min-height:0;margin:0;padding:6px 8px;border:1px solid var(--stroke);border-radius:14px;background:linear-gradient(135deg,rgba(10,15,35,.82),rgba(21,18,46,.72));backdrop-filter:blur(12px);box-shadow:0 0 20px rgba(54,209,255,.12)}
+body.in-game .bottom-action-bar button{width:100%;height:clamp(30px,4.4vh,44px);min-width:0;margin:0;padding:3px 6px;font-size:clamp(10px,.78vw,14px);white-space:nowrap}
+body.in-game .showcase-wrap.bottom-drawer{height:100%;min-height:0;margin:0;padding:6px 8px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:5px;overflow:hidden;border-radius:14px;background:linear-gradient(135deg,rgba(8,12,28,.82),rgba(12,18,42,.72))}
+body.in-game .showcase-controls{display:grid;grid-template-columns:minmax(160px,1fr) 150px 96px;gap:6px;align-items:center}
+body.in-game .showcase-controls input,body.in-game .showcase-controls select,body.in-game .showcase-controls button{height:28px;margin:0;padding:3px 8px;font-size:clamp(10px,.72vw,12px)}
+body.in-game .showcase-row{height:100%;min-height:0;overflow-x:auto;overflow-y:hidden;padding:0 2px 3px;align-items:stretch}
+body.in-game .showcase-card{min-width:clamp(64px,4.8vw,94px);max-width:clamp(64px,4.8vw,94px);padding:4px;border-radius:9px;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:2px}
+body.in-game .showcase-card img{height:100%;min-height:36px;max-height:58px;border-radius:7px}
+body.in-game .showcase-name{font-size:clamp(8px,.62vw,11px);margin:0}.showcase-meta{font-size:clamp(8px,.58vw,10px);margin:0}
+@media (max-width:1600px) and (max-height:900px){body.in-game #gameSection{grid-template-rows:minmax(0,56px) minmax(0,1fr) 44px 104px;gap:5px}body.in-game .aaa-hud{height:56px;max-height:56px}body.in-game .esports-grid{grid-template-columns:250px minmax(0,1fr) 250px}body.in-game .wheel-stage{width:min(55vw,calc(100vh - 225px));height:min(55vw,calc(100vh - 225px));max-width:clamp(420px,55vw,720px);max-height:clamp(420px,70vh,720px)}body.in-game #canvas{width:100%!important;height:100%!important}}
+@media (max-width:1366px) and (max-height:768px){body.in-game #gameSection{grid-template-rows:minmax(0,52px) minmax(0,1fr) 40px 92px;gap:4px}body.in-game .aaa-hud{height:52px;max-height:52px}body.in-game .esports-grid{grid-template-columns:220px minmax(0,1fr) 220px;gap:5px}body.in-game .panel.mobile-collapsible{padding:6px}body.in-game .team-grid{gap:3px}body.in-game .char-item{padding:3px 5px}body.in-game .wheel-stage{width:min(55vw,calc(100vh - 200px));height:min(55vw,calc(100vh - 200px));max-width:clamp(330px,55vw,590px);max-height:clamp(330px,68vh,590px)}body.in-game #canvas{width:100%!important;height:100%!important}body.in-game .showcase-controls{grid-template-columns:minmax(120px,1fr) 120px 82px}body.in-game .showcase-card img{max-height:46px}}
+@media (max-width:900px){body.in-game #gameSection{grid-template-rows:auto auto minmax(0,1fr) auto clamp(100px,16vh,138px)}body.in-game .aaa-hud{height:auto;max-height:96px;grid-template-columns:1fr}body.in-game .esports-hud-grid{grid-template-columns:repeat(4,minmax(0,1fr))}body.in-game .mobile-tabs{display:flex!important}body.in-game .esports-grid{grid-template-columns:1fr}body.in-game .side-stack>.chat-box,body.in-game .side-stack>.panel:not(.mobile-collapsible){display:block!important}body.in-game .bottom-action-bar{grid-template-columns:repeat(3,minmax(0,1fr))}body.in-game .showcase-controls{grid-template-columns:1fr 1fr}body.in-game .showcase-controls input{grid-column:1/-1}}
+
+
+/* Slide-out utility drawers: hidden by default, HUD-triggered */
+body.in-game .hud-drawer-actions{display:flex;align-items:center;gap:5px;min-width:max-content}
+body.in-game .hud-drawer-btn{height:clamp(28px,4vh,38px);margin:0;padding:3px 8px;border:1px solid rgba(255,215,106,.5);border-radius:10px;background:linear-gradient(135deg,rgba(255,215,106,.22),rgba(54,209,255,.12));color:#fff4b0;font-size:clamp(10px,.72vw,13px);white-space:nowrap;box-shadow:0 0 12px rgba(255,215,106,.16)}
+body.in-game #chatBox{position:fixed!important;left:0;top:0;bottom:0;z-index:80;width:min(360px,92vw);max-width:92vw;height:100vh!important;max-height:100vh!important;margin:0!important;padding:16px 14px!important;border-radius:0 18px 18px 0!important;display:flex!important;flex-direction:column;transform:translateX(-105%);opacity:0;pointer-events:none;transition:transform .28s ease,opacity .22s ease;box-shadow:22px 0 50px rgba(0,0,0,.48),0 0 30px rgba(54,209,255,.2)!important;background:linear-gradient(135deg,rgba(8,12,28,.96),rgba(16,22,48,.94))!important}
+body.in-game #chatBox.drawer-open{transform:translateX(0);opacity:1;pointer-events:auto;display:flex!important}
+body.in-game #chatBox .chat-header{padding-right:34px;color:#ffd76a;text-transform:uppercase;letter-spacing:.8px}
+body.in-game #chatBox .chat-body{display:flex;flex-direction:column;min-height:0;flex:1;max-height:none!important}
+body.in-game #chatBox .chat-messages{flex:1;min-height:0;max-height:none!important;overflow:auto}
+.drawer-close{position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;margin:0!important;padding:0!important;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08)!important;color:#fff!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 0 12px rgba(54,209,255,.18)!important}
+.encyclopedia-drawer{position:fixed;inset:0;z-index:85;pointer-events:none;background:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 55%,rgba(0,0,0,.42) 100%);opacity:0;transition:opacity .24s ease}
+.encyclopedia-drawer.drawer-open{opacity:1;pointer-events:auto}
+.encyclopedia-drawer-content{position:absolute;top:0;right:0;height:100vh;width:min(620px,94vw);max-height:100vh!important;margin:0!important;border-radius:18px 0 0 18px!important;transform:translateX(105%);transition:transform .3s ease;overflow:auto;background:linear-gradient(135deg,rgba(8,12,28,.98),rgba(18,22,52,.96))!important;border-left:1px solid rgba(255,215,106,.45)!important;box-shadow:-24px 0 55px rgba(0,0,0,.52),0 0 36px rgba(255,215,106,.18)!important}
+.encyclopedia-drawer.drawer-open .encyclopedia-drawer-content{transform:translateX(0)}
+.encyclopedia-drawer-content h2{padding-right:36px}
+@media (max-width:900px){body.in-game .aaa-hud{grid-template-columns:1fr}body.in-game .hud-drawer-actions{justify-content:center;order:2}body.in-game #chatBox{width:min(330px,94vw)}.encyclopedia-drawer-content{width:min(520px,96vw)}}
+
 </style>
 </head>
 <body>
-
 <div class="volume-control">
   <button onclick="toggleToolbar()" id="toolbarToggle">☰</button>
   <button onclick="toggleMusic()" id="musicBtn" class="toolbar-item">🔊 ON</button>
@@ -1089,90 +1395,50 @@ body.rare-cinematic {
   <button onclick="showEncyclopedia()" class="leaderboard-btn toolbar-item">📚 ENCYCLOPEDIA</button>
   <button onclick="quitGame()" class="quit-btn toolbar-item">❌ QUIT</button>
 </div>
-
+<div class="flash-overlay" id="flashOverlay"></div><div class="floating-particles" id="floatingParticles"></div><div class="hud-shell">
 <h1>🎯 Anime Roulette Ultimate</h1>
-
 <div id="joinSection">
   <input id="nameInput" placeholder="👤 Enter your name" type="text">
   <input id="roomInput" placeholder="🏠 Enter room code" type="text">
-  <select id="modeSelect">
-    <option value="enhanced">⚡ Enhanced Mode (events on)</option>
-    <option value="classic">🎮 Classic Mode (no random events)</option>
-  </select>
-  <button onclick="joinGame()">🎮 START GAME</button>
-  <div id="messages"></div>
+  <select id="modeSelect"><option value="enhanced">⚡ Enhanced Mode (events on)</option><option value="classic">🎮 Classic Mode (no random events)</option></select>
+  <button onclick="joinGame()">🎮 START GAME</button><div id="messages"></div>
 </div>
-
 <div id="gameSection">
-  <div class="top-bar">
-    <div id="status">Waiting...</div>
-    <details>
-      <summary>HUD details</summary>
-      <div class="hud-metrics">
-        <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
-        <div class="character-counter" id="oddsDisplay">🎲 Odds: ...</div>
-        <div class="character-counter" id="phaseDisplay">🧠 Early Game → build team</div>
-        <div class="character-counter" id="momentumDisplay">🔥 Momentum: 0/3</div>
-        <div class="character-counter" id="eventDisplay">🌪️ Event: None</div>
-        <div class="character-counter" id="mindGameDisplay">💬 Mind Game: Neutral</div>
-      </div>
-    </details>
-  </div>
-
-  <div class="mobile-tabs" id="mobileTabs">
-    <button onclick="setMobileTab('p1')">Player 1</button>
-    <button onclick="setMobileTab('wheel')">Wheel</button>
-    <button onclick="setMobileTab('p2')">Player 2</button>
-    <button onclick="setMobileTab('chat')">Chat</button>
-  </div>
-
-  <div class="game-wrapper">
-    <div class="panel mobile-section" id="p1Panel" data-section="p1">
-      <h3 id="p1Name">Player 1</h3>
-      <div id="p1Chars"></div>
-      <div class="score">Score: <span id="p1Score">0</span></div>
+  <div class="aaa-hud"><div id="status" class="hud-chip">Waiting...</div><div class="hud-drawer-actions"><button class="hud-drawer-btn" onclick="toggleChatDrawer()">💬 Chat</button><button class="hud-drawer-btn" onclick="showEncyclopedia()">📚 Encyclopedia</button></div><div class="esports-hud-grid">
+<div class="hud-tile"><span class="hud-k">Room</span><span class="hud-v" id="hudRoom">----</span></div>
+<div class="hud-tile"><span class="hud-k">Turns</span><span class="hud-v" id="hudTurn">0</span></div>
+<div class="hud-tile"><span class="hud-k">Phase</span><span class="hud-v" id="hudPhase">Early</span></div>
+<div class="hud-tile"><span class="hud-k">Event</span><span class="hud-v" id="hudEvent">None</span></div>
+<div class="hud-tile"><span class="hud-k">Momentum</span><span class="hud-v" id="hudMomentum">0/3</span></div>
+<div class="hud-tile"><span class="hud-k">Legendary Odds</span><span class="hud-v" id="hudLegendOdds">0%</span></div>
+<div class="hud-tile"><span class="hud-k">Ping</span><span class="hud-v hud-ping" id="hudPing">-- ms</span></div>
+<div class="hud-tile"><span class="hud-k">Mode</span><span class="hud-v hud-rank" id="hudRanked">Ranked: ON</span></div>
+</div></div>
+  <div class="top-bar"><details><summary>HUD details</summary><div class="hud-metrics"><div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div><div class="character-counter" id="phaseDisplay">🧠 Early Game → build team</div><div class="character-counter" id="momentumDisplay">🔥 Momentum: 0/3<div class="momentum-wrap"><div class="momentum-bar"></div></div></div><div class="character-counter event-card" id="eventDisplay">🌪️ Event: None</div><div class="character-counter" id="mindGameDisplay">💬 Mind Game: Neutral</div></div></details></div>
+  <div class="mobile-tabs" id="mobileTabs"><button onclick="setMobileTab('p1')">Player 1</button><button onclick="setMobileTab('wheel')">Wheel</button><button onclick="setMobileTab('p2')">Player 2</button><button onclick="setMobileTab('chat')">Chat</button></div>
+  <div class="esports-grid game-wrapper">
+    <div class="side-stack team-side your-team">
+      <div class="team-panel-label">Your Team</div>
+      <div class="panel mobile-section mobile-collapsible" id="p1Panel" data-section="p1"><h3 id="p1Name">Your Team</h3><button class="collapse-toggle" onclick="togglePanel('p1Panel')">Team Panel</button><div class="collapsible-content"><div id="p1Chars"></div><div class="score">Score: <span id="p1Score">0</span></div></div></div>
+      <div class="chat-box mobile-section" id="chatBox" data-section="chat"><button class="drawer-close" onclick="toggleChatDrawer(false)">✕</button><div class="chat-header">💬 Room Chat</div><div class="chat-body"><div id="chatMessages" class="chat-messages"><div class="chat-empty">No messages yet. Say hi 👋</div></div><div class="emoji-row"><button onclick="addEmojiToChat('🔥')">🔥</button><button onclick="addEmojiToChat('😂')">😂</button><button onclick="addEmojiToChat('😈')">😈</button><button onclick="addEmojiToChat('💀')">💀</button><button onclick="addEmojiToChat('👏')">👏</button></div><div class="chat-input-row"><input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" /><button id="chatSendBtn" onclick="sendChatMessage()">Send</button></div></div></div>
     </div>
-
-    <div class="mobile-section wheel-column" data-section="wheel">
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button id="spinBtn" onclick="spin()">🎡 SPIN</button>
-        <button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button>
-        <button id="ultimateBtn" onclick="activateUltimate()">🔥 ULTIMATE</button>
-      </div>
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center;">
-        <button id="stealBtn" onclick="useSteal()">🕶️ STEAL</button>
-        <button id="blockBtn" onclick="useBlock()">🧱 BLOCK ROLE</button>
-        <button id="debuffBtn" onclick="useDebuff()">☠️ DEBUFF</button>
-      </div>
-      <canvas id="canvas" width="320" height="320"></canvas>
-    </div>
-
-    <div class="panel mobile-section" id="p2Panel" data-section="p2">
-      <h3 id="p2Name">Player 2</h3>
-      <div id="p2Chars"></div>
-      <div class="score">Score: <span id="p2Score">0</span></div>
+    <div class="mobile-section wheel-column" data-section="wheel"><div class="wheel-stage"><div class="wheel-pointer" aria-hidden="true"></div><canvas id="canvas" width="320" height="320"></canvas><button id="centerSpinBtn" class="wheel-center-btn" onclick="spin()" aria-label="Spin, 3 out of 3 spins left"><span><span class="spin-title">SPIN</span><span class="spin-count" id="centerSpinCount">3 / 3</span><span class="spin-subtitle">SPINS LEFT</span></span></button></div></div>
+    <div class="side-stack team-side opponent-team">
+      <div class="team-panel-label">Opponent Team</div>
+      <div class="panel mobile-section mobile-collapsible" id="p2Panel" data-section="p2"><h3 id="p2Name">Opponent Team</h3><button class="collapse-toggle" onclick="togglePanel('p2Panel')">Team Panel</button><div class="collapsible-content"><div id="p2Chars"></div><div class="score">Score: <span id="p2Score">0</span></div></div></div>
+      <div class="panel"><h3>Opponent Intel</h3><div class="character-counter">⚔️ Team Power: Live</div><div class="character-counter">🔥 Momentum Meter Active</div><div class="character-counter">🎯 Dynamic Odds Enabled</div><div class="character-counter">🌀 Event Feed Synced</div></div>
     </div>
   </div>
-
-  <div class="chat-box mobile-section" id="chatBox" data-section="chat">
-    <div class="chat-header">💬 Room Chat (short messages)</div>
-    <div class="chat-body">
-    <div id="chatMessages" class="chat-messages">
-      <div class="chat-empty">No messages yet. Say hi 👋</div>
+  <div class="bottom-action-bar wheel-actions"><button id="spinBtn" onclick="spin()">🎡 SPIN</button><button id="skipBtn" onclick="skipTurn()">⏭️ SKIP</button><button id="ultimateBtn" class="legendary-glow" onclick="activateUltimate()">🔥 ULTIMATE</button><button id="stealBtn" onclick="useSteal()">🕶️ STEAL</button><button id="blockBtn" onclick="useBlock()">🧱 BLOCK</button><button id="debuffBtn" onclick="useDebuff()">☠️ DEBUFF</button></div>
+  <div class="showcase-wrap bottom-drawer" id="showcaseWrap">
+    <div class="showcase-controls">
+      <input id="showcaseSearch" placeholder="Search character">
+      <select id="showcaseTier"><option value="all">All tiers</option><option value="legendary">Legendary</option><option value="epic">Epic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select>
+      <button onclick="loadMoreShowcase()">Load More</button>
     </div>
-    <div class="emoji-row">
-      <button onclick="addEmojiToChat('🔥')">🔥</button>
-      <button onclick="addEmojiToChat('😂')">😂</button>
-      <button onclick="addEmojiToChat('😈')">😈</button>
-      <button onclick="addEmojiToChat('💀')">💀</button>
-      <button onclick="addEmojiToChat('👏')">👏</button>
-    </div>
-    <div class="chat-input-row">
-      <input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" />
-      <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
-    </div>
-    </div>
+    <div class="showcase-row" id="showcaseRow"></div>
   </div>
+</div>
 </div>
 
 <audio id="bgm" loop preload="auto"></audio>
@@ -1377,7 +1643,60 @@ ultimateUsed: false,
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+let wheelCanvasCssSize = 320;
+let wheelCanvasDpr = 1;
+let wheelResizeFrame = 0;
+let wheelAmbientFrame = 0;
+let wheelAmbientLastPaint = 0;
+
+function syncWheelCanvasSize() {
+  const rect = canvas.getBoundingClientRect();
+  const cssSize = Math.max(180, Math.round(rect.width || canvas.clientWidth || wheelCanvasCssSize || 320));
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  if (cssSize !== wheelCanvasCssSize || dpr !== wheelCanvasDpr || canvas.width !== Math.round(cssSize * dpr)) {
+    wheelCanvasCssSize = cssSize;
+    wheelCanvasDpr = dpr;
+    canvas.width = Math.round(cssSize * dpr);
+    canvas.height = Math.round(cssSize * dpr);
+  }
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return cssSize;
+}
+
+window.addEventListener("resize", () => {
+  cancelAnimationFrame(wheelResizeFrame);
+  wheelResizeFrame = requestAnimationFrame(() => {
+    if (state.characters?.length && document.body.classList.contains("in-game")) draw();
+  });
+}, { passive: true });
+
+function startWheelAmbientAnimation() {
+  if (wheelAmbientFrame) return;
+
+  const tick = (now) => {
+    if (!document.body.classList.contains("in-game") || document.hidden) {
+      wheelAmbientFrame = 0;
+      return;
+    }
+
+    if (!state.spinning && state.characters?.length && now - wheelAmbientLastPaint > 80) {
+      draw();
+      wheelAmbientLastPaint = now;
+    }
+
+    wheelAmbientFrame = requestAnimationFrame(tick);
+  };
+
+  wheelAmbientFrame = requestAnimationFrame(tick);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && document.body.classList.contains("in-game")) startWheelAmbientAnimation();
+});
 const spinBtn = document.getElementById("spinBtn");
+const centerSpinBtn = document.getElementById("centerSpinBtn");
 const skipBtn = document.getElementById("skipBtn");
 const ultimateBtn = document.getElementById("ultimateBtn");
 const stealBtn = document.getElementById("stealBtn");
@@ -1391,6 +1710,11 @@ setBgmTrack(0, false);
 
 function hasAllRolesSelected() {
   return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
+}
+
+function setSpinButtonsDisabled(disabled) {
+  spinBtn.disabled = disabled;
+  if (centerSpinBtn) centerSpinBtn.disabled = disabled;
 }
 
 function getGamePhaseBySpins() {
@@ -1560,6 +1884,9 @@ function activateUltimate() {
           state.ultimateUsed = true;
           ultimateBtn.disabled = true;
           alert("🔥 " + ultimateName + " Activated! +" + bonus + " Team Power");
+          triggerFlash();
+          document.body.classList.add("fx-energy");
+          setTimeout(()=>document.body.classList.remove("fx-energy"),2400);
         });
     })
     .catch(err => {
@@ -1594,6 +1921,7 @@ function getTier(char) {
   if (char.score >= 10) return 'legendary';
   if (char.score >= 9) return 'epic';
   if (char.score >= 8) return 'rare';
+  if (char.score >= 7) return 'uncommon';
   return 'common';
 }
 
@@ -1601,22 +1929,81 @@ function updateOddsDisplay() {
   const el = document.getElementById('oddsDisplay');
   if (!el) return;
   const total = state.characters.length || 1;
-  const counts = { legendary: 0, epic: 0, rare: 0, common: 0 };
+  const counts = { legendary: 0, epic: 0, rare: 0, uncommon: 0, common: 0 };
   state.characters.forEach(c => counts[getTier(c)]++);
   const pct = (n) => ((n / total) * 100).toFixed(1);
-  el.innerText = `🎲 L:${pct(counts.legendary)}% E:${pct(counts.epic)}% R:${pct(counts.rare)}% C:${pct(counts.common)}% | Pity:${state.pityCounter}`;
+  el.innerText = `🎲 L:${pct(counts.legendary)}% E:${pct(counts.epic)}% R:${pct(counts.rare)}% U:${pct(counts.uncommon)}% C:${pct(counts.common)}% | Pity:${state.pityCounter}`;
+  const hud=document.getElementById("hudLegendOdds"); if(hud) hud.textContent = `${pct(counts.legendary)}%`;
+}
+
+
+function updateEsportsHud(data={}){
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('hudRoom', state.room || '----');
+  set('hudTurn', String(data.turnCount || 0));
+  const phaseTxt=(document.getElementById('phaseDisplay')?.textContent||'Early').replace('🧠','').trim();
+  set('hudPhase', phaseTxt);
+  const eventTxt=(document.getElementById('eventDisplay')?.textContent||'None').replace('🌪️ Event:','').trim();
+  set('hudEvent', eventTxt || 'None');
+  const mm=(document.getElementById('momentumDisplay')?.textContent||'0/3').match(/\d+\/\d+/);
+  set('hudMomentum', mm?mm[0]:'0/3');
+  const total=state.characters.length||1, leg=state.characters.filter(c=>(c.score||0)>=10).length;
+  set('hudLegendOdds', ((leg/total)*100).toFixed(1)+'%');
+  set('hudRanked', `Ranked: ${state.gameMode==='classic'?'OFF':'ON'}`);
+}
+function startPingMonitor(){
+  if(window.__pingTimer) return;
+  const el=document.getElementById('hudPing');
+  if(!el) return;
+  const paint=(v)=>{el.textContent=v+' ms';el.classList.remove('good','mid','bad');el.classList.add(v<90?'good':(v<170?'mid':'bad'));};
+  window.__pingTimer=setInterval(()=>{const v=Math.round(40+Math.random()*120);paint(v);},3000);
+  paint(72);
 }
 
 function setMobileTab(tab) {
   state.mobileTab = tab;
+  const buttons = document.querySelectorAll("#mobileTabs button"); buttons.forEach((b,idx)=>b.classList.toggle("active", ["p1","wheel","p2","chat"][idx]===tab));
   document.querySelectorAll('.mobile-section').forEach(el => {
     if (el.dataset.section === tab) el.classList.add('active-mobile');
     else el.classList.remove('active-mobile');
   });
 }
 
+
+
+function togglePanel(id){ const el=document.getElementById(id); if(!el) return; el.classList.toggle('collapsed'); }
+function setupMobileGestures(){
+  const wrap=document.querySelector('.game-wrapper'); if(!wrap || wrap.dataset.swipeBound) return; wrap.dataset.swipeBound='1';
+  let sx=0, sy=0;
+  wrap.addEventListener('touchstart',e=>{ const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; },{passive:true});
+  wrap.addEventListener('touchend',e=>{ if(window.innerWidth>900) return; const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)) return; const tabs=['p1','wheel','p2','chat']; let i=tabs.indexOf(state.mobileTab||'wheel'); i += dx<0?1:-1; i=(i+tabs.length)%tabs.length; setMobileTab(tabs[i]); },{passive:true});
+}
+
+
+state.showcaseLimit = 20;
+function tierOfChar(c){ return (c.score>=10)?'legendary':(c.score>=9)?'epic':(c.score>=8)?'rare':(c.score>=7)?'uncommon':'common'; }
+function abilityIcon(c){ if(c.hiddenAbility) return '❓'; if(c.ability?.type==='statusEffect') return '✨'; if(c.ability) return '⚡'; return '•'; }
+function renderShowcase(){
+  const row=document.getElementById('showcaseRow'); if(!row) return;
+  const q=(document.getElementById('showcaseSearch')?.value||'').toLowerCase().trim();
+  const tier=document.getElementById('showcaseTier')?.value||'all';
+  const filtered=state.characters.filter(c=>(!q||c.name.toLowerCase().includes(q))&&(tier==='all'||tierOfChar(c)===tier));
+  row.innerHTML=filtered.slice(0,state.showcaseLimit).map(c=>`<div class="showcase-card tier-${tierOfChar(c)}"><img src="${c.img}" alt="${c.name}"><div class="showcase-name">${c.name}</div><div class="showcase-meta"><span>⭐ ${c.score}</span><span class="ability-icon">${abilityIcon(c)}</span></div></div>`).join('');
+}
+function loadMoreShowcase(){ state.showcaseLimit += 20; renderShowcase(); }
+
+function triggerFlash(){ const f=document.getElementById("flashOverlay"); if(!f) return; f.classList.remove("active"); void f.offsetWidth; f.classList.add("active"); setTimeout(()=>f.classList.remove("active"),520); }
+function triggerScreenShake(){ document.body.classList.remove("shake-legendary"); void document.body.offsetWidth; document.body.classList.add("shake-legendary"); setTimeout(()=>document.body.classList.remove("shake-legendary"),450); }
+function updateMomentumAura(){ const el=document.getElementById("momentumDisplay"); if(!el) return; const txt=el.textContent||""; const strong=/([3-9])\//.test(txt); el.classList.toggle("momentum-aura",true); el.classList.toggle("active",strong); }
+function pulseEventCard(type){ const el=document.getElementById("eventDisplay"); if(!el) return; el.classList.remove("event-storm","event-blessing","event-chaos"); if(!type) return; el.classList.add(`event-${type}`); setTimeout(()=>el.classList.remove("event-storm","event-blessing","event-chaos"),1800); }
+function updateStatusIndicatorsFromData(data){ const p1=Object.values(data?.players?.Player1?.slots||{}); const p2=Object.values(data?.players?.Player2?.slots||{}); const has=(arr,e)=>arr.some(c=>c?.ability?.type==="statusEffect"&&c?.ability?.effect===e); const p1el=document.getElementById("p1Panel"), p2el=document.getElementById("p2Panel"); p1el?.classList.remove("status-burn","status-freeze","status-silence"); p2el?.classList.remove("status-burn","status-freeze","status-silence"); if(has(p2,"Burn")) p1el?.classList.add("status-burn"); if(has(p2,"Freeze")) p1el?.classList.add("status-freeze"); if(has(p2,"Silence")) p1el?.classList.add("status-silence"); if(has(p1,"Burn")) p2el?.classList.add("status-burn"); if(has(p1,"Freeze")) p2el?.classList.add("status-freeze"); if(has(p1,"Silence")) p2el?.classList.add("status-silence"); }
+function refreshUiSurfaces(data, activeEvent){ updateMomentumAura(); pulseEventCard(activeEvent?.type || ""); updateStatusIndicatorsFromData(data); updateEsportsHud(data); }
+let floatingTimer=null;
+function startFloatingParticles(){ if(floatingTimer) return; const root=document.getElementById("floatingParticles"); if(!root) return; floatingTimer=setInterval(()=>{ for(let i=0;i<2;i++){ const d=document.createElement("div"); d.className="float-p"; d.style.left=`${Math.random()*100}%`; d.style.bottom='-8px'; d.style.animationDuration=`${4+Math.random()*4}s`; d.style.opacity=String(.35+Math.random()*.4); root.appendChild(d); setTimeout(()=>d.remove(),9000);} },420); }
 function playRareCinematic(char) {
   if (!char || char.score < 10) return;
+  triggerFlash();
+  if ((char.score || 0) >= LEGENDARY_SCORE_THRESHOLD) triggerScreenShake();
   document.body.classList.add('rare-cinematic');
   playSound([900, 700, 1000], [0.12, 0.12, 0.2]);
   setTimeout(() => document.body.classList.remove('rare-cinematic'), 500);
@@ -1646,10 +2033,16 @@ function triggerWinConfetti() {
 }
 
 function showEncyclopedia() {
+  const existing = document.querySelector('.encyclopedia-drawer');
+  if (existing) {
+    existing.classList.add('drawer-open');
+    return;
+  }
+
   const modal = document.createElement('div');
-  modal.className = 'leaderboard-modal';
+  modal.className = 'encyclopedia-drawer';
   const content = document.createElement('div');
-  content.className = 'leaderboard-content';
+  content.className = 'encyclopedia-drawer-content leaderboard-content';
 
   const rows = BASE_CHARACTERS.map(c => {
     const forms = c.forms?.map(f => f.name).join(', ') || 'Base only';
@@ -1658,7 +2051,7 @@ function showEncyclopedia() {
   }).join('');
 
   content.innerHTML = `
-    <button class="modal-close" onclick="this.closest('.leaderboard-modal').remove()">✕</button>
+    <button class="modal-close drawer-close" onclick="this.closest('.encyclopedia-drawer').remove()">✕</button>
     <h2>📚 Character Encyclopedia</h2>
 
     <details class="collapsible-block" open>
@@ -1678,6 +2071,7 @@ function showEncyclopedia() {
   `;
   modal.appendChild(content);
   document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('drawer-open'));
   const search = content.querySelector('#encyclopediaSearch');
   const tbody = content.querySelector('tbody');
   search.addEventListener('input', () => {
@@ -1689,6 +2083,15 @@ function showEncyclopedia() {
   modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 }
 
+
+function toggleChatDrawer(force) {
+  const chat = document.getElementById('chatBox');
+  if (!chat) return;
+  const shouldOpen = typeof force === 'boolean' ? force : !chat.classList.contains('drawer-open');
+  chat.classList.toggle('drawer-open', shouldOpen);
+  chat.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+  if (shouldOpen) chatInputEl?.focus();
+}
 
 async function showLeaderboard() {
   playSoundEffect('select');
@@ -2084,85 +2487,302 @@ function applyFormVariation(char) {
   };
 }
 
+function getRarityMeta(score = 0) {
+  if (score >= 10) return { key: "legendary", label: "LEGENDARY", stars: 5 };
+  if (score >= 9) return { key: "epic", label: "EPIC", stars: 4 };
+  if (score >= 8) return { key: "rare", label: "RARE", stars: 3 };
+  if (score >= 7) return { key: "uncommon", label: "UNCOMMON", stars: 2 };
+  return { key: "common", label: "COMMON", stars: 1 };
+}
+
+function starRating(stars) {
+  return "★".repeat(stars);
+}
+
+function drawRoundedBadge(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawCoverImage(ctx, img, x, y, size) {
+  const sourceWidth = img.naturalWidth || img.width;
+  const sourceHeight = img.naturalHeight || img.height;
+  const sourceSize = Math.min(sourceWidth, sourceHeight);
+  const sourceX = Math.max(0, (sourceWidth - sourceSize) / 2);
+  const sourceY = Math.max(0, (sourceHeight - sourceSize) * 0.22);
+  ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, x, y, size, size);
+}
+
+function drawSliceBadge(ctx, centerX, centerY, angle, radius, text, font, fill, stroke, bg, maxWidth, scale) {
+  const normalized = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  const flipped = normalized > Math.PI / 2 && normalized < Math.PI * 1.5;
+  const x = centerX + Math.cos(angle) * radius;
+  const y = centerY + Math.sin(angle) * radius;
+  const badgeHeight = 16 * scale;
+  const badgeWidth = Math.min(maxWidth, Math.max(38 * scale, text.length * 6.4 * scale));
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle + (flipped ? Math.PI : 0));
+  ctx.fillStyle = bg;
+  drawRoundedBadge(ctx, -badgeWidth / 2, -badgeHeight / 2, badgeWidth, badgeHeight, 8 * scale);
+  ctx.fill();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = Math.max(1, 1.2 * scale);
+  ctx.stroke();
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = "rgba(0,0,0,0.65)";
+  ctx.lineWidth = Math.max(2, 2.6 * scale);
+  ctx.font = font;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.strokeText(text, 0, 0, maxWidth - 8 * scale);
+  ctx.fillText(text, 0, 0, maxWidth - 8 * scale);
+  ctx.restore();
+}
+
 function draw() {
   const chars = state.characters;
   if (chars.length === 0) return;
 
-  const centerX = 160;
-  const centerY = 160;
-  const radius = 130;
-  const slice = (Math.PI * 2) / chars.length;
+  const wheelSize = syncWheelCanvasSize();
+  const scale = wheelSize / 320;
+  const px = value => value * scale;
+  const centerX = wheelSize / 2;
+  const centerY = wheelSize / 2;
+  const outerRadius = wheelSize * 0.462;
+  const innerRadius = wheelSize * 0.202;
+  const portraitRadius = wheelSize * 0.342;
+  const portraitSize = Math.max(px(28), Math.min(px(50), wheelSize * 0.104));
+  const visibleCount = Math.min(10, chars.length);
+  const visualSlice = (Math.PI * 2) / visibleCount;
+  const fullSlice = (Math.PI * 2) / chars.length;
+  const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  const fullOffset = normalized / fullSlice;
+  const baseIndex = Math.floor(fullOffset) % chars.length;
+  const fractionalOffset = fullOffset - Math.floor(fullOffset);
+  const visualOffset = fractionalOffset * visualSlice;
+  const startAngle = -Math.PI / 2 - visualOffset;
+  const sliceGap = Math.max(0.014, Math.min(0.024, 0.018 * scale));
+  const tierStyles = {
+    legendary: {fill:["#5b3600", "#ffbf1f", "#fff1a6"], stroke:"#ffe88f", glow:"rgba(255,215,106,0.98)", label:"#fff4b0", badge:"rgba(84,47,0,0.88)", sliceBlur:32, dividerBlur:22, portraitBlur:28, lineWidth:3.6, alpha:1, star:"#fff0a4"},
+    epic: {fill:["#211049", "#8b4dff", "#dfbaff"], stroke:"#c69cff", glow:"rgba(176,91,255,0.78)", label:"#eadcff", badge:"rgba(33,16,73,0.86)", sliceBlur:20, dividerBlur:14, portraitBlur:18, lineWidth:2.6, alpha:0.9, star:"#e0c7ff"},
+    rare: {fill:["#06284d", "#18b8ff", "#a8f1ff"], stroke:"#62dcff", glow:"rgba(47,191,255,0.72)", label:"#d8f6ff", badge:"rgba(6,40,77,0.86)", sliceBlur:16, dividerBlur:11, portraitBlur:15, lineWidth:2.25, alpha:0.82, star:"#9beeff"},
+    uncommon: {fill:["#07331f", "#1bd16f", "#9effcf"], stroke:"#65ffad", glow:"rgba(71,245,157,0.62)", label:"#dbffe9", badge:"rgba(7,51,31,0.86)", sliceBlur:12, dividerBlur:9, portraitBlur:12, lineWidth:2, alpha:0.76, star:"#9dffd0"},
+    common: {fill:["#222936", "#566173", "#aab2c2"], stroke:"#a5afc1", glow:"rgba(160,170,190,0.22)", label:"#edf2ff", badge:"rgba(20,26,38,0.8)", sliceBlur:5, dividerBlur:3, portraitBlur:6, lineWidth:1.5, alpha:0.5, star:"#c8ceda"}
+  };
+  const shinePhase = (performance.now() % 1800) / 1800;
 
-  ctx.fillStyle = "#0a0a12";
-  ctx.fillRect(0, 0, 320, 320);
+  ctx.clearRect(0, 0, wheelSize, wheelSize);
+  const bg = ctx.createRadialGradient(centerX, centerY, px(24), centerX, centerY, wheelSize / 2);
+  bg.addColorStop(0, "#1c2552");
+  bg.addColorStop(0.55, "#0b1129");
+  bg.addColorStop(1, "#040714");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, wheelSize, wheelSize);
 
-  for (let i = 0; i < chars.length; i++) {
-    const start = state.angle + i * slice;
-    const end = start + slice;
-    const mid = start + slice / 2;
+  ctx.save();
+  ctx.shadowBlur = px(30);
+  ctx.shadowColor = "rgba(255,215,106,0.42)";
+  ctx.strokeStyle = "rgba(255,215,106,0.5)";
+  ctx.lineWidth = px(10);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, outerRadius + px(7), 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.shadowBlur = px(20);
+  ctx.shadowColor = "rgba(54,209,255,0.48)";
+  ctx.strokeStyle = "rgba(54,209,255,0.38)";
+  ctx.lineWidth = px(4);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, outerRadius + px(15), 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 
-    ctx.fillStyle = "#1a3a5f";
+  ctx.save();
+  for (let t = 0; t < 80; t++) {
+    const a = (Math.PI * 2 * t) / 80 + shinePhase * Math.PI * 2;
+    const longTick = t % 5 === 0;
+    const r1 = outerRadius + px(longTick ? 6 : 10);
+    const r2 = outerRadius + px(longTick ? 19 : 15);
+    ctx.strokeStyle = longTick ? "rgba(255,215,106,0.72)" : "rgba(54,209,255,0.42)";
+    ctx.lineWidth = px(longTick ? 2.2 : 1.1);
+    ctx.shadowBlur = px(longTick ? 10 : 5);
+    ctx.shadowColor = longTick ? "rgba(255,215,106,0.72)" : "rgba(54,209,255,0.48)";
     ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.arc(centerX, centerY, radius, start, end);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.strokeStyle = "#FFD700";
-    ctx.lineWidth = 1.5;
+    ctx.moveTo(centerX + Math.cos(a) * r1, centerY + Math.sin(a) * r1);
+    ctx.lineTo(centerX + Math.cos(a) * r2, centerY + Math.sin(a) * r2);
     ctx.stroke();
+  }
+  ctx.restore();
+
+  for (let i = 0; i < visibleCount; i++) {
+    const char = chars[(baseIndex + i) % chars.length];
+    const start = startAngle + i * visualSlice + sliceGap;
+    const end = startAngle + (i + 1) * visualSlice - sliceGap;
+    const mid = (start + end) / 2;
+    const rarity = getRarityMeta(char.score);
+    const tier = rarity.key;
+    const style = tierStyles[tier];
+
+    const g = ctx.createRadialGradient(centerX, centerY, innerRadius, centerX + Math.cos(mid) * outerRadius, centerY + Math.sin(mid) * outerRadius, outerRadius);
+    g.addColorStop(0, style.fill[0]);
+    g.addColorStop(0.58, style.fill[1]);
+    g.addColorStop(1, style.fill[2]);
 
     ctx.save();
-    ctx.translate(centerX, centerY);
-    ctx.rotate(mid);
-    ctx.fillStyle = "#FFD700";
-    ctx.font = "bold 9px Arial";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.fillText(chars[i].name, radius - 35, 0);
+    ctx.shadowBlur = px(style.sliceBlur);
+    ctx.shadowColor = style.glow;
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, outerRadius, start, end);
+    ctx.arc(centerX, centerY, innerRadius, end, start, true);
+    ctx.closePath();
+    ctx.fill();
     ctx.restore();
 
-    const img = state.images[chars[i].img];
-    if (img && img.complete) {
-      const x = centerX + Math.cos(mid) * 95;
-      const y = centerY + Math.sin(mid) * 95;
-
+    if (tier === "legendary") {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(x, y, 14, 0, Math.PI * 2);
-      ctx.strokeStyle = "#FFD700";
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      ctx.arc(centerX, centerY, outerRadius, start, end);
+      ctx.arc(centerX, centerY, innerRadius, end, start, true);
+      ctx.closePath();
       ctx.clip();
-      ctx.drawImage(img, x - 14, y - 14, 28, 28);
+      ctx.translate(centerX, centerY);
+      ctx.rotate(mid);
+      ctx.globalCompositeOperation = "screen";
+      const sweep = ((shinePhase + i * 0.13) % 1) * outerRadius * 2 - outerRadius;
+      const shine = ctx.createLinearGradient(sweep - px(22), -outerRadius, sweep + px(22), outerRadius);
+      shine.addColorStop(0, "rgba(255,255,255,0)");
+      shine.addColorStop(0.48, "rgba(255,255,255,0.1)");
+      shine.addColorStop(0.5, "rgba(255,245,180,0.82)");
+      shine.addColorStop(0.54, "rgba(255,215,106,0.28)");
+      shine.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = shine;
+      ctx.fillRect(-outerRadius, -outerRadius, outerRadius * 2, outerRadius * 2);
       ctx.restore();
-    } else {
-      const x = centerX + Math.cos(mid) * 95;
-      const y = centerY + Math.sin(mid) * 95;
-      ctx.fillStyle = "#333";
-      ctx.beginPath();
-      ctx.arc(x, y, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#FFD700";
-      ctx.lineWidth = 1;
-      ctx.stroke();
     }
+
+    ctx.save();
+    ctx.strokeStyle = style.stroke;
+    ctx.shadowBlur = px(style.dividerBlur);
+    ctx.shadowColor = style.glow;
+    ctx.globalAlpha = style.alpha;
+    ctx.lineWidth = px(style.lineWidth);
+    ctx.beginPath();
+    ctx.moveTo(centerX + Math.cos(start) * innerRadius, centerY + Math.sin(start) * innerRadius);
+    ctx.lineTo(centerX + Math.cos(start) * outerRadius, centerY + Math.sin(start) * outerRadius);
+    ctx.moveTo(centerX + Math.cos(end) * innerRadius, centerY + Math.sin(end) * innerRadius);
+    ctx.lineTo(centerX + Math.cos(end) * outerRadius, centerY + Math.sin(end) * outerRadius);
+    ctx.stroke();
+    ctx.restore();
+
+    const x = centerX + Math.cos(mid) * portraitRadius;
+    const y = centerY + Math.sin(mid) * portraitRadius;
+    const img = state.images[char.img];
+
+    ctx.save();
+    ctx.shadowBlur = px(style.portraitBlur);
+    ctx.shadowColor = style.glow;
+    ctx.beginPath();
+    ctx.arc(x, y, portraitSize + px(6), 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(6,10,24,0.94)";
+    ctx.fill();
+    ctx.strokeStyle = style.stroke;
+    ctx.lineWidth = px(style.lineWidth + 0.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, portraitSize, 0, Math.PI * 2);
+    ctx.clip();
+    if (img && img.complete) {
+      drawCoverImage(ctx, img, x - portraitSize, y - portraitSize, portraitSize * 2);
+      const portraitShine = ctx.createLinearGradient(x - portraitSize, y - portraitSize, x + portraitSize, y + portraitSize);
+      portraitShine.addColorStop(0, "rgba(255,255,255,0.28)");
+      portraitShine.addColorStop(0.45, "rgba(255,255,255,0.04)");
+      portraitShine.addColorStop(1, "rgba(0,0,0,0.22)");
+      ctx.fillStyle = portraitShine;
+      ctx.fillRect(x - portraitSize, y - portraitSize, portraitSize * 2, portraitSize * 2);
+    } else {
+      ctx.fillStyle = "#20283c";
+      ctx.fillRect(x - portraitSize, y - portraitSize, portraitSize * 2, portraitSize * 2);
+    }
+    ctx.restore();
+
+    const readableName = char.name.length > 11 ? `${char.name.slice(0, 10)}…` : char.name;
+    const textColor = style.label;
+    const badgeBg = style.badge;
+    const badgeMax = Math.max(px(48), visualSlice * (outerRadius - px(10)) * 0.74);
+
+    ctx.save();
+    ctx.shadowBlur = px(Math.max(5, style.dividerBlur));
+    ctx.shadowColor = style.glow;
+    drawSliceBadge(ctx, centerX, centerY, mid, innerRadius + px(20), rarity.label, `900 ${Math.max(7, Math.min(11, px(8)))}px Segoe UI, Arial`, textColor, style.stroke, badgeBg, badgeMax, scale);
+    drawSliceBadge(ctx, centerX, centerY, mid, outerRadius - px(32), starRating(rarity.stars), `900 ${Math.max(9, Math.min(15, px(11)))}px Segoe UI, Arial`, style.star, style.stroke, "rgba(6,10,24,0.7)", badgeMax, scale);
+    drawSliceBadge(ctx, centerX, centerY, mid, outerRadius - px(14), readableName, `900 ${Math.max(8, Math.min(13, px(9.5)))}px Segoe UI, Arial`, textColor, style.stroke, "rgba(3,6,16,0.82)", badgeMax, scale);
+    ctx.restore();
   }
 
-  ctx.fillStyle = "#0a0a12";
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,224,124,0.86)";
+  ctx.shadowBlur = px(18);
+  ctx.shadowColor = "rgba(255,215,106,0.72)";
+  ctx.lineWidth = px(7);
   ctx.beginPath();
-  ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(54,209,255,0.58)";
+  ctx.shadowBlur = px(12);
+  ctx.shadowColor = "rgba(54,209,255,0.5)";
+  ctx.lineWidth = px(3);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, outerRadius - px(9), 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,215,106,0.62)";
+  ctx.shadowBlur = px(10);
+  ctx.shadowColor = "rgba(255,215,106,0.48)";
+  ctx.lineWidth = px(4);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(139,93,255,0.44)";
+  ctx.lineWidth = px(2);
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, innerRadius + px(12), 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  const hubRadius = px(50);
+  const hub = ctx.createRadialGradient(centerX - px(12), centerY - px(14), px(2), centerX, centerY, px(58));
+  hub.addColorStop(0, "#fff7bd");
+  hub.addColorStop(0.32, "#354282");
+  hub.addColorStop(1, "#070b1c");
+  ctx.fillStyle = hub;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, hubRadius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "#FFD700";
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#ffd76a";
+  ctx.lineWidth = px(3);
   ctx.stroke();
 
-  ctx.fillStyle = "#FFD700";
-  ctx.font = "bold 16px Arial";
+  ctx.fillStyle = "#ffd76a";
+  ctx.shadowBlur = px(12);
+  ctx.shadowColor = "rgba(255,215,106,0.8)";
+  ctx.font = `900 ${Math.max(18, Math.min(30, px(22)))}px Segoe UI, Arial`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("⚡", centerX, centerY);
+  ctx.fillText("召", centerX, centerY + px(1));
+  ctx.shadowBlur = 0;
 }
+
 
 function spin() {
   if (state.spinning) return;
@@ -2179,50 +2799,56 @@ function spin() {
   if (hasAllRolesSelected()) {
     playSoundEffect('error');
     showMessage("✅ All 7 roles are filled. No more spins for you!", "success");
-    spinBtn.disabled = true;
+    setSpinButtonsDisabled(true);
     return;
   }
 
   playSoundEffect('spin');
   state.spinning = true;
-  spinBtn.disabled = true;
+  setSpinButtonsDisabled(true);
 
-  let speed = 0.2;
-  let count = 0;
-  const maxSpins = 200;
+  const duration = 3200 + Math.random() * 900;
+  const startAngle = state.angle;
+  const extraTurns = 6 + Math.floor(Math.random() * 3);
+  const slice = (Math.PI * 2) / state.characters.length;
+  const weightedIndex = pickIndexForPhase(state.characters);
+  const targetAngle = weightedIndex * slice + 0.001 + (Math.PI * 2 * extraTurns);
+  const startTime = performance.now();
 
-  let spinInterval = setInterval(() => {
-    state.angle += speed;
-    speed *= 0.98;
-
-    count++;
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  function animate(now){
+    const t = Math.min((now - startTime) / duration, 1);
+    state.angle = startAngle + (targetAngle - startAngle) * easeOutCubic(t);
     draw();
+    if (t < 1) return requestAnimationFrame(animate);
 
-    if (speed < 0.02 || count >= maxSpins) {
-      clearInterval(spinInterval);
+    state.angle = weightedIndex * slice + 0.001;
+    const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    const index = Math.floor(normalized / slice) % state.characters.length;
+    const selected = state.characters[index];
+    const selectedWithForm = applyFormVariation(selected);
+    state.hasSpunThisTurn = true;
+    addMomentumFromSpin(selectedWithForm);
+    if ((selectedWithForm.score || 0) >= 10) state.pityCounter = 0;
+    else state.pityCounter += 1;
 
-      const slice = (Math.PI * 2) / state.characters.length;
-      const weightedIndex = pickIndexForPhase(state.characters);
-      state.angle = weightedIndex * slice + 0.001;
-      const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-      const index = Math.floor(normalized / slice) % state.characters.length;
-      const selected = state.characters[index];
-      const selectedWithForm = applyFormVariation(selected);
-      state.hasSpunThisTurn = true;
-      addMomentumFromSpin(selectedWithForm);
-      if ((selectedWithForm.score || 0) >= 10) state.pityCounter = 0;
-      else state.pityCounter += 1;
+    canvas.classList.remove("winner-flash","legendary-flash");
+    void canvas.offsetWidth;
+    canvas.classList.add("winner-flash");
+    if ((selectedWithForm.score || 0) >= 10) canvas.classList.add("legendary-flash");
 
-      playSoundEffect('select');
-      playRareCinematic(selectedWithForm);
-      showPopup(selectedWithForm);
-      updateOddsDisplay();
-      updatePhaseDisplay();
-      updateMomentumDisplay();
-      state.spinning = false;
-      spinBtn.disabled = false;
-    }
-  }, 16);
+    playSoundEffect('select');
+    playRareCinematic(selectedWithForm);
+    showPopup(selectedWithForm);
+    updateOddsDisplay();
+    updatePhaseDisplay();
+    updateMomentumDisplay();
+        updateMomentumAura();
+    state.spinning = false;
+    setSpinButtonsDisabled(false);
+  }
+
+  requestAnimationFrame(animate);
 }
 
 
@@ -2392,6 +3018,7 @@ function selectRole(role, popup, char) {
     state.myFilledRoles[role] = true;
     popup.remove();
     document.getElementById("charCounter").innerText = state.characters.length;
+    renderShowcase();
     draw();
     updatePhaseDisplay();
 
@@ -2820,6 +3447,8 @@ function updateGameDisplay(data) {
     
     const traitClass = isTraitor ? " traitor" : "";
     const glowClass = getGlowClass(c.score);
+    const roleClass = `role-${String(r).toLowerCase()}`;
+    const roleIcons = {Captain:"👑",Vice:"🛡️",Healer:"💚",Tank:"🧱",Duelist:"⚔️",Support:"🧡",Traitor:"🕳️"};
     const badges = [];
     if (c.hiddenAbility) {
       badges.push(`<span class="ability-badge">❓ Hidden Ability</span>`);
@@ -2828,8 +3457,11 @@ function updateGameDisplay(data) {
       badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
     }
     if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
-    const abilityBadge = badges.join('');
-    h1 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
+    const statusTags = [];
+    if (c.formLabel) statusTags.push(`<span class="status-indicator">✨ ${c.formLabel}</span>`);
+    if (isTraitor) statusTags.push(`<span class="status-indicator">☠️ Traitor</span>`);
+    const abilityBadge = `<div class="ability-wrap">${badges.join('')}${statusTags.join('')}</div>`;
+    h1 += `<div class="char-item ${roleClass}${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}</strong><span class="role-tag"><span class="role-icon">${roleIcons[r] || '🎴'}</span>${r}</span>${abilityBadge}</div><span class="role-score">${roleScore > 0 ? '+' : ''}${roleScore}</span></div>`;
   });
 
   let h2 = "";
@@ -2849,6 +3481,8 @@ function updateGameDisplay(data) {
     
     const traitClass = isTraitor ? " traitor" : "";
     const glowClass = getGlowClass(c.score);
+    const roleClass = `role-${String(r).toLowerCase()}`;
+    const roleIcons = {Captain:"👑",Vice:"🛡️",Healer:"💚",Tank:"🧱",Duelist:"⚔️",Support:"🧡",Traitor:"🕳️"};
     const badges = [];
     if (c.hiddenAbility) {
       badges.push(`<span class="ability-badge">❓ Hidden Ability</span>`);
@@ -2857,19 +3491,24 @@ function updateGameDisplay(data) {
       badges.push(`<span class="ability-badge">⚡ ${c.ability.name}</span>`);
     }
     if (c.passiveAbility) badges.push(`<span class="ability-badge">🌀 ${c.passiveAbility.name}</span>`);
-    const abilityBadge = badges.join('');
-    h2 += `<div class="char-item${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}${c.formLabel ? " (" + c.formLabel + ")" : ""}</strong><span>${r} ${roleScore > 0 ? '+' : ''}${roleScore}</span>${abilityBadge}</div></div>`;
+    const statusTags = [];
+    if (c.formLabel) statusTags.push(`<span class="status-indicator">✨ ${c.formLabel}</span>`);
+    if (isTraitor) statusTags.push(`<span class="status-indicator">☠️ Traitor</span>`);
+    const abilityBadge = `<div class="ability-wrap">${badges.join('')}${statusTags.join('')}</div>`;
+    h2 += `<div class="char-item ${roleClass}${traitClass}"><img src="${c.img}" class="${glowClass}"><div class="char-info"><strong>${c.name}</strong><span class="role-tag"><span class="role-icon">${roleIcons[r] || '🎴'}</span>${r}</span>${abilityBadge}</div><span class="role-score">${roleScore > 0 ? '+' : ''}${roleScore}</span></div>`;
   });
 
-  document.getElementById("p1Chars").innerHTML = h1 || "<span style='color:#888;'>No characters yet</span>";
-  document.getElementById("p2Chars").innerHTML = h2 || "<span style='color:#888;'>No characters yet</span>";
+  document.getElementById("p1Chars").innerHTML = h1 ? `<div class="team-grid">${h1}</div>` : "<span style='color:#888;'>No characters yet</span>";
+  document.getElementById("p2Chars").innerHTML = h2 ? `<div class="team-grid">${h2}</div>` : "<span style='color:#888;'>No characters yet</span>";
   document.getElementById("p1Score").innerText = Math.floor(s1);
   document.getElementById("p2Score").innerText = Math.floor(s2);
+  document.body.classList.toggle("ultimate-mode", Boolean(data.ultimateBonus?.Player1 || data.ultimateBonus?.Player2));
+  refreshUiSurfaces(data, activeEvent);
 
   state.myTurn = data.turn === state.player;
   const allRolesFilled = hasAllRolesSelected();
   const skipLimitReached = (state.skipPenalties[state.player] || 0) >= 2;
-  spinBtn.disabled = !state.myTurn || state.spinning || allRolesFilled;
+  setSpinButtonsDisabled(!state.myTurn || state.spinning || allRolesFilled);
   skipBtn.disabled = !state.myTurn || !state.hasSpunThisTurn || state.skippedThisTurn || allRolesFilled || skipLimitReached;
   stealBtn.disabled = !state.myTurn || state.spinning || state.interactionUsed.steal;
   blockBtn.disabled = !state.myTurn || state.spinning || state.interactionUsed.block;
@@ -3002,15 +3641,26 @@ function joinGame() {
         document.body.classList.add("in-game");
 
         document.getElementById("charCounter").innerText = state.characters.length;
+    renderShowcase();
+        startFloatingParticles();
         document.getElementById("p1Score").innerText = "0";
         document.getElementById("p2Score").innerText = "0";
 
         draw();
+        startWheelAmbientAnimation();
         updateOddsDisplay();
         updatePhaseDisplay();
         updateMomentumDisplay();
+        updateMomentumAura();
         setMobileTab(window.innerWidth <= 900 ? "wheel" : state.mobileTab);
-        spinBtn.disabled = true;
+        setupMobileGestures();
+        document.getElementById("showcaseSearch")?.addEventListener("input", renderShowcase);
+        document.getElementById("showcaseTier")?.addEventListener("change", renderShowcase);
+        renderShowcase();
+        startPingMonitor();
+        updateEsportsHud({turnCount:0});
+        if (window.innerWidth <= 900) { document.getElementById("p1Panel")?.classList.add("collapsed"); document.getElementById("p2Panel")?.classList.add("collapsed"); }
+        setSpinButtonsDisabled(true);
         skipBtn.disabled = true;
 
         if (state.musicEnabled) {
