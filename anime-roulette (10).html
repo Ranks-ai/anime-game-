@@ -1324,7 +1324,7 @@ button:focus-visible{outline:2px solid rgba(54,209,255,.7);outline-offset:2px}
 body.in-game{padding:0;overflow:hidden}
 body.in-game .hud-shell{width:100%;max-width:none;height:100vh;max-height:100vh;padding:6px;display:block;overflow:hidden}
 body.in-game #gameSection{height:100%;max-height:100%;display:grid!important;grid-template-rows:minmax(0,60px) minmax(0,1fr) clamp(42px,5.8vh,58px) clamp(86px,12vh,128px);gap:6px;overflow:hidden}
-body.in-game .aaa-hud{height:60px;max-height:60px;min-height:0;margin:0;padding:4px 6px;display:grid;grid-template-columns:minmax(130px,auto) minmax(0,1fr);align-items:center;overflow:hidden}
+body.in-game .aaa-hud{height:60px;max-height:60px;min-height:0;margin:0;padding:4px 6px;display:grid;grid-template-columns:minmax(120px,auto) auto minmax(0,1fr);align-items:center;overflow:hidden}
 body.in-game .hud-chip{height:100%;display:grid;place-items:center;padding:4px 10px;font-size:clamp(11px,.8vw,14px);white-space:nowrap}
 body.in-game .esports-hud-grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;height:100%;align-items:stretch}
 body.in-game .hud-tile{min-height:0;padding:3px 5px;font-size:clamp(9px,.68vw,12px);display:flex;flex-direction:column;justify-content:center}
@@ -1364,6 +1364,23 @@ body.in-game .showcase-name{font-size:clamp(8px,.62vw,11px);margin:0}.showcase-m
 @media (max-width:1366px) and (max-height:768px){body.in-game #gameSection{grid-template-rows:minmax(0,52px) minmax(0,1fr) 40px 92px;gap:4px}body.in-game .aaa-hud{height:52px;max-height:52px}body.in-game .esports-grid{grid-template-columns:220px minmax(0,1fr) 220px;gap:5px}body.in-game .panel.mobile-collapsible{padding:6px}body.in-game .team-grid{gap:3px}body.in-game .char-item{padding:3px 5px}body.in-game .wheel-stage{max-width:clamp(320px,48vw,520px);max-height:clamp(320px,58vh,520px)}body.in-game #canvas{width:min(100%,clamp(320px,48vw,520px))!important;height:min(100%,clamp(320px,58vh,520px))!important}body.in-game .showcase-controls{grid-template-columns:minmax(120px,1fr) 120px 82px}body.in-game .showcase-card img{max-height:46px}}
 @media (max-width:900px){body.in-game #gameSection{grid-template-rows:auto auto minmax(0,1fr) auto clamp(100px,16vh,138px)}body.in-game .aaa-hud{height:auto;max-height:96px;grid-template-columns:1fr}body.in-game .esports-hud-grid{grid-template-columns:repeat(4,minmax(0,1fr))}body.in-game .mobile-tabs{display:flex!important}body.in-game .esports-grid{grid-template-columns:1fr}body.in-game .side-stack>.chat-box,body.in-game .side-stack>.panel:not(.mobile-collapsible){display:block!important}body.in-game .bottom-action-bar{grid-template-columns:repeat(3,minmax(0,1fr))}body.in-game .showcase-controls{grid-template-columns:1fr 1fr}body.in-game .showcase-controls input{grid-column:1/-1}}
 
+
+/* Slide-out utility drawers: hidden by default, HUD-triggered */
+body.in-game .hud-drawer-actions{display:flex;align-items:center;gap:5px;min-width:max-content}
+body.in-game .hud-drawer-btn{height:clamp(28px,4vh,38px);margin:0;padding:3px 8px;border:1px solid rgba(255,215,106,.5);border-radius:10px;background:linear-gradient(135deg,rgba(255,215,106,.22),rgba(54,209,255,.12));color:#fff4b0;font-size:clamp(10px,.72vw,13px);white-space:nowrap;box-shadow:0 0 12px rgba(255,215,106,.16)}
+body.in-game #chatBox{position:fixed!important;left:0;top:0;bottom:0;z-index:80;width:min(360px,92vw);max-width:92vw;height:100vh!important;max-height:100vh!important;margin:0!important;padding:16px 14px!important;border-radius:0 18px 18px 0!important;display:flex!important;flex-direction:column;transform:translateX(-105%);opacity:0;pointer-events:none;transition:transform .28s ease,opacity .22s ease;box-shadow:22px 0 50px rgba(0,0,0,.48),0 0 30px rgba(54,209,255,.2)!important;background:linear-gradient(135deg,rgba(8,12,28,.96),rgba(16,22,48,.94))!important}
+body.in-game #chatBox.drawer-open{transform:translateX(0);opacity:1;pointer-events:auto;display:flex!important}
+body.in-game #chatBox .chat-header{padding-right:34px;color:#ffd76a;text-transform:uppercase;letter-spacing:.8px}
+body.in-game #chatBox .chat-body{display:flex;flex-direction:column;min-height:0;flex:1;max-height:none!important}
+body.in-game #chatBox .chat-messages{flex:1;min-height:0;max-height:none!important;overflow:auto}
+.drawer-close{position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;margin:0!important;padding:0!important;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08)!important;color:#fff!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 0 12px rgba(54,209,255,.18)!important}
+.encyclopedia-drawer{position:fixed;inset:0;z-index:85;pointer-events:none;background:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 55%,rgba(0,0,0,.42) 100%);opacity:0;transition:opacity .24s ease}
+.encyclopedia-drawer.drawer-open{opacity:1;pointer-events:auto}
+.encyclopedia-drawer-content{position:absolute;top:0;right:0;height:100vh;width:min(620px,94vw);max-height:100vh!important;margin:0!important;border-radius:18px 0 0 18px!important;transform:translateX(105%);transition:transform .3s ease;overflow:auto;background:linear-gradient(135deg,rgba(8,12,28,.98),rgba(18,22,52,.96))!important;border-left:1px solid rgba(255,215,106,.45)!important;box-shadow:-24px 0 55px rgba(0,0,0,.52),0 0 36px rgba(255,215,106,.18)!important}
+.encyclopedia-drawer.drawer-open .encyclopedia-drawer-content{transform:translateX(0)}
+.encyclopedia-drawer-content h2{padding-right:36px}
+@media (max-width:900px){body.in-game .aaa-hud{grid-template-columns:1fr}body.in-game .hud-drawer-actions{justify-content:center;order:2}body.in-game #chatBox{width:min(330px,94vw)}.encyclopedia-drawer-content{width:min(520px,96vw)}}
+
 </style>
 </head>
 <body>
@@ -1385,7 +1402,7 @@ body.in-game .showcase-name{font-size:clamp(8px,.62vw,11px);margin:0}.showcase-m
   <button onclick="joinGame()">🎮 START GAME</button><div id="messages"></div>
 </div>
 <div id="gameSection">
-  <div class="aaa-hud"><div id="status" class="hud-chip">Waiting...</div><div class="esports-hud-grid">
+  <div class="aaa-hud"><div id="status" class="hud-chip">Waiting...</div><div class="hud-drawer-actions"><button class="hud-drawer-btn" onclick="toggleChatDrawer()">💬 Chat</button><button class="hud-drawer-btn" onclick="showEncyclopedia()">📚 Encyclopedia</button></div><div class="esports-hud-grid">
 <div class="hud-tile"><span class="hud-k">Room</span><span class="hud-v" id="hudRoom">----</span></div>
 <div class="hud-tile"><span class="hud-k">Turns</span><span class="hud-v" id="hudTurn">0</span></div>
 <div class="hud-tile"><span class="hud-k">Phase</span><span class="hud-v" id="hudPhase">Early</span></div>
@@ -1401,7 +1418,7 @@ body.in-game .showcase-name{font-size:clamp(8px,.62vw,11px);margin:0}.showcase-m
     <div class="side-stack team-side your-team">
       <div class="team-panel-label">Your Team</div>
       <div class="panel mobile-section mobile-collapsible" id="p1Panel" data-section="p1"><h3 id="p1Name">Your Team</h3><button class="collapse-toggle" onclick="togglePanel('p1Panel')">Team Panel</button><div class="collapsible-content"><div id="p1Chars"></div><div class="score">Score: <span id="p1Score">0</span></div></div></div>
-      <div class="chat-box mobile-section" id="chatBox" data-section="chat"><div class="chat-header">💬 Room Chat</div><div class="chat-body"><div id="chatMessages" class="chat-messages"><div class="chat-empty">No messages yet. Say hi 👋</div></div><div class="emoji-row"><button onclick="addEmojiToChat('🔥')">🔥</button><button onclick="addEmojiToChat('😂')">😂</button><button onclick="addEmojiToChat('😈')">😈</button><button onclick="addEmojiToChat('💀')">💀</button><button onclick="addEmojiToChat('👏')">👏</button></div><div class="chat-input-row"><input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" /><button id="chatSendBtn" onclick="sendChatMessage()">Send</button></div></div></div>
+      <div class="chat-box mobile-section" id="chatBox" data-section="chat"><button class="drawer-close" onclick="toggleChatDrawer(false)">✕</button><div class="chat-header">💬 Room Chat</div><div class="chat-body"><div id="chatMessages" class="chat-messages"><div class="chat-empty">No messages yet. Say hi 👋</div></div><div class="emoji-row"><button onclick="addEmojiToChat('🔥')">🔥</button><button onclick="addEmojiToChat('😂')">😂</button><button onclick="addEmojiToChat('😈')">😈</button><button onclick="addEmojiToChat('💀')">💀</button><button onclick="addEmojiToChat('👏')">👏</button></div><div class="chat-input-row"><input id="chatInput" type="text" maxlength="80" placeholder="Type a short message (max 80 chars)" /><button id="chatSendBtn" onclick="sendChatMessage()">Send</button></div></div></div>
     </div>
     <div class="mobile-section wheel-column" data-section="wheel"><div class="wheel-stage"><div class="wheel-pointer" aria-hidden="true"></div><canvas id="canvas" width="320" height="320"></canvas><button id="centerSpinBtn" class="wheel-center-btn" onclick="spin()" aria-label="Spin, 3 out of 3 spins left"><span><span class="spin-title">SPIN</span><span class="spin-count" id="centerSpinCount">3 / 3</span><span class="spin-subtitle">SPINS LEFT</span></span></button></div></div>
     <div class="side-stack team-side opponent-team">
@@ -2014,10 +2031,16 @@ function triggerWinConfetti() {
 }
 
 function showEncyclopedia() {
+  const existing = document.querySelector('.encyclopedia-drawer');
+  if (existing) {
+    existing.classList.add('drawer-open');
+    return;
+  }
+
   const modal = document.createElement('div');
-  modal.className = 'leaderboard-modal';
+  modal.className = 'encyclopedia-drawer';
   const content = document.createElement('div');
-  content.className = 'leaderboard-content';
+  content.className = 'encyclopedia-drawer-content leaderboard-content';
 
   const rows = BASE_CHARACTERS.map(c => {
     const forms = c.forms?.map(f => f.name).join(', ') || 'Base only';
@@ -2026,7 +2049,7 @@ function showEncyclopedia() {
   }).join('');
 
   content.innerHTML = `
-    <button class="modal-close" onclick="this.closest('.leaderboard-modal').remove()">✕</button>
+    <button class="modal-close drawer-close" onclick="this.closest('.encyclopedia-drawer').remove()">✕</button>
     <h2>📚 Character Encyclopedia</h2>
 
     <details class="collapsible-block" open>
@@ -2046,6 +2069,7 @@ function showEncyclopedia() {
   `;
   modal.appendChild(content);
   document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('drawer-open'));
   const search = content.querySelector('#encyclopediaSearch');
   const tbody = content.querySelector('tbody');
   search.addEventListener('input', () => {
@@ -2057,6 +2081,15 @@ function showEncyclopedia() {
   modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 }
 
+
+function toggleChatDrawer(force) {
+  const chat = document.getElementById('chatBox');
+  if (!chat) return;
+  const shouldOpen = typeof force === 'boolean' ? force : !chat.classList.contains('drawer-open');
+  chat.classList.toggle('drawer-open', shouldOpen);
+  chat.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+  if (shouldOpen) chatInputEl?.focus();
+}
 
 async function showLeaderboard() {
   playSoundEffect('select');
