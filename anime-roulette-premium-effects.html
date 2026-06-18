@@ -30,26 +30,46 @@ body {
 body::before {
   content: "";
   position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    from 0deg,
-    var(--energy-a),
-    var(--energy-b),
-    var(--energy-c),
-    var(--energy-a)
-  );
-  animation: spinEnergy 20s linear infinite;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      110deg,
+      rgba(255,255,255,0.04) 0px,
+      rgba(255,255,255,0.04) 2px,
+      transparent 2px,
+      transparent 18px
+    ),
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.10), transparent 40%),
+    radial-gradient(circle at 80% 75%, rgba(255,215,0,0.10), transparent 45%);
+  animation: animeSpeedLines 14s linear infinite;
   z-index: -2;
   pointer-events: none;
 }
 
-@keyframes spinEnergy {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.04); }
-  100% { transform: rotate(360deg) scale(1); }
+body::after {
+  content: "⚡  ✦  ⚔️  ☄️";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  font-size: 22px;
+  letter-spacing: 26px;
+  text-align: center;
+  opacity: 0.2;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.35));
+  animation: animeGlyphFloat 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes animeSpeedLines {
+  0% { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(-80px, 0, 0); }
+}
+
+@keyframes animeGlyphFloat {
+  0%,100% { transform: translateY(0px); opacity: 0.16; }
+  50% { transform: translateY(-6px); opacity: 0.28; }
 }
 
 body.theme-strength {
@@ -1052,6 +1072,8 @@ body.rare-cinematic {
     <div id="status">Waiting...</div>
     <div class="character-counter">📊 Characters: <span id="charCounter">60</span>/60</div>
     <div class="character-counter" id="oddsDisplay">🎲 Odds: ...</div>
+    <div class="character-counter" id="phaseDisplay">🧠 Early Game → build team</div>
+    <div class="character-counter" id="momentumDisplay">🔥 Momentum: 0/3</div>
   </div>
 
   <div class="mobile-tabs" id="mobileTabs">
@@ -1243,6 +1265,10 @@ const CHARACTERS = BASE_CHARACTERS.map(char => ({
 }));
 
 const ROLES = ["Captain", "Vice", "Healer", "Tank", "Duelist", "Support", "Traitor"];
+const LEGENDARY_SCORE_THRESHOLD = 10;
+const MOMENTUM_MAX = 3;
+const MOMENTUM_GOOD_SPIN_SCORE = 9;
+const MOMENTUM_BOOST_BONUS = 6;
 
 const SERIES_MAP = {
   Goku: "Dragon Ball", Vegeta: "Dragon Ball",
@@ -1276,6 +1302,10 @@ ultimateUsed: false,
     Player1: 0,
     Player2: 0
   },
+  momentum: {
+    Player1: 0,
+    Player2: 0
+  },
   pityCounter: 0,
   mobileTab: "wheel"
 };
@@ -1291,6 +1321,63 @@ const chatInputEl = document.getElementById("chatInput");
 
 function hasAllRolesSelected() {
   return Object.keys(state.myFilledRoles || {}).length >= ROLES.length;
+}
+
+function getGamePhaseBySpins() {
+  const filled = Object.keys(state.myFilledRoles || {}).length;
+  if (filled <= 2) return "early";      // First 3 spins
+  if (filled <= 4) return "mid";        // Mid game adaptation
+  return "late";                        // Last 2 spins
+}
+
+function updatePhaseDisplay() {
+  const el = document.getElementById("phaseDisplay");
+  if (!el) return;
+  const phase = getGamePhaseBySpins();
+  if (phase === "early") {
+    el.innerText = "🧠 Early Game → build team";
+  } else if (phase === "mid") {
+    el.innerText = "🧩 Mid Game → adapt";
+  } else {
+    el.innerText = "🔥 Late Game → power spikes (legendary boost)";
+  }
+}
+
+function updateMomentumDisplay() {
+  const el = document.getElementById("momentumDisplay");
+  if (!el || !state.player) return;
+  const value = Math.min(MOMENTUM_MAX, state.momentum?.[state.player] || 0);
+  if (value >= MOMENTUM_MAX) {
+    el.innerText = `🔥 Momentum: ${value}/${MOMENTUM_MAX} — ULTIMATE BOOST MODE`;
+  } else {
+    el.innerText = `🔥 Momentum: ${value}/${MOMENTUM_MAX}`;
+  }
+}
+
+function addMomentumFromSpin(char) {
+  if (!state.room || !state.player || !char) return;
+  if ((char.score || 0) < MOMENTUM_GOOD_SPIN_SCORE) return;
+  const momentumRef = db.ref(`rooms/${state.room}/momentum/${state.player}`);
+  momentumRef.transaction(current => Math.min(MOMENTUM_MAX, (current || 0) + 1));
+}
+
+function pickIndexForPhase(chars) {
+  if (!chars.length) return 0;
+  const phase = getGamePhaseBySpins();
+  const legendaryIndexes = [];
+  for (let i = 0; i < chars.length; i++) {
+    if ((chars[i].score || 0) >= LEGENDARY_SCORE_THRESHOLD) legendaryIndexes.push(i);
+  }
+
+  let legendaryChance = 0;
+  if (phase === "mid") legendaryChance = 0.2;
+  if (phase === "late") legendaryChance = 0.55; // Last 2 spins = higher chance of legendary
+
+  if (legendaryIndexes.length && Math.random() < legendaryChance) {
+    return legendaryIndexes[Math.floor(Math.random() * legendaryIndexes.length)];
+  }
+
+  return Math.floor(Math.random() * chars.length);
 }
 
 function activateUltimate() {
@@ -1867,11 +1954,14 @@ function spin() {
       clearInterval(spinInterval);
 
       const slice = (Math.PI * 2) / state.characters.length;
+      const weightedIndex = pickIndexForPhase(state.characters);
+      state.angle = weightedIndex * slice + 0.001;
       const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const index = Math.floor(normalized / slice) % state.characters.length;
       const selected = state.characters[index];
       const selectedWithForm = applyFormVariation(selected);
       state.hasSpunThisTurn = true;
+      addMomentumFromSpin(selectedWithForm);
       if ((selectedWithForm.score || 0) >= 10) state.pityCounter = 0;
       else state.pityCounter += 1;
 
@@ -1879,6 +1969,8 @@ function spin() {
       playRareCinematic(selectedWithForm);
       showPopup(selectedWithForm);
       updateOddsDisplay();
+      updatePhaseDisplay();
+      updateMomentumDisplay();
       state.spinning = false;
       spinBtn.disabled = false;
     }
@@ -2031,6 +2123,7 @@ function selectRole(role, popup, char) {
     popup.remove();
     document.getElementById("charCounter").innerText = state.characters.length;
     draw();
+    updatePhaseDisplay();
 
     state.hasSpunThisTurn = false;
     state.skippedThisTurn = false;
@@ -2077,7 +2170,7 @@ function skipTurn() {
   db.ref(`rooms/${state.room}/turn`).set(next);
 }
 
-function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
+function calculateScore(slots, enemySlots = {}, ultimateBonus = 0, momentumBonus = 0) {
   let score = 0;
   const ownChars = Object.values(slots || {});
   const enemyChars = Object.values(enemySlots || {});
@@ -2132,16 +2225,24 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
     score += base;
   });
 
-  // Team set bonus: drafting 3+ from same anime series grants buffs
+  // Synergy system:
+  // - Same anime (2+) => +3
+  // - One Piece crew (2+) => +5
+  // - Rival combo Naruto + Sasuke => special +6
   const seriesCounts = {};
   ownChars.forEach(char => {
     const series = SERIES_MAP[char.name];
     if (!series) return;
     seriesCounts[series] = (seriesCounts[series] || 0) + 1;
   });
-  Object.values(seriesCounts).forEach(count => {
-    if (count >= 3) score += 5;
+  Object.entries(seriesCounts).forEach(([series, count]) => {
+    if (count >= 2) score += 3;
+    if (series === "One Piece" && count >= 2) score += 5;
   });
+  const ownNames = ownChars.map(c => c.name);
+  if (ownNames.includes("Naruto") && ownNames.includes("Sasuke")) {
+    score += 6;
+  }
 
   const ownShields = effectsDisabled ? 0 : ownChars.filter(c => c.ability?.type === "shield").length;
   const enemyDebuffTotal = enemyChars
@@ -2186,6 +2287,7 @@ function calculateScore(slots, enemySlots = {}, ultimateBonus = 0) {
 
   // Apply ultimate bonus
   score += ultimateBonus;
+  score += momentumBonus;
 
   return score;
 }
@@ -2277,8 +2379,12 @@ function updateGameDisplay(data) {
   const p2 = data.players.Player2?.slots || {};
   const p1UltimateBonus = data.ultimateBonus?.Player1 || 0;
   const p2UltimateBonus = data.ultimateBonus?.Player2 || 0;
+  const p1Momentum = data.momentum?.Player1 || 0;
+  const p2Momentum = data.momentum?.Player2 || 0;
   const p1SkipPenalty = data.skipPenalties?.Player1 || 0;
   const p2SkipPenalty = data.skipPenalties?.Player2 || 0;
+  state.momentum.Player1 = p1Momentum;
+  state.momentum.Player2 = p2Momentum;
   state.skipPenalties.Player1 = p1SkipPenalty;
   state.skipPenalties.Player2 = p2SkipPenalty;
 
@@ -2293,12 +2399,16 @@ function updateGameDisplay(data) {
     state.myFilledRoles = p2;
     applyTeamTheme(p2);
   }
+  updatePhaseDisplay();
+  updateMomentumDisplay();
 
   const p1HasPicks = Object.keys(p1).length > 0;
   const p2HasPicks = Object.keys(p2).length > 0;
 
-  const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus) : 0;
-  const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus) : 0;
+  const p1MomentumBonus = p1Momentum >= MOMENTUM_MAX ? MOMENTUM_BOOST_BONUS : 0;
+  const p2MomentumBonus = p2Momentum >= MOMENTUM_MAX ? MOMENTUM_BOOST_BONUS : 0;
+  const s1Base = p1HasPicks ? calculateScore(p1, p2, effectiveP1UltimateBonus, p1MomentumBonus) : 0;
+  const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus, p2MomentumBonus) : 0;
   const s1 = s1Base - p1SkipPenalty;
   const s2 = s2Base - p2SkipPenalty;
 
@@ -2421,6 +2531,7 @@ function joinGame() {
   state.hasSpunThisTurn = false;
   state.skippedThisTurn = false;
   state.skipPenalties = { Player1: 0, Player2: 0 };
+  state.momentum = { Player1: 0, Player2: 0 };
 
   const roomRef = db.ref(`rooms/${room}`);
 
@@ -2464,6 +2575,13 @@ function joinGame() {
         }
       });
 
+      // Ensure momentum starts at 0 for both players
+      db.ref(`rooms/${room}/momentum`).once("value").then(snap => {
+        if (!snap.val()) {
+          db.ref(`rooms/${room}/momentum`).set({ Player1: 0, Player2: 0 });
+        }
+      });
+
       await preloadImages();
 
       setTimeout(() => {
@@ -2476,6 +2594,8 @@ function joinGame() {
 
         draw();
         updateOddsDisplay();
+        updatePhaseDisplay();
+        updateMomentumDisplay();
         setMobileTab(window.innerWidth <= 900 ? "wheel" : state.mobileTab);
         spinBtn.disabled = true;
         skipBtn.disabled = true;
