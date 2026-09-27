@@ -1794,6 +1794,22 @@ const SERIES_MAP = {
   Eren: "AOT", Levi: "AOT"
 };
 
+let gameState = {
+  roomId: "",
+  status: "waiting",
+  currentTurn: 1,
+  turnNumber: 1,
+  players: {
+    player1: { name: "", team: [], roles: {} },
+    player2: { name: "", team: [], roles: {} }
+  },
+  availableCharacters: [],
+  selectedCharacters: [],
+  momentum: { player1: 0, player2: 0 },
+  winner: null
+};
+window.gameState = gameState;
+
 let state = {
 ultimateUsed: false,
   room: null,
@@ -1829,6 +1845,28 @@ ultimateUsed: false,
   pityCounter: 0,
   mobileTab: "wheel"
 };
+
+function syncGameState(roomData, scores = null) {
+  const p1Roles = roomData?.players?.Player1?.slots || {};
+  const p2Roles = roomData?.players?.Player2?.slots || {};
+  const bothTeamsReady = Object.keys(p1Roles).length === 7 && Object.keys(p2Roles).length === 7;
+  const p1Name = roomData?.players?.Player1?.name || "";
+  const p2Name = roomData?.players?.Player2?.name || "";
+
+  gameState.roomId = state.room || "";
+  gameState.status = bothTeamsReady ? "complete" : (p1Name && p2Name ? "active" : "waiting");
+  gameState.currentTurn = roomData?.turn === "Player2" ? 2 : 1;
+  gameState.turnNumber = Math.max(1, (roomData?.turnCount || 0) + 1);
+  gameState.players.player1 = { name: p1Name, team: Object.values(p1Roles), roles: p1Roles };
+  gameState.players.player2 = { name: p2Name, team: Object.values(p2Roles), roles: p2Roles };
+  gameState.availableCharacters = [...state.characters];
+  gameState.selectedCharacters = [...Object.values(p1Roles), ...Object.values(p2Roles)];
+  gameState.momentum.player1 = roomData?.momentum?.Player1 || 0;
+  gameState.momentum.player2 = roomData?.momentum?.Player2 || 0;
+  gameState.winner = bothTeamsReady && scores
+    ? (scores.player1 === scores.player2 ? "tie" : (scores.player1 > scores.player2 ? "player1" : "player2"))
+    : null;
+}
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -3631,6 +3669,7 @@ function updateGameDisplay(data) {
   const s2Base = p2HasPicks ? calculateScore(p2, p1, effectiveP2UltimateBonus, p2MomentumBonus, eventType) : 0;
   const s1 = s1Base - p1SkipPenalty - p1TeamDebuff;
   const s2 = s2Base - p2SkipPenalty - p2TeamDebuff;
+  syncGameState(data, { player1: s1, player2: s2 });
 
   state.ultimateUsed = Boolean(data.ultimateBonus?.[state.player]);
   ultimateBtn.disabled = state.ultimateUsed;
@@ -3759,9 +3798,15 @@ function joinGame() {
   showMessage("⏳ Joining...", "success");
 
   state.room = room;
+  gameState.roomId = room;
+  gameState.status = "waiting";
+  gameState.availableCharacters = [];
+  gameState.selectedCharacters = [];
+  gameState.winner = null;
   state.playerName = name;
   state.gameMode = requestedMode;
   state.characters = shuffle(CHARACTERS);
+  gameState.availableCharacters = [...state.characters];
   state.gameEnded = false;
   state.ultimateUsed = false;
   state.cachedUltimateBonus = 0;
