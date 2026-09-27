@@ -1511,6 +1511,189 @@ function playSoundEffect(type) {
   else if (type === 'error') playSound([150, 100], [0.1, 0.1]);
 }
 
+const WHEEL_AUDIO_MIX = {
+  master: 0.42, // +40% over the legacy 0.30 wheel/UI tone base without clipping.
+  spinStart: 0.46,
+  spinLoopMin: 0.055,
+  spinLoopMax: 0.18,
+  tickMin: 0.06,
+  tickMax: 0.16,
+  landing: { common: 0.22, uncommon: 0.25, rare: 0.3, epic: 0.36, legendary: 0.46 },
+  legendary: 0.5
+};
+let wheelAudioState = { loopOsc: null, loopSubOsc: null, loopGain: null, loopFilter: null, lastTickIndex: null, lastTickTime: 0 };
+
+function resumeAudioContext() {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  } catch(e) { return null; }
+}
+
+function playAudioTone({ frequency = 440, duration = 0.12, type = 'sine', volume = 0.2, delay = 0, endFrequency = null }) {
+  try {
+    const ctx = resumeAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const compressor = ctx.createDynamicsCompressor();
+    const start = ctx.currentTime + delay;
+    const safeVolume = Math.min(volume * WHEEL_AUDIO_MIX.master, 0.55);
+    osc.type = type;
+    osc.frequency.setValueAtTime(frequency, start);
+    if (endFrequency) osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + duration);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, safeVolume), start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(gain);
+    gain.connect(compressor);
+    compressor.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + duration + 0.03);
+  } catch(e) {}
+}
+
+function playNoiseBurst({ duration = 0.24, volume = 0.18, delay = 0, highpass = 600, lowpass = 2400 }) {
+  try {
+    const ctx = resumeAudioContext();
+    if (!ctx) return;
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    const start = ctx.currentTime + delay;
+    source.buffer = buffer;
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(highpass, start);
+    filter.frequency.exponentialRampToValueAtTime(lowpass, start + duration);
+    filter.Q.value = 1.2;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(Math.min(volume * WHEEL_AUDIO_MIX.master, 0.5), start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(start);
+    source.stop(start + duration + 0.02);
+  } catch(e) {}
+}
+
+function getAudioRarity(char) {
+  const score = char?.score || 0;
+  if (score >= 10) return 'legendary';
+  if (score >= 9) return 'epic';
+  if (score >= 8) return 'rare';
+  if (score >= 7) return 'uncommon';
+  return 'common';
+}
+
+function speedToPlaybackRate(speedRatio) {
+  return Math.max(0.72, Math.min(1.9, 0.72 + speedRatio * 1.18));
+}
+
+function playSpinStartAudio() {
+  playNoiseBurst({ duration: 0.34, volume: WHEEL_AUDIO_MIX.spinStart, highpass: 380, lowpass: 3600 });
+  playAudioTone({ frequency: 130, endFrequency: 420, duration: 0.34, type: 'sawtooth', volume: 0.38 });
+  playAudioTone({ frequency: 880, endFrequency: 1320, duration: 0.18, type: 'triangle', volume: 0.18, delay: 0.04 });
+}
+
+function startSpinLoopAudio() {
+  try {
+    const ctx = resumeAudioContext();
+    if (!ctx) return;
+    stopSpinLoopAudio();
+    const loopOsc = ctx.createOscillator();
+    const loopSubOsc = ctx.createOscillator();
+    const loopGain = ctx.createGain();
+    const loopFilter = ctx.createBiquadFilter();
+    loopOsc.type = 'sawtooth';
+    loopSubOsc.type = 'triangle';
+    loopOsc.frequency.value = 180;
+    loopSubOsc.frequency.value = 90;
+    loopFilter.type = 'lowpass';
+    loopFilter.frequency.value = 1200;
+    loopFilter.Q.value = 0.65;
+    loopGain.gain.value = 0.0001;
+    loopOsc.connect(loopFilter);
+    loopSubOsc.connect(loopFilter);
+    loopFilter.connect(loopGain);
+    loopGain.connect(ctx.destination);
+    loopOsc.start();
+    loopSubOsc.start();
+    wheelAudioState.loopOsc = loopOsc;
+    wheelAudioState.loopSubOsc = loopSubOsc;
+    wheelAudioState.loopGain = loopGain;
+    wheelAudioState.loopFilter = loopFilter;
+  } catch(e) {}
+}
+
+function updateSpinLoopAudio(speedRatio) {
+  try {
+    const ctx = getAudioContext();
+    const { loopOsc, loopSubOsc, loopGain, loopFilter } = wheelAudioState;
+    if (!loopOsc || !loopGain || !loopFilter) return;
+    const rate = speedToPlaybackRate(speedRatio);
+    const volume = WHEEL_AUDIO_MIX.spinLoopMin + (WHEEL_AUDIO_MIX.spinLoopMax - WHEEL_AUDIO_MIX.spinLoopMin) * speedRatio;
+    loopOsc.frequency.setTargetAtTime(145 * rate, ctx.currentTime, 0.035);
+    if (loopSubOsc) loopSubOsc.frequency.setTargetAtTime(72 * rate, ctx.currentTime, 0.035);
+    loopFilter.frequency.setTargetAtTime(700 + speedRatio * 2200, ctx.currentTime, 0.04);
+    loopGain.gain.setTargetAtTime(volume * WHEEL_AUDIO_MIX.master, ctx.currentTime, 0.04);
+  } catch(e) {}
+}
+
+function stopSpinLoopAudio() {
+  try {
+    const ctx = getAudioContext();
+    const loopOsc = wheelAudioState.loopOsc;
+    const loopSubOsc = wheelAudioState.loopSubOsc;
+    const loopGain = wheelAudioState.loopGain;
+    const loopFilter = wheelAudioState.loopFilter;
+    if (loopGain) loopGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.035);
+    [loopOsc, loopSubOsc].forEach(node => { if (node) { try { node.stop(ctx.currentTime + 0.12); } catch(e) {} } });
+    setTimeout(() => {
+      [loopOsc, loopSubOsc, loopGain, loopFilter].forEach(node => { try { node?.disconnect(); } catch(e) {} });
+    }, 220);
+  } catch(e) {}
+  wheelAudioState.loopOsc = null;
+  wheelAudioState.loopSubOsc = null;
+  wheelAudioState.loopGain = null;
+  wheelAudioState.loopFilter = null;
+}
+
+function playSpinTickAudio(speedRatio) {
+  const now = performance.now();
+  if (now - wheelAudioState.lastTickTime < 24) return;
+  wheelAudioState.lastTickTime = now;
+  const rate = speedToPlaybackRate(speedRatio);
+  playAudioTone({ frequency: 720 * rate, endFrequency: 510 * rate, duration: 0.035, type: 'square', volume: WHEEL_AUDIO_MIX.tickMin + WHEEL_AUDIO_MIX.tickMax * speedRatio });
+}
+
+function playLandingAudio(char) {
+  const rarity = getAudioRarity(char);
+  const volume = WHEEL_AUDIO_MIX.landing[rarity] || WHEEL_AUDIO_MIX.landing.common;
+  const mappings = {
+    common: [260, 190],
+    uncommon: [340, 250, 420],
+    rare: [480, 620, 360],
+    epic: [220, 540, 860, 620],
+    legendary: [180, 420, 760, 1180, 1560]
+  };
+  (mappings[rarity] || mappings.common).forEach((freq, idx) => {
+    playAudioTone({ frequency: freq, duration: rarity === 'legendary' ? 0.18 : 0.11, type: idx % 2 ? 'triangle' : 'sawtooth', volume, delay: idx * 0.045 });
+  });
+  if (rarity === 'rare' || rarity === 'epic' || rarity === 'legendary') playNoiseBurst({ duration: 0.18, volume: volume * 0.65, delay: 0.03, highpass: 900, lowpass: 4200 });
+}
+
+function playLegendaryRewardAudio() {
+  playNoiseBurst({ duration: 0.65, volume: WHEEL_AUDIO_MIX.legendary, highpass: 260, lowpass: 5200 });
+  [523, 659, 784, 1046, 1318].forEach((freq, idx) => playAudioTone({ frequency: freq, duration: 0.42, type: 'triangle', volume: 0.34, delay: idx * 0.075 }));
+  [180, 220, 260].forEach((freq, idx) => playAudioTone({ frequency: freq, endFrequency: freq * 1.8, duration: 0.55, type: 'sawtooth', volume: 0.22, delay: idx * 0.08 }));
+}
+
 const BASE_CHARACTERS = [
   {name:"Goku",score:10,img:"images/goku.png",strength:10,speed:9,defense:7,stamina:10,forms:[{name:"Ultra Instinct",score:12,speed:10,defense:9,stamina:10},{name:"Super Saiyan Blue",score:11,strength:10,speed:9,defense:8,stamina:10}],ability:{name:"Saiyan Surge",description:"If score ≥ 9, +20% total team",type:"teamMultiplier",threshold:9,multiplier:0.2}},
   {name:"Vegeta",score:10,img:"images/vegeta.png",strength:9,speed:9,defense:8,stamina:9,ability:{name:"Prince's Pride",description:"+3 if Vice",type:"roleBonus",role:"Vice",value:3}},
@@ -2036,9 +2219,11 @@ function startFloatingParticles(){ if(floatingTimer) return; const root=document
 function playRareCinematic(char) {
   if (!char || char.score < 10) return;
   triggerFlash();
-  if ((char.score || 0) >= LEGENDARY_SCORE_THRESHOLD) triggerScreenShake();
+  if ((char.score || 0) >= LEGENDARY_SCORE_THRESHOLD) {
+    triggerScreenShake();
+    playLegendaryRewardAudio();
+  }
   document.body.classList.add('rare-cinematic');
-  playSound([900, 700, 1000], [0.12, 0.12, 0.2]);
   setTimeout(() => document.body.classList.remove('rare-cinematic'), 500);
 }
 
@@ -2837,24 +3022,40 @@ function spin() {
   }
 
   playSoundEffect('spin');
+  playSpinStartAudio();
+  startSpinLoopAudio();
   state.spinning = true;
   setSpinButtonsDisabled(true);
 
   const duration = 3200 + Math.random() * 900;
   const startAngle = state.angle;
+  let previousAngle = startAngle;
   const extraTurns = 6 + Math.floor(Math.random() * 3);
   const slice = (Math.PI * 2) / state.characters.length;
   const weightedIndex = pickIndexForPhase(state.characters);
   const targetAngle = weightedIndex * slice + 0.001 + (Math.PI * 2 * extraTurns);
+  const totalTravel = Math.max(0.0001, targetAngle - startAngle);
   const startTime = performance.now();
+  wheelAudioState.lastTickIndex = Math.floor((((startAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / slice);
+  wheelAudioState.lastTickTime = 0;
 
   function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
   function animate(now){
     const t = Math.min((now - startTime) / duration, 1);
-    state.angle = startAngle + (targetAngle - startAngle) * easeOutCubic(t);
+    state.angle = startAngle + totalTravel * easeOutCubic(t);
+    const frameTravel = Math.abs(state.angle - previousAngle);
+    const speedRatio = Math.max(0, Math.min(1, frameTravel / Math.max(slice * 0.65, 0.0001)));
+    updateSpinLoopAudio(speedRatio);
+    const tickIndex = Math.floor((((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / slice);
+    if (tickIndex !== wheelAudioState.lastTickIndex) {
+      wheelAudioState.lastTickIndex = tickIndex;
+      playSpinTickAudio(speedRatio);
+    }
+    previousAngle = state.angle;
     draw();
     if (t < 1) return requestAnimationFrame(animate);
 
+    stopSpinLoopAudio();
     state.angle = weightedIndex * slice + 0.001;
     const normalized = ((state.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
     const index = Math.floor(normalized / slice) % state.characters.length;
@@ -2870,6 +3071,7 @@ function spin() {
     canvas.classList.add("winner-flash");
     if ((selectedWithForm.score || 0) >= 10) canvas.classList.add("legendary-flash");
 
+    playLandingAudio(selectedWithForm);
     playSoundEffect('select');
     playRareCinematic(selectedWithForm);
     showPopup(selectedWithForm);
